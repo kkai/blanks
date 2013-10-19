@@ -8,6 +8,12 @@
 
 #import "OptionsViewController.h"
 
-@interface BlanksViewController : UIViewController <OptionsViewControllerDelegate>
+@interface BlanksViewController : UIViewController <OptionsViewControllerDelegate>{
+    
+    IBOutlet UIButton* wordButton1;
+    IBOutlet UIButton* wordButton2;
+    IBOutlet UIButton* wordButton3;
+    IBOutlet UIButton* wordButton4;
+}
 
 @end

@@ -22,6 +22,8 @@
 		04BBA4431812720F00E9B81A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04BBA4221812720F00E9B81A /* UIKit.framework */; };
 		04BBA44B1812720F00E9B81A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4491812720F00E9B81A /* InfoPlist.strings */; };
 		04BBA44D1812720F00E9B81A /* BlanksTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA44C1812720F00E9B81A /* BlanksTests.m */; };
+		04BBA45A1812B40700E9B81A /* average.plist in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4591812B40700E9B81A /* average.plist */; };
+		04BBA45B1812B40700E9B81A /* average.plist in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4591812B40700E9B81A /* average.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +58,7 @@
 		04BBA4481812720F00E9B81A /* BlanksTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "BlanksTests-Info.plist"; sourceTree = "<group>"; };
 		04BBA44A1812720F00E9B81A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		04BBA44C1812720F00E9B81A /* BlanksTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BlanksTests.m; sourceTree = "<group>"; };
+		04BBA4591812B40700E9B81A /* average.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = average.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +134,7 @@
 		04BBA4251812720F00E9B81A /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				04BBA4591812B40700E9B81A /* average.plist */,
 				04BBA4261812720F00E9B81A /* Blanks-Info.plist */,
 				04BBA4271812720F00E9B81A /* InfoPlist.strings */,
 				04BBA42A1812720F00E9B81A /* main.m */,
@@ -235,6 +239,7 @@
 			files = (
 				04BBA43A1812720F00E9B81A /* Images.xcassets in Resources */,
 				04BBA4291812720F00E9B81A /* InfoPlist.strings in Resources */,
+				04BBA45A1812B40700E9B81A /* average.plist in Resources */,
 				04BBA4321812720F00E9B81A /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -243,6 +248,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04BBA45B1812B40700E9B81A /* average.plist in Resources */,
 				04BBA44B1812720F00E9B81A /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
