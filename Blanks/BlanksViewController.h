@@ -8,6 +8,6 @@
 
 #import "OptionsViewController.h"
 
-@interface MainViewController : UIViewController <OptionsViewControllerDelegate>
+@interface BlanksViewController : UIViewController <OptionsViewControllerDelegate>
 
 @end

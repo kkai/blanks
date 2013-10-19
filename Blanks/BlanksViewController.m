@@ -6,13 +6,13 @@
 //  Copyright (c) 2013 Kai Kunze. All rights reserved.
 //
 
-#import "MainViewController.h"
+#import "BlanksViewController.h"
 
-@interface MainViewController ()
+@interface BlanksViewController ()
 
 @end
 
-@implementation MainViewController
+@implementation BlanksViewController
 
 - (void)viewDidLoad
 {
