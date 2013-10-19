@@ -9,6 +9,11 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>MoreBlanks.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
@@ -18,6 +23,16 @@
 			<true/>
 		</dict>
 		<key>04BBA43E1812720F00E9B81A</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>04BBA45F1812B4E500E9B81A</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>04BBA47E1812B4E500E9B81A</key>
 		<dict>
 			<key>primary</key>
 			<true/>
