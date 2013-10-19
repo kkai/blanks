@@ -6,8 +6,8 @@
 //  Copyright (c) 2013 Kai Kunze. All rights reserved.
 //
 
-#import "FlipsideViewController.h"
+#import "OptionsViewController.h"
 
-@interface MainViewController : UIViewController <FlipsideViewControllerDelegate>
+@interface MainViewController : UIViewController <OptionsViewControllerDelegate>
 
 @end

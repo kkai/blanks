@@ -6,13 +6,13 @@
 //  Copyright (c) 2013 Kai Kunze. All rights reserved.
 //
 
-#import "FlipsideViewController.h"
+#import "OptionsViewController.h"
 
-@interface FlipsideViewController ()
+@interface OptionsViewController ()
 
 @end
 
-@implementation FlipsideViewController
+@implementation OptionsViewController
 
 - (void)viewDidLoad
 {
@@ -30,7 +30,7 @@
 
 - (IBAction)done:(id)sender
 {
-    [self.delegate flipsideViewControllerDidFinish:self];
+    [self.delegate optionsViewControllerDidFinish:self];
 }
 
 @end
