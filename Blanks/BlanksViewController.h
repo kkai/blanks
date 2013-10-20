@@ -26,6 +26,7 @@
     float wrongCount;
     float streak;
     NSNumber *highestStreak;
+    bool correct;
 }
 
 @end

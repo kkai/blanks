@@ -43,6 +43,8 @@
 		04BBA49D181396BB00E9B81A /* WordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA49B181396BB00E9B81A /* WordModel.m */; };
 		04BBA49E181396BB00E9B81A /* WordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA49B181396BB00E9B81A /* WordModel.m */; };
 		04BBA49F181396BB00E9B81A /* WordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA49B181396BB00E9B81A /* WordModel.m */; };
+		04BBA4A11813BB4F00E9B81A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04BBA4A01813BB4F00E9B81A /* QuartzCore.framework */; };
+		04BBA4A21813BB6500E9B81A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04BBA4A01813BB4F00E9B81A /* QuartzCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -104,6 +106,7 @@
 		04BBA48B1812B4E500E9B81A /* MoreBlanksTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MoreBlanksTests.m; sourceTree = "<group>"; };
 		04BBA49A181396BB00E9B81A /* WordModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WordModel.h; sourceTree = "<group>"; };
 		04BBA49B181396BB00E9B81A /* WordModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WordModel.m; sourceTree = "<group>"; };
+		04BBA4A01813BB4F00E9B81A /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +114,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04BBA4A11813BB4F00E9B81A /* QuartzCore.framework in Frameworks */,
 				04BBA4211812720F00E9B81A /* CoreGraphics.framework in Frameworks */,
 				04BBA4231812720F00E9B81A /* UIKit.framework in Frameworks */,
 				04BBA41F1812720F00E9B81A /* Foundation.framework in Frameworks */,
@@ -131,6 +135,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04BBA4A21813BB6500E9B81A /* QuartzCore.framework in Frameworks */,
 				04BBA4621812B4E500E9B81A /* CoreGraphics.framework in Frameworks */,
 				04BBA4631812B4E500E9B81A /* UIKit.framework in Frameworks */,
 				04BBA4611812B4E500E9B81A /* Foundation.framework in Frameworks */,
@@ -176,6 +181,7 @@
 		04BBA41D1812720F00E9B81A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				04BBA4A01813BB4F00E9B81A /* QuartzCore.framework */,
 				04BBA41E1812720F00E9B81A /* Foundation.framework */,
 				04BBA4201812720F00E9B81A /* CoreGraphics.framework */,
 				04BBA4221812720F00E9B81A /* UIKit.framework */,

@@ -35,6 +35,9 @@
                                 <state key="normal" title="sfsdfsfsfsf" backgroundImage="ripped">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
+                                <connections>
+                                    <action selector="answerPressed:" destination="rQl-PL-IFJ" eventType="touchUpInside" id="zaq-8W-Rm4"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="bai-TA-z5z">
                                 <rect key="frame" x="-7" y="509" width="186" height="63"/>
@@ -43,6 +46,9 @@
                                 <state key="normal" title="fsdfsdfsfsdfs" backgroundImage="ripped">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
+                                <connections>
+                                    <action selector="answerPressed:" destination="rQl-PL-IFJ" eventType="touchUpInside" id="LkJ-1u-S4l"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="2lN-VB-Y64">
                                 <rect key="frame" x="156" y="508" width="186" height="63"/>
@@ -51,6 +57,9 @@
                                 <state key="normal" title="fssfdsfsfsfsfsfs" backgroundImage="ripped">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
+                                <connections>
+                                    <action selector="answerPressed:" destination="rQl-PL-IFJ" eventType="touchUpInside" id="ArZ-HA-vl3"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="X4g-nr-xZG">
                                 <rect key="frame" x="156" y="456" width="186" height="63"/>
@@ -62,6 +71,9 @@
                                 <state key="normal" title="sfsdsdfsfsfsfs" backgroundImage="ripped">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
+                                <connections>
+                                    <action selector="answerPressed:" destination="rQl-PL-IFJ" eventType="touchUpInside" id="tfv-Vj-yaV"/>
+                                </connections>
                             </button>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" editable="NO" text="testing the default bla blup bla bla bla defintion" translatesAutoresizingMaskIntoConstraints="NO" id="1Nk-jx-olu">
                                 <rect key="frame" x="20" y="148" width="280" height="181"/>
