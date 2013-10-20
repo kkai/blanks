@@ -7,13 +7,25 @@
 //
 
 #import "OptionsViewController.h"
+#import "WordModel.h"
 
 @interface BlanksViewController : UIViewController <OptionsViewControllerDelegate>{
     
+    WordModel *wordModel;
     IBOutlet UIButton* wordButton1;
     IBOutlet UIButton* wordButton2;
     IBOutlet UIButton* wordButton3;
     IBOutlet UIButton* wordButton4;
+    
+    IBOutlet UITextView *definitionTV;
+    IBOutlet UIImageView *tickView;
+    IBOutlet UIImageView *crossView;
+    
+    // XXX TODO better in word model??
+    float correctCount;
+    float wrongCount;
+    float streak;
+    NSNumber *highestStreak;
 }
 
 @end

@@ -39,6 +39,10 @@
 		04BBA4971812B5D200E9B81A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4391812720F00E9B81A /* Images.xcassets */; };
 		04BBA4981812B5D500E9B81A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4301812720F00E9B81A /* Main.storyboard */; };
 		04BBA4991812B5DD00E9B81A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4671812B4E500E9B81A /* InfoPlist.strings */; };
+		04BBA49C181396BB00E9B81A /* WordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA49B181396BB00E9B81A /* WordModel.m */; };
+		04BBA49D181396BB00E9B81A /* WordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA49B181396BB00E9B81A /* WordModel.m */; };
+		04BBA49E181396BB00E9B81A /* WordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA49B181396BB00E9B81A /* WordModel.m */; };
+		04BBA49F181396BB00E9B81A /* WordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA49B181396BB00E9B81A /* WordModel.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -98,6 +102,8 @@
 		04BBA4871812B4E500E9B81A /* MoreBlanksTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MoreBlanksTests-Info.plist"; sourceTree = "<group>"; };
 		04BBA4891812B4E500E9B81A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		04BBA48B1812B4E500E9B81A /* MoreBlanksTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MoreBlanksTests.m; sourceTree = "<group>"; };
+		04BBA49A181396BB00E9B81A /* WordModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WordModel.h; sourceTree = "<group>"; };
+		04BBA49B181396BB00E9B81A /* WordModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WordModel.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -188,6 +194,8 @@
 				04BBA4341812720F00E9B81A /* BlanksViewController.m */,
 				04BBA4361812720F00E9B81A /* OptionsViewController.h */,
 				04BBA4371812720F00E9B81A /* OptionsViewController.m */,
+				04BBA49A181396BB00E9B81A /* WordModel.h */,
+				04BBA49B181396BB00E9B81A /* WordModel.m */,
 				04BBA4391812720F00E9B81A /* Images.xcassets */,
 				04BBA4251812720F00E9B81A /* Supporting Files */,
 			);
@@ -429,6 +437,7 @@
 				04BBA42F1812720F00E9B81A /* AppDelegate.m in Sources */,
 				04BBA4351812720F00E9B81A /* BlanksViewController.m in Sources */,
 				04BBA4381812720F00E9B81A /* OptionsViewController.m in Sources */,
+				04BBA49C181396BB00E9B81A /* WordModel.m in Sources */,
 				04BBA42B1812720F00E9B81A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -438,6 +447,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				04BBA44D1812720F00E9B81A /* BlanksTests.m in Sources */,
+				04BBA49D181396BB00E9B81A /* WordModel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -448,6 +458,7 @@
 				04BBA4931812B5AE00E9B81A /* AppDelegate.m in Sources */,
 				04BBA4941812B5B300E9B81A /* BlanksViewController.m in Sources */,
 				04BBA4951812B5B700E9B81A /* OptionsViewController.m in Sources */,
+				04BBA49E181396BB00E9B81A /* WordModel.m in Sources */,
 				04BBA4961812B5BB00E9B81A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -457,6 +468,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				04BBA48C1812B4E500E9B81A /* MoreBlanksTests.m in Sources */,
+				04BBA49F181396BB00E9B81A /* WordModel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

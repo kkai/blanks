@@ -18,9 +18,27 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-
+    wordModel = [[WordModel alloc] init];
+    
     //[self addGestureRecognizersToPiece:wordButton1];
-
+    
+    streak = 0.0;
+    
+    highestStreak = [[NSUserDefaults standardUserDefaults] objectForKey: @"HighScore"];
+    if(!highestStreak){
+        highestStreak =[NSNumber numberWithFloat:0.0];
+        [[NSUserDefaults standardUserDefaults] setObject: highestStreak forKey: @"HighScore"];
+    }
+    NSArray *words=[wordModel getWords];
+    //NSLog(@"@&",[words objectAtIndex:0]);
+    [wordButton1 setTitle: (NSString*)[words objectAtIndex:0] forState: UIControlStateNormal];
+    [wordButton2 setTitle: (NSString*)[words objectAtIndex:1] forState: UIControlStateNormal];
+    [wordButton3 setTitle: (NSString*)[words objectAtIndex:2] forState: UIControlStateNormal];
+    [wordButton4 setTitle: (NSString*)[words objectAtIndex:3] forState: UIControlStateNormal];
+    
+    [definitionTV setText:wordModel.definition];
+    
+    
 }
 
 - (void)didReceiveMemoryWarning

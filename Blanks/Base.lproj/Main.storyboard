@@ -24,61 +24,47 @@
                                 <rect key="frame" x="0.0" y="433" width="320" height="133"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <button opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="infoLight" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jqg-sy-dxO">
-                                <rect key="frame" x="278" y="405" width="22" height="22"/>
-                                <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="15"/>
-                                <state key="normal">
-                                    <color key="titleColor" red="0.1960784314" green="0.30980392159999998" blue="0.52156862749999999" alpha="1" colorSpace="calibratedRGB"/>
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <state key="highlighted">
-                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
-                                <connections>
-                                    <segue destination="kIf-nA-PKG" kind="modal" identifier="showAlternate" modalTransitionStyle="flipHorizontal" id="ZEO-Qe-X3j"/>
-                                </connections>
-                            </button>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="top" translatesAutoresizingMaskIntoConstraints="NO" id="RZ7-pC-YFe">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="151"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="clip" translatesAutoresizingMaskIntoConstraints="NO" id="UsZ-zG-BLb">
-                                <rect key="frame" x="-14" y="459" width="186" height="63"/>
+                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="UsZ-zG-BLb">
+                                <rect key="frame" x="-14" y="457" width="186" height="63"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="Baskerville-SemiBold" family="Baskerville" pointSize="18"/>
-                                <state key="normal" title="Button" backgroundImage="ripped">
+                                <state key="normal" title="sfsdfsfsfsf" backgroundImage="ripped">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bai-TA-z5z">
-                                <rect key="frame" x="-7" y="511" width="186" height="63"/>
+                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="bai-TA-z5z">
+                                <rect key="frame" x="-7" y="509" width="186" height="63"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="Baskerville-SemiBold" family="Baskerville" pointSize="18"/>
-                                <state key="normal" title="Button" backgroundImage="ripped">
+                                <state key="normal" title="fsdfsdfsfsdfs" backgroundImage="ripped">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2lN-VB-Y64">
-                                <rect key="frame" x="156" y="511" width="186" height="63"/>
+                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="2lN-VB-Y64">
+                                <rect key="frame" x="156" y="508" width="186" height="63"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="Baskerville-SemiBold" family="Baskerville" pointSize="18"/>
-                                <state key="normal" title="Button" backgroundImage="ripped">
+                                <state key="normal" title="fssfdsfsfsfsfsfs" backgroundImage="ripped">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="X4g-nr-xZG">
-                                <rect key="frame" x="156" y="459" width="186" height="63"/>
+                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="characterWrap" translatesAutoresizingMaskIntoConstraints="NO" id="X4g-nr-xZG">
+                                <rect key="frame" x="156" y="456" width="186" height="63"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="63" id="pKk-E3-AUm"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="Baskerville-SemiBold" family="Baskerville" pointSize="18"/>
-                                <state key="normal" title="Button" backgroundImage="ripped">
+                                <state key="normal" title="sfsdsdfsfsfsfs" backgroundImage="ripped">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 </state>
                             </button>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" editable="NO" text="testing the default bla blup bla bla bla defintion" translatesAutoresizingMaskIntoConstraints="NO" id="1Nk-jx-olu">
-                                <rect key="frame" x="20" y="148" width="280" height="147"/>
+                                <rect key="frame" x="20" y="148" width="280" height="181"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" none="YES" notEnabled="YES"/>
@@ -94,6 +80,28 @@
                                     </fragment>
                                 </attributedString>
                             </textView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="correct" translatesAutoresizingMaskIntoConstraints="NO" id="tTs-JU-QYF">
+                                <rect key="frame" x="228" y="44" width="65" height="63"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="wrong" translatesAutoresizingMaskIntoConstraints="NO" id="w6c-oo-WVf">
+                                <rect key="frame" x="245" y="67" width="65" height="63"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <button opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="infoLight" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jqg-sy-dxO">
+                                <rect key="frame" x="278" y="405" width="22" height="22"/>
+                                <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="15"/>
+                                <state key="normal">
+                                    <color key="titleColor" red="0.1960784314" green="0.30980392159999998" blue="0.52156862749999999" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <segue destination="kIf-nA-PKG" kind="modal" identifier="showAlternate" modalTransitionStyle="flipHorizontal" id="ZEO-Qe-X3j"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.25" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
@@ -110,6 +118,9 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="crossView" destination="w6c-oo-WVf" id="TjK-RG-f9f"/>
+                        <outlet property="definitionTV" destination="1Nk-jx-olu" id="ww4-vZ-fEQ"/>
+                        <outlet property="tickView" destination="tTs-JU-QYF" id="0Jr-0O-gzC"/>
                         <outlet property="wordButton1" destination="UsZ-zG-BLb" id="7sX-vb-g3M"/>
                         <outlet property="wordButton2" destination="X4g-nr-xZG" id="0d2-Cc-kAc"/>
                         <outlet property="wordButton3" destination="bai-TA-z5z" id="Dv9-yN-vXJ"/>
@@ -164,10 +175,12 @@
     </scenes>
     <resources>
         <image name="bottom" width="320" height="133"/>
+        <image name="correct" width="55" height="53"/>
         <image name="middle" width="320" height="285"/>
         <image name="optionback" width="320" height="568"/>
         <image name="ripped" width="174" height="63"/>
         <image name="top" width="320" height="150"/>
+        <image name="wrong" width="55" height="53"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
