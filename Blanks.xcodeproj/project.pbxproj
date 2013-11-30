@@ -49,6 +49,7 @@
 		04BBA49F181396BB00E9B81A /* WordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA49B181396BB00E9B81A /* WordModel.m */; };
 		04BBA4A11813BB4F00E9B81A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04BBA4A01813BB4F00E9B81A /* QuartzCore.framework */; };
 		04BBA4A21813BB6500E9B81A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04BBA4A01813BB4F00E9B81A /* QuartzCore.framework */; };
+		04F05D231849ED6E007D4070 /* average.plist in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4591812B40700E9B81A /* average.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -430,6 +431,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04F05D231849ED6E007D4070 /* average.plist in Resources */,
 				04266DCD1849CF7D000B9649 /* WordView.xib in Resources */,
 				04BBA4971812B5D200E9B81A /* Images.xcassets in Resources */,
 				04BBA4981812B5D500E9B81A /* Main.storyboard in Resources */,
