@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04153C241849F2F300F8B6CB /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4791812B4E500E9B81A /* Images.xcassets */; };
 		04266DC91849CE5B000B9649 /* WordView.m in Sources */ = {isa = PBXBuildFile; fileRef = 04266DC81849CE5B000B9649 /* WordView.m */; };
 		04266DCA1849CE5B000B9649 /* WordView.m in Sources */ = {isa = PBXBuildFile; fileRef = 04266DC81849CE5B000B9649 /* WordView.m */; };
 		04266DCC1849CF7D000B9649 /* WordView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 04266DCB1849CF7D000B9649 /* WordView.xib */; };
@@ -40,7 +41,6 @@
 		04BBA4941812B5B300E9B81A /* BlanksViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA4341812720F00E9B81A /* BlanksViewController.m */; };
 		04BBA4951812B5B700E9B81A /* OptionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA4371812720F00E9B81A /* OptionsViewController.m */; };
 		04BBA4961812B5BB00E9B81A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA42A1812720F00E9B81A /* main.m */; };
-		04BBA4971812B5D200E9B81A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4391812720F00E9B81A /* Images.xcassets */; };
 		04BBA4981812B5D500E9B81A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4301812720F00E9B81A /* Main.storyboard */; };
 		04BBA4991812B5DD00E9B81A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 04BBA4671812B4E500E9B81A /* InfoPlist.strings */; };
 		04BBA49C181396BB00E9B81A /* WordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 04BBA49B181396BB00E9B81A /* WordModel.m */; };
@@ -379,6 +379,9 @@
 					04BBA43E1812720F00E9B81A = {
 						TestTargetID = 04BBA41A1812720F00E9B81A;
 					};
+					04BBA45F1812B4E500E9B81A = {
+						DevelopmentTeam = 8H42EZRCCP;
+					};
 					04BBA47E1812B4E500E9B81A = {
 						TestTargetID = 04BBA41A1812720F00E9B81A;
 					};
@@ -431,9 +434,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04153C241849F2F300F8B6CB /* Images.xcassets in Resources */,
 				04F05D231849ED6E007D4070 /* average.plist in Resources */,
 				04266DCD1849CF7D000B9649 /* WordView.xib in Resources */,
-				04BBA4971812B5D200E9B81A /* Images.xcassets in Resources */,
 				04BBA4981812B5D500E9B81A /* Main.storyboard in Resources */,
 				04BBA4991812B5DD00E9B81A /* InfoPlist.strings in Resources */,
 			);
@@ -707,6 +710,8 @@
 				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MoreBlanks/MoreBlanks-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -715,6 +720,7 @@
 				);
 				INFOPLIST_FILE = "MoreBlanks/MoreBlanks-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -725,10 +731,13 @@
 				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MoreBlanks/MoreBlanks-Prefix.pch";
 				INFOPLIST_FILE = "MoreBlanks/MoreBlanks-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
