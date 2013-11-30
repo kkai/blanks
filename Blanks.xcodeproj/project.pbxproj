@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04266DC91849CE5B000B9649 /* WordView.m in Sources */ = {isa = PBXBuildFile; fileRef = 04266DC81849CE5B000B9649 /* WordView.m */; };
+		04266DCA1849CE5B000B9649 /* WordView.m in Sources */ = {isa = PBXBuildFile; fileRef = 04266DC81849CE5B000B9649 /* WordView.m */; };
+		04266DCC1849CF7D000B9649 /* WordView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 04266DCB1849CF7D000B9649 /* WordView.xib */; };
+		04266DCD1849CF7D000B9649 /* WordView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 04266DCB1849CF7D000B9649 /* WordView.xib */; };
 		04BBA41F1812720F00E9B81A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04BBA41E1812720F00E9B81A /* Foundation.framework */; };
 		04BBA4211812720F00E9B81A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04BBA4201812720F00E9B81A /* CoreGraphics.framework */; };
 		04BBA4231812720F00E9B81A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04BBA4221812720F00E9B81A /* UIKit.framework */; };
@@ -65,6 +69,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		04266DC71849CE5B000B9649 /* WordView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WordView.h; sourceTree = "<group>"; };
+		04266DC81849CE5B000B9649 /* WordView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WordView.m; sourceTree = "<group>"; };
+		04266DCB1849CF7D000B9649 /* WordView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = WordView.xib; sourceTree = "<group>"; };
 		04BBA41B1812720F00E9B81A /* Blanks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blanks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		04BBA41E1812720F00E9B81A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		04BBA4201812720F00E9B81A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -204,6 +211,9 @@
 				04BBA49B181396BB00E9B81A /* WordModel.m */,
 				04BBA4391812720F00E9B81A /* Images.xcassets */,
 				04BBA4251812720F00E9B81A /* Supporting Files */,
+				04266DC71849CE5B000B9649 /* WordView.h */,
+				04266DC81849CE5B000B9649 /* WordView.m */,
+				04266DCB1849CF7D000B9649 /* WordView.xib */,
 			);
 			path = Blanks;
 			sourceTree = "<group>";
@@ -403,6 +413,7 @@
 				04BBA4291812720F00E9B81A /* InfoPlist.strings in Resources */,
 				04BBA45A1812B40700E9B81A /* average.plist in Resources */,
 				04BBA4321812720F00E9B81A /* Main.storyboard in Resources */,
+				04266DCC1849CF7D000B9649 /* WordView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,6 +430,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04266DCD1849CF7D000B9649 /* WordView.xib in Resources */,
 				04BBA4971812B5D200E9B81A /* Images.xcassets in Resources */,
 				04BBA4981812B5D500E9B81A /* Main.storyboard in Resources */,
 				04BBA4991812B5DD00E9B81A /* InfoPlist.strings in Resources */,
@@ -444,6 +456,7 @@
 				04BBA4351812720F00E9B81A /* BlanksViewController.m in Sources */,
 				04BBA4381812720F00E9B81A /* OptionsViewController.m in Sources */,
 				04BBA49C181396BB00E9B81A /* WordModel.m in Sources */,
+				04266DC91849CE5B000B9649 /* WordView.m in Sources */,
 				04BBA42B1812720F00E9B81A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -465,6 +478,7 @@
 				04BBA4941812B5B300E9B81A /* BlanksViewController.m in Sources */,
 				04BBA4951812B5B700E9B81A /* OptionsViewController.m in Sources */,
 				04BBA49E181396BB00E9B81A /* WordModel.m in Sources */,
+				04266DCA1849CE5B000B9649 /* WordView.m in Sources */,
 				04BBA4961812B5BB00E9B81A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -796,6 +810,7 @@
 				04BBA48F1812B4E500E9B81A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		04BBA4901812B4E500E9B81A /* Build configuration list for PBXNativeTarget "MoreBlanksTests" */ = {
 			isa = XCConfigurationList;
@@ -804,6 +819,7 @@
 				04BBA4921812B4E500E9B81A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
