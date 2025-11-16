@@ -8,10 +8,12 @@
 
 import UIKit
 
+/// Delegate protocol for flipside view dismissal
 protocol FlipsideViewControllerDelegate: AnyObject {
     func flipsideViewControllerDidFinish(_ controller: FlipsideViewController)
 }
 
+/// Flipside view controller for additional settings or information
 final class FlipsideViewController: UIViewController {
     weak var delegate: FlipsideViewControllerDelegate?
 
