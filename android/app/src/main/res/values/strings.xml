@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ultrathink Vocabulary</string>
+    <string name="gap_placeholder">_____</string>
+    <string name="streak_label">Streak: %d</string>
+    <string name="word_count_label">Words: %d</string>
+    <string name="accuracy_label">Accuracy: %.0f%%</string>
+    <string name="high_score_label">Best Streak: %d</string>
+    <string name="loading">Loading words…</string>
+    <string name="error_loading_words">Failed to load vocabulary. Please restart the app.</string>
+    <string name="settings">Settings</string>
+    <string name="tap_mode">Tap Mode</string>
+    <string name="drag_mode">Drag Mode</string>
+    <string name="reset_session">Reset Session</string>
+    <string name="reset_all_stats">Reset All Stats</string>
+    <string name="reset_confirm_title">Reset Statistics?</string>
+    <string name="reset_confirm_message">This will reset all your progress including high score. Are you sure?</string>
+    <string name="reset_session_confirm_message">Reset current session statistics?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="cancel">Cancel</string>
+    <string name="drag_hint">Long press and drag to the gap</string>
+    <string name="tap_hint">Tap the correct word</string>
+</resources>

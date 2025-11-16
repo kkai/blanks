@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/menu_tap_mode"
+            android:title="@string/tap_mode"
+            android:checkable="true" />
+
+        <item
+            android:id="@+id/menu_drag_mode"
+            android:title="@string/drag_mode"
+            android:checkable="true" />
+    </group>
+
+    <item
+        android:id="@+id/menu_reset_session"
+        android:title="@string/reset_session" />
+
+    <item
+        android:id="@+id/menu_reset_all"
+        android:title="@string/reset_all_stats" />
+
+</menu>
