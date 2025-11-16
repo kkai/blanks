@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echo Chamber - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        /* Echo Chamber specific styles */
+        .game-header {
+            position: relative;
+        }
+
+        .lives-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .heart {
+            font-size: 1.5em;
+            transition: all 0.3s ease;
+        }
+
+        .heart.lost {
+            opacity: 0.2;
+            filter: grayscale(100%);
+        }
+
+        .echo-stage {
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .definition-display {
+            font-size: 2em;
+            text-align: center;
+            color: var(--primary-color);
+            font-weight: 500;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            box-shadow: var(--shadow-lg);
+            transition: opacity 0.1s linear;
+        }
+
+        .definition-display.fading {
+            /* Opacity will be controlled by JavaScript */
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin: 30px auto;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .options-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .option-btn {
+            padding: 30px;
+            font-size: 1.5em;
+            font-weight: 600;
+            background: white;
+            color: var(--primary-color);
+            border: 3px solid var(--primary-color);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .option-btn.correct {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+            animation: correct-flash 0.5s ease, pulse 0.5s ease;
+        }
+
+        .option-btn.wrong {
+            background: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+            animation: wrong-flash 0.5s ease, shake 0.5s ease;
+        }
+
+        .fade-timer {
+            width: 100%;
+            max-width: 800px;
+            height: 8px;
+            background: var(--bg-light);
+            border-radius: 4px;
+            margin: 20px auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .fade-timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color) 0%, var(--error-color) 100%);
+            transition: width 0.1s linear;
+            border-radius: 4px;
+        }
+
+        .round-info {
+            text-align: center;
+            font-size: 1.2em;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-left: 10px;
+            background: var(--bg-light);
+        }
+
+        .difficulty-badge.easy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .difficulty-badge.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .difficulty-badge.hard {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .difficulty-badge.extreme {
+            background: #d6d8db;
+            color: #383d41;
+        }
+
+        .instructions {
+            text-align: center;
+            font-size: 1.1em;
+            color: var(--text-color);
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        /* Game Over Modal */
+        .game-over {
+            text-align: center;
+        }
+
+        .game-over h2 {
+            color: var(--error-color);
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .game-over.victory h2 {
+            color: var(--success-color);
+        }
+
+        .final-stats {
+            margin: 30px 0;
+            font-size: 1.2em;
+        }
+
+        .final-stats div {
+            margin: 10px 0;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .definition-display {
+                font-size: 1.5em;
+                padding: 30px 20px;
+            }
+
+            .options-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .option-btn {
+                padding: 20px;
+                font-size: 1.2em;
+            }
+
+            .round-info {
+                font-size: 1em;
+            }
+        }
+
+        /* Fade effect helper */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">Echo Chamber</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Lives</span>
+                    <div class="lives-container" id="lives">
+                        <span class="heart">❤️</span>
+                        <span class="heart">❤️</span>
+                        <span class="heart">❤️</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">High Score</span>
+                    <span class="stat-value" id="highScore">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <div class="loading" id="loading">Loading words...</div>
+
+            <div class="echo-stage" id="echoStage" style="display: none;">
+                <div class="round-info" id="roundInfo"></div>
+                <div class="instructions" id="instructions">
+                    Remember the definition before it fades away!
+                </div>
+
+                <div class="fade-timer" id="fadeTimer" style="display: none;">
+                    <div class="fade-timer-fill" id="fadeTimerFill"></div>
+                </div>
+
+                <div class="definition-display" id="definitionDisplay"></div>
+
+                <div class="options-container" id="optionsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content game-over">
+            <h2 id="gameOverTitle">Game Over!</h2>
+            <div class="final-stats">
+                <div>Final Score: <strong id="finalScore">0</strong></div>
+                <div id="highScoreMessage"></div>
+                <div>Correct Answers: <strong id="correctAnswers">0</strong></div>
+                <div>Accuracy: <strong id="accuracy">0%</strong></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
+                <button class="btn btn-secondary" onclick="location.href='../index.html'">Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        class EchoChamberGame {
+            constructor() {
+                this.utils = new VocabularyGameUtils();
+                this.score = 0;
+                this.lives = 3;
+                this.round = 0;
+                this.correctAnswers = 0;
+                this.totalAnswers = 0;
+                this.currentWord = null;
+                this.fadeTime = 8000; // Start with 8 seconds
+                this.minFadeTime = 2000; // Minimum 2 seconds
+                this.fadeInterval = null;
+                this.isProcessing = false;
+
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.utils.loadWords();
+                    this.updateHighScore();
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('echoStage').style.display = 'flex';
+                    this.startNewRound();
+                } catch (error) {
+                    console.error('Error initializing game:', error);
+                    document.getElementById('loading').textContent = 'Error loading game. Please refresh.';
+                }
+            }
+
+            updateHighScore() {
+                const highScore = this.utils.getHighScore('echo-chamber');
+                document.getElementById('highScore').textContent = highScore;
+            }
+
+            calculateFadeTime() {
+                // Fade time decreases as score increases
+                // Formula: start at 8s, decrease by 0.3s per point, minimum 2s
+                const reduction = this.score * 300; // 300ms per point
+                const newFadeTime = Math.max(this.minFadeTime, this.fadeTime - reduction);
+                return newFadeTime;
+            }
+
+            getDifficultyLevel() {
+                const fadeTime = this.calculateFadeTime();
+                if (fadeTime > 6000) return 'easy';
+                if (fadeTime > 4000) return 'medium';
+                if (fadeTime > 2500) return 'hard';
+                return 'extreme';
+            }
+
+            startNewRound() {
+                this.round++;
+                this.isProcessing = false;
+
+                // Get a new word with options
+                this.currentWord = this.utils.getWordWithOptions();
+
+                // Update round info
+                const difficulty = this.getDifficultyLevel();
+                const fadeTime = this.calculateFadeTime();
+                document.getElementById('roundInfo').innerHTML = `
+                    Round ${this.round}
+                    <span class="difficulty-badge ${difficulty}">
+                        ${difficulty.toUpperCase()} - ${(fadeTime / 1000).toFixed(1)}s
+                    </span>
+                `;
+
+                // Show instructions
+                document.getElementById('instructions').style.display = 'block';
+
+                // Hide options
+                const optionsContainer = document.getElementById('optionsContainer');
+                optionsContainer.classList.remove('visible');
+                optionsContainer.innerHTML = '';
+
+                // Show definition
+                const definitionDisplay = document.getElementById('definitionDisplay');
+                definitionDisplay.textContent = this.currentWord.definition;
+                definitionDisplay.style.opacity = '1';
+
+                // Start fade animation
+                this.startFadeAnimation();
+            }
+
+            startFadeAnimation() {
+                const fadeTime = this.calculateFadeTime();
+                const definitionDisplay = document.getElementById('definitionDisplay');
+                const fadeTimer = document.getElementById('fadeTimer');
+                const fadeTimerFill = document.getElementById('fadeTimerFill');
+
+                // Show timer
+                fadeTimer.style.display = 'block';
+                fadeTimerFill.style.width = '100%';
+
+                const startTime = Date.now();
+                const updateInterval = 50; // Update every 50ms for smooth animation
+
+                this.fadeInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = elapsed / fadeTime;
+
+                    if (progress >= 1) {
+                        // Fade complete
+                        clearInterval(this.fadeInterval);
+                        definitionDisplay.style.opacity = '0';
+                        fadeTimerFill.style.width = '0%';
+
+                        // Wait a moment then show options
+                        setTimeout(() => {
+                            this.showOptions();
+                        }, 500);
+                    } else {
+                        // Update opacity and timer
+                        const opacity = 1 - progress;
+                        definitionDisplay.style.opacity = opacity.toFixed(2);
+                        fadeTimerFill.style.width = ((1 - progress) * 100).toFixed(1) + '%';
+                    }
+                }, updateInterval);
+            }
+
+            showOptions() {
+                // Hide instructions and timer
+                document.getElementById('instructions').style.display = 'none';
+                document.getElementById('fadeTimer').style.display = 'none';
+
+                // Create option buttons
+                const optionsContainer = document.getElementById('optionsContainer');
+                optionsContainer.innerHTML = '';
+
+                this.currentWord.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.className = 'option-btn';
+                    button.textContent = option;
+                    button.addEventListener('click', () => this.selectOption(option, button));
+                    optionsContainer.appendChild(button);
+                });
+
+                // Show options with animation
+                setTimeout(() => {
+                    optionsContainer.classList.add('visible');
+                }, 100);
+            }
+
+            selectOption(selectedWord, buttonElement) {
+                if (this.isProcessing) return;
+                this.isProcessing = true;
+                this.totalAnswers++;
+
+                // Disable all buttons
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.disabled = true);
+
+                // Check if correct
+                const isCorrect = selectedWord === this.currentWord.word;
+
+                if (isCorrect) {
+                    buttonElement.classList.add('correct');
+                    this.score++;
+                    this.correctAnswers++;
+                    this.updateScore();
+
+                    // Continue to next round after delay
+                    setTimeout(() => {
+                        this.startNewRound();
+                    }, 1500);
+                } else {
+                    buttonElement.classList.add('wrong');
+
+                    // Highlight correct answer
+                    allButtons.forEach(btn => {
+                        if (btn.textContent === this.currentWord.word) {
+                            btn.classList.add('correct');
+                        }
+                    });
+
+                    this.loseLife();
+
+                    // Continue or end game after delay
+                    setTimeout(() => {
+                        if (this.lives > 0) {
+                            this.startNewRound();
+                        } else {
+                            this.gameOver();
+                        }
+                    }, 2000);
+                }
+            }
+
+            updateScore() {
+                document.getElementById('score').textContent = this.score;
+            }
+
+            loseLife() {
+                this.lives--;
+                const hearts = document.querySelectorAll('.heart');
+                hearts[this.lives].classList.add('lost');
+            }
+
+            gameOver() {
+                // Clear any ongoing fade animation
+                if (this.fadeInterval) {
+                    clearInterval(this.fadeInterval);
+                }
+
+                // Calculate stats
+                const accuracy = this.totalAnswers > 0
+                    ? Math.round((this.correctAnswers / this.totalAnswers) * 100)
+                    : 0;
+
+                // Check for high score
+                const isNewHighScore = this.utils.saveHighScore('echo-chamber', this.score);
+
+                // Update modal
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('correctAnswers').textContent = `${this.correctAnswers}/${this.totalAnswers}`;
+                document.getElementById('accuracy').textContent = accuracy + '%';
+
+                const highScoreMessage = document.getElementById('highScoreMessage');
+                if (isNewHighScore) {
+                    highScoreMessage.innerHTML = '<span style="color: var(--success-color); font-size: 1.3em;">🎉 New High Score! 🎉</span>';
+                } else {
+                    const currentHighScore = this.utils.getHighScore('echo-chamber');
+                    highScoreMessage.innerHTML = `High Score: <strong>${currentHighScore}</strong>`;
+                }
+
+                // Show modal
+                document.getElementById('gameOverModal').classList.add('active');
+            }
+        }
+
+        // Start the game when page loads
+        let game;
+        window.addEventListener('DOMContentLoaded', () => {
+            game = new EchoChamberGame();
+        });
+    </script>
+</body>
+</html>

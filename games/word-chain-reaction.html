@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Chain Reaction - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        /* Word Chain Reaction specific styles */
+        .game-header {
+            position: relative;
+        }
+
+        .instructions {
+            text-align: center;
+            font-size: 1.1em;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--bg-light);
+            border-radius: 10px;
+        }
+
+        .word-grid-container {
+            position: relative;
+            max-width: 900px;
+            margin: 30px auto;
+        }
+
+        .chain-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .word-grid {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            z-index: 2;
+        }
+
+        .word-card {
+            background: white;
+            border: 3px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            position: relative;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .word-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .word-card.selected {
+            border-color: var(--secondary-color);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            transform: scale(1.05);
+        }
+
+        .word-card.in-chain {
+            background: linear-gradient(135deg, var(--success-color) 0%, #11998e 100%);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .word-card.in-chain:hover {
+            background: linear-gradient(135deg, var(--success-color) 0%, #11998e 100%);
+        }
+
+        .word-text {
+            font-size: 1.4em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .word-chain-number {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--secondary-color);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            white-space: normal;
+            max-width: 250px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            line-height: 1.4;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .word-card:hover .tooltip {
+            opacity: 1;
+        }
+
+        .chains-display {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: var(--bg-light);
+            border-radius: 12px;
+        }
+
+        .chains-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .chain-item {
+            background: white;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chain-words {
+            font-weight: 600;
+            color: var(--text-color);
+            flex: 1;
+        }
+
+        .chain-score {
+            font-weight: bold;
+            color: var(--success-color);
+            font-size: 1.2em;
+        }
+
+        .chain-arrow {
+            margin: 0 5px;
+            color: var(--primary-color);
+        }
+
+        .finish-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 15px 40px;
+            font-size: 1.2em;
+        }
+
+        .game-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .reset-chain-btn {
+            padding: 10px 20px;
+            background: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .reset-chain-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Chain color variations */
+        .chain-0 { border-color: #667eea; }
+        .chain-1 { border-color: #f093fb; }
+        .chain-2 { border-color: #4facfe; }
+        .chain-3 { border-color: #43e97b; }
+        .chain-4 { border-color: #fa709a; }
+
+        @media (max-width: 768px) {
+            .word-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .word-card {
+                padding: 15px;
+                min-height: 80px;
+            }
+
+            .word-text {
+                font-size: 1.1em;
+            }
+
+            .tooltip {
+                max-width: 180px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">Word Chain Reaction</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Chains</div>
+                    <div class="stat-value" id="chain-count">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Time</div>
+                    <div class="stat-value" id="timer">1:00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <div class="instructions">
+                Connect words that share at least one letter! Click two words to form a chain.
+                Longer chains earn more points. Create multiple chains for maximum score!
+            </div>
+
+            <div class="game-controls">
+                <button class="btn btn-primary" id="start-btn">Start Game</button>
+                <button class="btn btn-success" id="complete-chain-btn" style="display: none;">Complete Chain</button>
+                <button class="btn btn-secondary reset-chain-btn" id="reset-current-btn" style="display: none;">Reset Current Chain</button>
+            </div>
+
+            <div id="game-area" style="display: none;">
+                <div class="word-grid-container">
+                    <svg class="chain-canvas" id="chain-canvas"></svg>
+                    <div class="word-grid" id="word-grid"></div>
+                </div>
+
+                <div class="chains-display" id="chains-display" style="display: none;">
+                    <div class="chains-title">Completed Chains</div>
+                    <div id="chains-list"></div>
+                </div>
+
+                <button class="btn btn-primary finish-btn" id="finish-btn">Finish Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal" id="game-over-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Game Over!</h2>
+            <div id="final-score" class="score-display"></div>
+            <div id="high-score-message" style="margin: 20px 0; font-size: 1.2em; color: var(--success-color);"></div>
+            <div id="chains-summary" style="margin: 20px 0; text-align: left;"></div>
+            <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
+            <button class="btn btn-secondary" onclick="location.href='../index.html'" style="margin-left: 10px;">Back to Menu</button>
+        </div>
+    </div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        class WordChainReaction {
+            constructor() {
+                this.gameUtils = new VocabularyGameUtils();
+                this.words = [];
+                this.currentChain = [];
+                this.completedChains = [];
+                this.score = 0;
+                this.timeLeft = 60;
+                this.timerInterval = null;
+                this.gameActive = false;
+                this.selectedWord = null;
+
+                this.initElements();
+                this.attachEventListeners();
+            }
+
+            initElements() {
+                this.scoreEl = document.getElementById('score');
+                this.chainCountEl = document.getElementById('chain-count');
+                this.timerEl = document.getElementById('timer');
+                this.wordGridEl = document.getElementById('word-grid');
+                this.chainCanvasEl = document.getElementById('chain-canvas');
+                this.chainsListEl = document.getElementById('chains-list');
+                this.chainsDisplayEl = document.getElementById('chains-display');
+                this.gameAreaEl = document.getElementById('game-area');
+                this.startBtn = document.getElementById('start-btn');
+                this.finishBtn = document.getElementById('finish-btn');
+                this.completeChainBtn = document.getElementById('complete-chain-btn');
+                this.resetCurrentBtn = document.getElementById('reset-current-btn');
+                this.gameOverModal = document.getElementById('game-over-modal');
+            }
+
+            attachEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startGame());
+                this.finishBtn.addEventListener('click', () => this.endGame());
+                this.completeChainBtn.addEventListener('click', () => this.completeCurrentChain());
+                this.resetCurrentBtn.addEventListener('click', () => this.resetCurrentChain());
+            }
+
+            async startGame() {
+                this.startBtn.style.display = 'none';
+                this.gameAreaEl.style.display = 'block';
+
+                // Load words
+                await this.gameUtils.loadWords();
+                this.words = this.gameUtils.getRandomWords(10);
+
+                this.renderWords();
+                this.startTimer();
+                this.gameActive = true;
+            }
+
+            renderWords() {
+                this.wordGridEl.innerHTML = '';
+
+                this.words.forEach((wordObj, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'word-card';
+                    card.dataset.index = index;
+                    card.dataset.word = wordObj.word;
+
+                    card.innerHTML = `
+                        <div class="word-text">${wordObj.word}</div>
+                        <div class="tooltip">${wordObj.definition}</div>
+                    `;
+
+                    card.addEventListener('click', () => this.selectWord(index));
+                    this.wordGridEl.appendChild(card);
+                });
+
+                // Update canvas size after rendering
+                setTimeout(() => this.updateCanvasSize(), 100);
+            }
+
+            updateCanvasSize() {
+                const container = document.querySelector('.word-grid-container');
+                this.chainCanvasEl.setAttribute('width', container.offsetWidth);
+                this.chainCanvasEl.setAttribute('height', container.offsetHeight);
+            }
+
+            selectWord(index) {
+                if (!this.gameActive) return;
+
+                const card = this.wordGridEl.children[index];
+                const wordObj = this.words[index];
+
+                // If word is already in a completed chain, ignore
+                if (card.classList.contains('in-chain') && !this.isWordInCurrentChain(index)) {
+                    return;
+                }
+
+                // First word in chain
+                if (this.currentChain.length === 0) {
+                    this.currentChain.push(index);
+                    card.classList.add('selected');
+                    this.selectedWord = index;
+                    this.updateChainButtons();
+                    return;
+                }
+
+                // Clicking same word - deselect
+                if (this.selectedWord === index) {
+                    card.classList.remove('selected');
+                    this.currentChain = this.currentChain.filter(i => i !== index);
+                    this.selectedWord = null;
+                    this.drawChains();
+                    this.updateChainButtons();
+                    return;
+                }
+
+                // Try to add to chain
+                const lastWord = this.words[this.currentChain[this.currentChain.length - 1]].word;
+                const newWord = wordObj.word;
+
+                if (this.wordsShareLetter(lastWord, newWord)) {
+                    // Valid connection
+                    this.currentChain.push(index);
+                    card.classList.add('selected');
+                    this.selectedWord = index;
+                    this.drawChains();
+                    this.updateChainButtons();
+                    this.gameUtils.playSound('success');
+                } else {
+                    // Invalid connection
+                    this.gameUtils.showFeedback(card, false);
+                    this.gameUtils.playSound('error');
+                }
+            }
+
+            updateChainButtons() {
+                if (this.currentChain.length >= 2) {
+                    this.completeChainBtn.style.display = 'inline-block';
+                    this.resetCurrentBtn.style.display = 'inline-block';
+                } else if (this.currentChain.length === 1) {
+                    this.completeChainBtn.style.display = 'none';
+                    this.resetCurrentBtn.style.display = 'inline-block';
+                } else {
+                    this.completeChainBtn.style.display = 'none';
+                    this.resetCurrentBtn.style.display = 'none';
+                }
+            }
+
+            wordsShareLetter(word1, word2) {
+                const letters1 = new Set(word1.toLowerCase().split(''));
+                const letters2 = new Set(word2.toLowerCase().split(''));
+
+                for (let letter of letters1) {
+                    if (letters2.has(letter)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            isWordInCurrentChain(index) {
+                return this.currentChain.includes(index);
+            }
+
+            drawChains() {
+                this.chainCanvasEl.innerHTML = '';
+
+                // Draw current chain
+                if (this.currentChain.length > 1) {
+                    this.drawChainPath(this.currentChain, '#667eea', 3);
+                }
+
+                // Draw completed chains
+                this.completedChains.forEach((chain, idx) => {
+                    const colors = ['#38ef7d', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
+                    const color = colors[idx % colors.length];
+                    this.drawChainPath(chain.indices, color, 2);
+                });
+            }
+
+            drawChainPath(indices, color, opacity) {
+                const svg = this.chainCanvasEl;
+
+                for (let i = 0; i < indices.length - 1; i++) {
+                    const card1 = this.wordGridEl.children[indices[i]];
+                    const card2 = this.wordGridEl.children[indices[i + 1]];
+
+                    const rect1 = card1.getBoundingClientRect();
+                    const rect2 = card2.getBoundingClientRect();
+                    const containerRect = this.wordGridEl.getBoundingClientRect();
+
+                    const x1 = rect1.left - containerRect.left + rect1.width / 2;
+                    const y1 = rect1.top - containerRect.top + rect1.height / 2;
+                    const x2 = rect2.left - containerRect.left + rect2.width / 2;
+                    const y2 = rect2.top - containerRect.top + rect2.height / 2;
+
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', x1);
+                    line.setAttribute('y1', y1);
+                    line.setAttribute('x2', x2);
+                    line.setAttribute('y2', y2);
+                    line.setAttribute('stroke', color);
+                    line.setAttribute('stroke-width', '4');
+                    line.setAttribute('stroke-opacity', opacity);
+                    line.setAttribute('stroke-linecap', 'round');
+
+                    svg.appendChild(line);
+                }
+            }
+
+            resetCurrentChain() {
+                // Clear selected states
+                this.currentChain.forEach(index => {
+                    const card = this.wordGridEl.children[index];
+                    card.classList.remove('selected');
+                });
+
+                this.currentChain = [];
+                this.selectedWord = null;
+                this.drawChains();
+                this.updateChainButtons();
+            }
+
+            completeCurrentChain() {
+                if (this.currentChain.length < 2) {
+                    alert('Chain must have at least 2 words!');
+                    return;
+                }
+
+                // Calculate score for this chain
+                const chainScore = this.currentChain.length * 100;
+                this.score += chainScore;
+
+                // Save chain
+                const chainWords = this.currentChain.map(i => this.words[i].word);
+                this.completedChains.push({
+                    indices: [...this.currentChain],
+                    words: chainWords,
+                    score: chainScore
+                });
+
+                // Mark cards as in completed chain
+                this.currentChain.forEach((index, pos) => {
+                    const card = this.wordGridEl.children[index];
+                    card.classList.remove('selected');
+                    card.classList.add('in-chain');
+
+                    // Add chain number badge
+                    const badge = document.createElement('div');
+                    badge.className = 'word-chain-number';
+                    badge.textContent = pos + 1;
+                    card.appendChild(badge);
+                });
+
+                // Update displays
+                this.updateScore();
+                this.updateChainsDisplay();
+
+                // Reset current chain
+                this.currentChain = [];
+                this.selectedWord = null;
+                this.drawChains();
+                this.updateChainButtons();
+            }
+
+            updateScore() {
+                this.scoreEl.textContent = this.score;
+                this.chainCountEl.textContent = this.completedChains.length;
+            }
+
+            updateChainsDisplay() {
+                this.chainsDisplayEl.style.display = 'block';
+                this.chainsListEl.innerHTML = '';
+
+                this.completedChains.forEach((chain, index) => {
+                    const chainItem = document.createElement('div');
+                    chainItem.className = 'chain-item';
+
+                    const wordsText = chain.words.join(' → ');
+
+                    chainItem.innerHTML = `
+                        <div class="chain-words">Chain ${index + 1}: ${wordsText}</div>
+                        <div class="chain-score">+${chain.score}</div>
+                    `;
+
+                    this.chainsListEl.appendChild(chainItem);
+                });
+            }
+
+            startTimer() {
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    this.timerEl.textContent = this.gameUtils.formatTime(this.timeLeft);
+
+                    if (this.timeLeft <= 10) {
+                        this.timerEl.classList.add('warning');
+                    }
+
+                    if (this.timeLeft <= 0) {
+                        this.endGame();
+                    }
+                }, 1000);
+            }
+
+            endGame() {
+                this.gameActive = false;
+                clearInterval(this.timerInterval);
+
+                // Complete current chain if it exists
+                if (this.currentChain.length >= 2) {
+                    this.completeCurrentChain();
+                }
+
+                this.showGameOver();
+            }
+
+            showGameOver() {
+                const finalScoreEl = document.getElementById('final-score');
+                const highScoreMsg = document.getElementById('high-score-message');
+                const chainsSummary = document.getElementById('chains-summary');
+
+                finalScoreEl.textContent = `Final Score: ${this.score}`;
+
+                // Check high score
+                const isHighScore = this.gameUtils.saveHighScore('word-chain-reaction', this.score);
+                const highScore = this.gameUtils.getHighScore('word-chain-reaction');
+
+                if (isHighScore) {
+                    highScoreMsg.textContent = '🎉 New High Score! 🎉';
+                } else {
+                    highScoreMsg.textContent = `High Score: ${highScore}`;
+                }
+
+                // Show chains summary
+                if (this.completedChains.length > 0) {
+                    let summary = '<h3>Your Chains:</h3>';
+                    this.completedChains.forEach((chain, idx) => {
+                        summary += `<p><strong>Chain ${idx + 1}:</strong> ${chain.words.join(' → ')} (${chain.score} points)</p>`;
+                    });
+                    chainsSummary.innerHTML = summary;
+                } else {
+                    chainsSummary.innerHTML = '<p>No chains completed!</p>';
+                }
+
+                this.gameOverModal.classList.add('active');
+            }
+        }
+
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new WordChainReaction();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const game = window.wordChainGame;
+            if (game) {
+                game.updateCanvasSize();
+                game.drawChains();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Ladder Climb - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        .ladder-game {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 600px;
+        }
+
+        /* Ladder Visual */
+        .ladder-container {
+            flex: 0 0 200px;
+            position: relative;
+        }
+
+        .ladder {
+            position: relative;
+            width: 200px;
+            height: 600px;
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+
+        .ladder-side {
+            position: absolute;
+            width: 8px;
+            height: 100%;
+            background: linear-gradient(to bottom, #ffd700, #b8860b);
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .ladder-side.left {
+            left: 20px;
+        }
+
+        .ladder-side.right {
+            right: 20px;
+        }
+
+        .rung {
+            position: relative;
+            width: 100%;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .rung-bar {
+            width: 140px;
+            height: 8px;
+            background: linear-gradient(to right, #ffd700, #daa520, #ffd700);
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .rung.active .rung-bar {
+            background: linear-gradient(to right, #38ef7d, #11998e);
+            box-shadow: 0 0 20px rgba(56, 239, 125, 0.5);
+            transform: scale(1.1);
+        }
+
+        .rung-number {
+            position: absolute;
+            left: -30px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 10;
+        }
+
+        .player.climbing {
+            animation: climb 0.5s ease;
+        }
+
+        .player.falling {
+            animation: fall 0.5s ease;
+        }
+
+        @keyframes climb {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2) rotate(10deg); }
+        }
+
+        @keyframes fall {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.9) rotate(-10deg); }
+        }
+
+        /* Question Area */
+        .question-area {
+            flex: 1;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .question-header {
+            text-align: center;
+        }
+
+        .question-header h2 {
+            color: var(--primary-color);
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .definition-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .definition-text {
+            font-size: 1.3em;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .option-btn {
+            padding: 20px;
+            background: white;
+            border: 3px solid var(--primary-color);
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+        }
+
+        .option-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .option-btn.correct {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .option-btn.wrong {
+            background: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+        }
+
+        /* Victory Modal */
+        .victory-content {
+            text-align: center;
+        }
+
+        .victory-emoji {
+            font-size: 5em;
+            margin: 20px 0;
+        }
+
+        .victory-stats {
+            margin: 30px 0;
+            font-size: 1.2em;
+            color: var(--text-color);
+        }
+
+        .victory-stat {
+            margin: 10px 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .ladder-game {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .ladder-container {
+                flex: 0 0 auto;
+            }
+
+            .ladder {
+                width: 150px;
+                height: 400px;
+            }
+
+            .ladder-side.left {
+                left: 15px;
+            }
+
+            .ladder-side.right {
+                right: 15px;
+            }
+
+            .rung-bar {
+                width: 100px;
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .definition-box {
+                padding: 20px;
+            }
+
+            .definition-text {
+                font-size: 1.1em;
+            }
+        }
+
+        .loading-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: var(--primary-color);
+            padding: 40px;
+        }
+
+        .position-indicator {
+            text-align: center;
+            font-size: 1.1em;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">Word Ladder Climb</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <div class="stat-label">Position</div>
+                    <div class="stat-value" id="position">0/10</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Questions</div>
+                    <div class="stat-value" id="questionsCount">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <div id="loadingMessage" class="loading-message">
+                Loading words...
+            </div>
+
+            <div id="gameArea" class="ladder-game" style="display: none;">
+                <!-- Ladder Visual -->
+                <div class="ladder-container">
+                    <div class="ladder">
+                        <div class="ladder-side left"></div>
+                        <div class="ladder-side right"></div>
+                        <div id="ladderRungs"></div>
+                        <div id="player" class="player">🧗</div>
+                    </div>
+                </div>
+
+                <!-- Question Area -->
+                <div class="question-area">
+                    <div class="question-header">
+                        <div class="position-indicator" id="positionIndicator">
+                            Climb to the top! (Rung 0/10)
+                        </div>
+                        <h2>What word matches this definition?</h2>
+                    </div>
+
+                    <div class="definition-box">
+                        <div class="definition-text" id="definition">
+                            Loading definition...
+                        </div>
+                    </div>
+
+                    <div class="options-grid" id="options">
+                        <!-- Options will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victoryModal" class="modal">
+        <div class="modal-content victory-content">
+            <div class="victory-emoji">🏆</div>
+            <h2 class="modal-title">You Reached the Top!</h2>
+            <div class="victory-stats">
+                <div class="victory-stat">Final Position: <strong>10/10</strong></div>
+                <div class="victory-stat">Total Questions: <strong id="finalQuestions">0</strong></div>
+                <div class="victory-stat">Final Score: <strong id="finalScore">0</strong></div>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="restartGame()">Play Again</button>
+                <a href="../index.html" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">Main Menu</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        const gameUtils = new VocabularyGameUtils();
+        let currentPosition = 0;
+        let questionsAnswered = 0;
+        let score = 0;
+        let currentWord = null;
+        let isAnswering = false;
+
+        // Initialize game
+        async function initGame() {
+            await gameUtils.loadWords();
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'flex';
+            createLadder();
+            loadQuestion();
+            updateDisplay();
+        }
+
+        // Create ladder rungs
+        function createLadder() {
+            const ladderRungs = document.getElementById('ladderRungs');
+            ladderRungs.innerHTML = '';
+
+            for (let i = 0; i <= 10; i++) {
+                const rung = document.createElement('div');
+                rung.className = 'rung';
+                rung.id = `rung-${i}`;
+
+                if (i === 10) {
+                    rung.innerHTML = `
+                        <div class="rung-number">🏆</div>
+                        <div class="rung-bar"></div>
+                    `;
+                } else {
+                    rung.innerHTML = `
+                        <div class="rung-number">${i}</div>
+                        <div class="rung-bar"></div>
+                    `;
+                }
+
+                ladderRungs.appendChild(rung);
+            }
+        }
+
+        // Update player position on ladder
+        function updatePlayerPosition(animate = false) {
+            const player = document.getElementById('player');
+            const ladderRungs = document.getElementById('ladderRungs');
+            const rung = document.getElementById(`rung-${currentPosition}`);
+
+            // Remove all active states
+            document.querySelectorAll('.rung').forEach(r => r.classList.remove('active'));
+
+            // Set current rung as active
+            rung.classList.add('active');
+
+            // Calculate position
+            const ladder = document.querySelector('.ladder');
+            const ladderHeight = ladder.offsetHeight;
+            const rungHeight = ladderHeight / 11; // 11 positions (0-10)
+            const bottomPosition = 10 + (currentPosition * rungHeight);
+
+            if (animate) {
+                player.classList.add('climbing');
+                setTimeout(() => player.classList.remove('climbing'), 500);
+            }
+
+            player.style.bottom = `${bottomPosition}px`;
+        }
+
+        // Load new question
+        function loadQuestion() {
+            currentWord = gameUtils.getWordWithOptions();
+
+            document.getElementById('definition').textContent = currentWord.definition;
+
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+
+            currentWord.options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => checkAnswer(option, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            isAnswering = false;
+        }
+
+        // Check answer
+        function checkAnswer(selected, button) {
+            if (isAnswering) return;
+            isAnswering = true;
+
+            const correct = selected === currentWord.word;
+            const allButtons = document.querySelectorAll('.option-btn');
+
+            // Disable all buttons
+            allButtons.forEach(btn => btn.disabled = true);
+
+            if (correct) {
+                button.classList.add('correct');
+
+                // Move up
+                if (currentPosition < 10) {
+                    currentPosition++;
+                    score += 100 + (currentPosition * 10); // Bonus for higher rungs
+                    questionsAnswered++;
+
+                    const player = document.getElementById('player');
+                    player.classList.add('climbing');
+                    setTimeout(() => player.classList.remove('climbing'), 500);
+
+                    updatePlayerPosition(true);
+                    updateDisplay();
+
+                    // Check for win
+                    if (currentPosition === 10) {
+                        setTimeout(() => showVictory(), 800);
+                    } else {
+                        setTimeout(() => loadQuestion(), 1200);
+                    }
+                }
+            } else {
+                button.classList.add('wrong');
+
+                // Show correct answer
+                allButtons.forEach(btn => {
+                    if (btn.textContent === currentWord.word) {
+                        btn.classList.add('correct');
+                    }
+                });
+
+                // Move down
+                if (currentPosition > 0) {
+                    currentPosition--;
+                    score = Math.max(0, score - 50); // Penalty for wrong answer
+
+                    const player = document.getElementById('player');
+                    player.classList.add('falling');
+                    setTimeout(() => player.classList.remove('falling'), 500);
+
+                    updatePlayerPosition(true);
+                }
+
+                questionsAnswered++;
+                updateDisplay();
+                setTimeout(() => loadQuestion(), 1500);
+            }
+        }
+
+        // Update display
+        function updateDisplay() {
+            document.getElementById('position').textContent = `${currentPosition}/10`;
+            document.getElementById('questionsCount').textContent = questionsAnswered;
+            document.getElementById('score').textContent = score;
+            document.getElementById('positionIndicator').textContent =
+                `Climb to the top! (Rung ${currentPosition}/10)`;
+        }
+
+        // Show victory modal
+        function showVictory() {
+            document.getElementById('finalQuestions').textContent = questionsAnswered;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('victoryModal').classList.add('active');
+
+            // Save high score
+            const isNewHigh = gameUtils.saveHighScore('word-ladder-climb', score);
+            if (isNewHigh) {
+                console.log('New high score!');
+            }
+        }
+
+        // Restart game
+        function restartGame() {
+            currentPosition = 0;
+            questionsAnswered = 0;
+            score = 0;
+
+            document.getElementById('victoryModal').classList.remove('active');
+            updatePlayerPosition(false);
+            updateDisplay();
+            loadQuestion();
+        }
+
+        // Start game on load
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

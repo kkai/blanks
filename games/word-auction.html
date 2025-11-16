@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Auction - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        .auction-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .wallet-display {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .wallet-label {
+            font-size: 1em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .wallet-amount {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .definition-display {
+            font-size: 1.5em;
+            color: var(--text-color);
+            max-width: 900px;
+            margin: 0 auto 40px auto;
+            line-height: 1.8;
+            padding: 30px;
+            background: var(--bg-light);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .auction-label {
+            font-size: 1.3em;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .word-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto 30px auto;
+        }
+
+        .word-card {
+            background: white;
+            border: 3px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .word-card:hover:not(.selected):not(.disabled) {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+
+        .word-card:hover:not(.selected):not(.disabled) .card-value {
+            color: white;
+        }
+
+        .word-card.selected {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        .word-card.selected .card-value {
+            color: white;
+        }
+
+        .word-card.correct {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .word-card.correct .card-value {
+            color: white;
+        }
+
+        .word-card.wrong {
+            background: var(--error-color);
+            border-color: var(--error-color);
+            color: white;
+            animation: shake 0.5s ease;
+        }
+
+        .word-card.wrong .card-value {
+            color: white;
+        }
+
+        .word-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .card-word {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 1.2em;
+            color: #f5576c;
+            font-weight: 600;
+        }
+
+        .bid-section {
+            max-width: 600px;
+            margin: 30px auto;
+            background: var(--bg-light);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .bid-controls {
+            margin-bottom: 20px;
+        }
+
+        .bid-label {
+            font-size: 1.2em;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .bid-input-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .bid-slider {
+            flex: 1;
+            height: 10px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .bid-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+
+        .bid-slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: var(--shadow);
+        }
+
+        .bid-amount {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary-color);
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .quick-bid-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .quick-bid-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .quick-bid-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .place-bid-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--success-color) 0%, #11998e 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .place-bid-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .place-bid-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-message {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.3em;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-message.show {
+            opacity: 1;
+        }
+
+        .result-message.profit {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .result-message.loss {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .next-round-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+        }
+
+        .next-round-btn.show {
+            opacity: 1;
+        }
+
+        .next-round-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .results-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .results-title {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .results-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .result-stat {
+            background: var(--bg-light);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .result-stat-value {
+            font-size: 3em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .result-stat-value.positive {
+            color: var(--success-color);
+        }
+
+        .result-stat-value.negative {
+            color: var(--error-color);
+        }
+
+        .result-stat-label {
+            font-size: 1.2em;
+            color: var(--text-color);
+            margin-top: 10px;
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .wallet-amount {
+                font-size: 2em;
+            }
+
+            .definition-display {
+                font-size: 1.2em;
+                padding: 20px;
+            }
+
+            .word-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .card-word {
+                font-size: 1.3em;
+            }
+
+            .bid-amount {
+                font-size: 1.5em;
+            }
+
+            .place-bid-btn {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">Word Auction</div>
+            <div class="game-stats">
+                <div class="stat">
+                    <div class="stat-label">Round</div>
+                    <div class="stat-value" id="roundNumber">1/10</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Points</div>
+                    <div class="stat-value" id="points">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Correct</div>
+                    <div class="stat-value" id="correctCount">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <div id="gameView">
+                <div class="wallet-display">
+                    <div class="wallet-label">Your Balance</div>
+                    <div class="wallet-amount" id="walletAmount">$1000</div>
+                </div>
+
+                <div class="auction-container">
+                    <div class="auction-label">Definition Up For Auction:</div>
+                    <div class="definition-display" id="definitionDisplay">
+                        Loading vocabulary...
+                    </div>
+
+                    <div class="auction-label">Place Your Bid on a Word:</div>
+                    <div class="word-cards" id="wordCards">
+                        <!-- Word cards will be populated by JavaScript -->
+                    </div>
+
+                    <div class="bid-section">
+                        <div class="bid-controls">
+                            <div class="bid-label">How much will you bid?</div>
+                            <div class="bid-input-container">
+                                <input type="range" class="bid-slider" id="bidSlider"
+                                       min="0" max="1000" value="100" step="10">
+                                <div class="bid-amount" id="bidAmount">$100</div>
+                            </div>
+                            <div class="quick-bid-buttons">
+                                <button class="quick-bid-btn" onclick="setQuickBid(0.25)">25%</button>
+                                <button class="quick-bid-btn" onclick="setQuickBid(0.5)">50%</button>
+                                <button class="quick-bid-btn" onclick="setQuickBid(0.75)">75%</button>
+                                <button class="quick-bid-btn" onclick="setQuickBid(1)">All In</button>
+                            </div>
+                        </div>
+
+                        <button class="place-bid-btn" id="placeBidBtn" disabled>
+                            Select a word first
+                        </button>
+
+                        <div class="result-message" id="resultMessage"></div>
+
+                        <button class="next-round-btn" id="nextRoundBtn">
+                            Next Round →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resultsView" style="display: none;">
+                <div class="results-container">
+                    <div class="results-title" id="resultsTitle">Game Complete!</div>
+                    <div class="results-stats">
+                        <div class="result-stat">
+                            <div class="result-stat-value" id="finalPoints">0</div>
+                            <div class="result-stat-label">Points Earned</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value" id="currencySpent">0</div>
+                            <div class="result-stat-label">Currency Spent</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value" id="netProfit">0</div>
+                            <div class="result-stat-label">Net Profit/Loss</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value" id="correctAnswers">0/10</div>
+                            <div class="result-stat-label">Correct Bids</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value" id="finalBalance">$0</div>
+                            <div class="result-stat-label">Final Balance</div>
+                        </div>
+                    </div>
+                    <div class="result-buttons">
+                        <button class="btn btn-primary" onclick="restartGame()">Play Again</button>
+                        <a href="../index.html" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">Back to Menu</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        const utils = new VocabularyGameUtils();
+        let gameState = {
+            currentRound: 0,
+            totalRounds: 10,
+            balance: 1000,
+            points: 0,
+            correctAnswers: 0,
+            totalSpent: 0,
+            currentBid: 100,
+            selectedWord: null,
+            correctWord: null,
+            currentOptions: [],
+            wordValues: {},
+            answered: false,
+            allWords: []
+        };
+
+        // Point values for words
+        const POINT_VALUES = [100, 200, 300, 400];
+
+        // Initialize game
+        async function initGame() {
+            gameState.allWords = await utils.loadWords();
+            if (gameState.allWords.length === 0) {
+                alert('Error loading vocabulary. Please refresh the page.');
+                return;
+            }
+            loadNextRound();
+        }
+
+        // Load next round
+        function loadNextRound() {
+            if (gameState.currentRound >= gameState.totalRounds) {
+                showResults();
+                return;
+            }
+
+            gameState.answered = false;
+            gameState.selectedWord = null;
+            gameState.currentBid = Math.min(100, gameState.balance);
+
+            // Reset UI
+            document.getElementById('resultMessage').classList.remove('show');
+            document.getElementById('nextRoundBtn').classList.remove('show');
+            document.getElementById('placeBidBtn').textContent = 'Select a word first';
+            document.getElementById('placeBidBtn').disabled = true;
+
+            // Get word with options
+            const wordData = utils.getWordWithOptions();
+            gameState.correctWord = wordData.word;
+            gameState.currentOptions = wordData.options;
+
+            // Assign random point values to each word
+            gameState.wordValues = {};
+            const shuffledValues = utils.shuffle(POINT_VALUES);
+            gameState.currentOptions.forEach((word, index) => {
+                gameState.wordValues[word] = shuffledValues[index];
+            });
+
+            // Update displays
+            document.getElementById('definitionDisplay').textContent = wordData.definition;
+            document.getElementById('roundNumber').textContent =
+                `${gameState.currentRound + 1}/${gameState.totalRounds}`;
+
+            // Update bid slider max to current balance
+            const slider = document.getElementById('bidSlider');
+            slider.max = gameState.balance;
+            slider.value = gameState.currentBid;
+            updateBidDisplay();
+
+            // Render word cards
+            renderWordCards();
+        }
+
+        // Render word cards
+        function renderWordCards() {
+            const cardsContainer = document.getElementById('wordCards');
+            cardsContainer.innerHTML = '';
+
+            gameState.currentOptions.forEach(word => {
+                const card = document.createElement('div');
+                card.className = 'word-card';
+                card.innerHTML = `
+                    <div class="card-word">${word}</div>
+                    <div class="card-value">Worth: ${gameState.wordValues[word]} pts</div>
+                `;
+                card.onclick = () => selectWord(word, card);
+                cardsContainer.appendChild(card);
+            });
+        }
+
+        // Select a word
+        function selectWord(word, cardElement) {
+            if (gameState.answered) return;
+
+            // Remove previous selection
+            document.querySelectorAll('.word-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Select new word
+            gameState.selectedWord = word;
+            cardElement.classList.add('selected');
+
+            // Enable bid button
+            const bidBtn = document.getElementById('placeBidBtn');
+            bidBtn.disabled = false;
+            bidBtn.textContent = `Place Bid: $${gameState.currentBid} on "${word}"`;
+        }
+
+        // Update bid display
+        function updateBidDisplay() {
+            const slider = document.getElementById('bidSlider');
+            gameState.currentBid = parseInt(slider.value);
+            document.getElementById('bidAmount').textContent = `$${gameState.currentBid}`;
+
+            // Update button text if word is selected
+            if (gameState.selectedWord && !gameState.answered) {
+                document.getElementById('placeBidBtn').textContent =
+                    `Place Bid: $${gameState.currentBid} on "${gameState.selectedWord}"`;
+            }
+        }
+
+        // Set quick bid
+        function setQuickBid(percentage) {
+            if (gameState.answered) return;
+            const bidAmount = Math.floor(gameState.balance * percentage);
+            document.getElementById('bidSlider').value = bidAmount;
+            updateBidDisplay();
+        }
+
+        // Place bid
+        function placeBid() {
+            if (gameState.answered || !gameState.selectedWord) return;
+
+            gameState.answered = true;
+
+            const isCorrect = gameState.selectedWord === gameState.correctWord;
+            const wordValue = gameState.wordValues[gameState.selectedWord];
+
+            // Update balance and points
+            gameState.balance -= gameState.currentBid;
+            gameState.totalSpent += gameState.currentBid;
+
+            let profit = 0;
+            if (isCorrect) {
+                gameState.points += wordValue;
+                profit = wordValue - gameState.currentBid;
+                gameState.correctAnswers++;
+            } else {
+                profit = -gameState.currentBid;
+            }
+
+            // Update UI
+            document.getElementById('walletAmount').textContent = `$${gameState.balance}`;
+            document.getElementById('points').textContent = gameState.points;
+            document.getElementById('correctCount').textContent = gameState.correctAnswers;
+
+            // Show result on cards
+            const cards = document.querySelectorAll('.word-card');
+            cards.forEach(card => {
+                const cardWord = card.querySelector('.card-word').textContent;
+
+                if (cardWord === gameState.correctWord) {
+                    card.classList.add('correct');
+                } else if (cardWord === gameState.selectedWord) {
+                    card.classList.add('wrong');
+                } else {
+                    card.classList.add('disabled');
+                }
+            });
+
+            // Show result message
+            const resultMsg = document.getElementById('resultMessage');
+            resultMsg.classList.remove('profit', 'loss');
+
+            if (isCorrect) {
+                resultMsg.className = 'result-message show profit';
+                resultMsg.innerHTML = `
+                    Correct! You won ${wordValue} points for $${gameState.currentBid}.<br>
+                    <strong>Net Profit: +$${profit}</strong>
+                `;
+            } else {
+                resultMsg.className = 'result-message show loss';
+                resultMsg.innerHTML = `
+                    Wrong! The correct answer was "${gameState.correctWord}".<br>
+                    <strong>Lost: $${gameState.currentBid}</strong>
+                `;
+            }
+
+            // Disable bid controls
+            document.getElementById('placeBidBtn').disabled = true;
+            document.getElementById('bidSlider').disabled = true;
+
+            // Show next button if not last round and has balance, or if last round
+            if (gameState.currentRound < gameState.totalRounds - 1 && gameState.balance > 0) {
+                setTimeout(() => {
+                    document.getElementById('nextRoundBtn').classList.add('show');
+                }, 500);
+            } else if (gameState.currentRound < gameState.totalRounds - 1 && gameState.balance === 0) {
+                // No balance left, skip remaining rounds
+                setTimeout(() => {
+                    resultMsg.innerHTML += `<br><br>You've run out of money! Game Over.`;
+                    setTimeout(showResults, 2000);
+                }, 1000);
+            } else {
+                // Last round
+                setTimeout(() => {
+                    document.getElementById('nextRoundBtn').textContent = 'See Results →';
+                    document.getElementById('nextRoundBtn').classList.add('show');
+                }, 500);
+            }
+        }
+
+        // Next round
+        function nextRound() {
+            // Re-enable controls
+            document.getElementById('bidSlider').disabled = false;
+
+            gameState.currentRound++;
+            loadNextRound();
+        }
+
+        // Show results
+        function showResults() {
+            document.getElementById('gameView').style.display = 'none';
+            document.getElementById('resultsView').style.display = 'block';
+
+            const netProfit = gameState.points - gameState.totalSpent;
+
+            document.getElementById('finalPoints').textContent = gameState.points;
+            document.getElementById('currencySpent').textContent = `$${gameState.totalSpent}`;
+
+            const netProfitElement = document.getElementById('netProfit');
+            netProfitElement.textContent = `$${netProfit}`;
+            if (netProfit > 0) {
+                netProfitElement.classList.add('positive');
+                document.getElementById('resultsTitle').textContent = 'Profit! Well Done!';
+            } else if (netProfit < 0) {
+                netProfitElement.classList.add('negative');
+                document.getElementById('resultsTitle').textContent = 'Loss! Better Luck Next Time!';
+            } else {
+                document.getElementById('resultsTitle').textContent = 'Break Even!';
+            }
+
+            document.getElementById('correctAnswers').textContent =
+                `${gameState.correctAnswers}/${gameState.totalRounds}`;
+            document.getElementById('finalBalance').textContent = `$${gameState.balance}`;
+
+            // Save high score (based on net profit)
+            const isNewHighScore = utils.saveHighScore('word-auction', Math.max(0, netProfit));
+        }
+
+        // Restart game
+        function restartGame() {
+            gameState = {
+                currentRound: 0,
+                totalRounds: 10,
+                balance: 1000,
+                points: 0,
+                correctAnswers: 0,
+                totalSpent: 0,
+                currentBid: 100,
+                selectedWord: null,
+                correctWord: null,
+                currentOptions: [],
+                wordValues: {},
+                answered: false,
+                allWords: gameState.allWords
+            };
+
+            document.getElementById('gameView').style.display = 'block';
+            document.getElementById('resultsView').style.display = 'none';
+            document.getElementById('walletAmount').textContent = '$1000';
+            document.getElementById('points').textContent = '0';
+            document.getElementById('correctCount').textContent = '0';
+
+            loadNextRound();
+        }
+
+        // Event listeners
+        document.getElementById('bidSlider').addEventListener('input', updateBidDisplay);
+        document.getElementById('placeBidBtn').addEventListener('click', placeBid);
+        document.getElementById('nextRoundBtn').addEventListener('click', nextRound);
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('gameView').style.display === 'none') return;
+
+            // Number keys for selecting words
+            if (e.key >= '1' && e.key <= '4' && !gameState.answered) {
+                const cards = document.querySelectorAll('.word-card');
+                const index = parseInt(e.key) - 1;
+                if (cards[index]) {
+                    cards[index].click();
+                }
+            }
+
+            // Enter to place bid or go to next round
+            if (e.key === 'Enter') {
+                if (!gameState.answered && gameState.selectedWord) {
+                    document.getElementById('placeBidBtn').click();
+                } else if (gameState.answered) {
+                    const nextBtn = document.getElementById('nextRoundBtn');
+                    if (nextBtn.classList.contains('show')) {
+                        nextBtn.click();
+                    }
+                }
+            }
+        });
+
+        // Start game
+        initGame();
+    </script>
+</body>
+</html>

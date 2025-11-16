@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Constellation - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        /* Memory-specific styles */
+        .game-header {
+            position: relative;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            position: relative;
+            cursor: pointer;
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .memory-card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .memory-card.matched .card-inner {
+            transform: rotateY(180deg);
+            opacity: 0.7;
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .card-back {
+            background: white;
+            transform: rotateY(180deg);
+            font-size: 0.9em;
+            text-align: center;
+            word-wrap: break-word;
+            overflow: hidden;
+            border: 2px solid var(--primary-color);
+        }
+
+        .card-back.word {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .card-back.definition {
+            font-size: 0.85em;
+            color: var(--text-color);
+            line-height: 1.4;
+        }
+
+        /* Star constellation effect */
+        .star-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Match animation */
+        @keyframes match-pulse {
+            0%, 100% { transform: rotateY(180deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+        }
+
+        .memory-card.matched .card-inner {
+            animation: match-pulse 0.5s ease;
+        }
+
+        /* Game complete modal */
+        .game-complete {
+            text-align: center;
+        }
+
+        .game-complete h2 {
+            color: var(--success-color);
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .final-stats {
+            margin: 30px 0;
+            font-size: 1.2em;
+        }
+
+        .final-stats div {
+            margin: 10px 0;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .memory-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .card-back {
+                font-size: 0.7em;
+                padding: 10px;
+            }
+
+            .card-back.word {
+                font-size: 1em;
+            }
+
+            .card-back.definition {
+                font-size: 0.65em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .memory-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">Memory Constellation</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="stat-label">Moves</span>
+                    <span class="stat-value" id="moves">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Matches</span>
+                    <span class="stat-value" id="matches">0/6</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <div class="loading" id="loading">Loading words...</div>
+            <div class="memory-grid" id="memoryGrid" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Star canvas for constellation effect -->
+    <canvas class="star-canvas" id="starCanvas"></canvas>
+
+    <!-- Game complete modal -->
+    <div class="modal" id="gameCompleteModal">
+        <div class="modal-content game-complete">
+            <h2>Constellation Complete!</h2>
+            <div class="final-stats">
+                <div>Total Moves: <strong id="finalMoves">0</strong></div>
+                <div>Accuracy: <strong id="finalAccuracy">0%</strong></div>
+                <div>Time: <strong id="finalTime">0:00</strong></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
+                <button class="btn btn-secondary" onclick="location.href='../index.html'">Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        class MemoryConstellationGame {
+            constructor() {
+                this.utils = new VocabularyGameUtils();
+                this.cards = [];
+                this.flippedCards = [];
+                this.matchedPairs = 0;
+                this.moves = 0;
+                this.attempts = 0;
+                this.isProcessing = false;
+                this.startTime = null;
+                this.canvas = document.getElementById('starCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.stars = [];
+
+                this.setupCanvas();
+                this.init();
+            }
+
+            setupCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+
+                window.addEventListener('resize', () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                });
+            }
+
+            async init() {
+                try {
+                    await this.utils.loadWords();
+                    this.createGame();
+                    this.startTime = Date.now();
+                } catch (error) {
+                    console.error('Error initializing game:', error);
+                    document.getElementById('loading').textContent = 'Error loading game. Please refresh.';
+                }
+            }
+
+            createGame() {
+                // Get 6 random words
+                const words = this.utils.getRandomWords(6);
+
+                // Create card pairs (word + definition)
+                const cardPairs = [];
+                words.forEach((wordObj, index) => {
+                    cardPairs.push({
+                        id: `word-${index}`,
+                        pairId: index,
+                        type: 'word',
+                        content: wordObj.word,
+                        displayContent: wordObj.word
+                    });
+                    cardPairs.push({
+                        id: `def-${index}`,
+                        pairId: index,
+                        type: 'definition',
+                        content: wordObj.definition,
+                        displayContent: wordObj.definition
+                    });
+                });
+
+                // Shuffle cards
+                this.cards = this.utils.shuffle(cardPairs);
+
+                // Render cards
+                this.renderCards();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('memoryGrid').style.display = 'grid';
+            }
+
+            renderCards() {
+                const grid = document.getElementById('memoryGrid');
+                grid.innerHTML = '';
+
+                this.cards.forEach((card, index) => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'memory-card';
+                    cardElement.dataset.index = index;
+                    cardElement.dataset.pairId = card.pairId;
+                    cardElement.dataset.type = card.type;
+
+                    cardElement.innerHTML = `
+                        <div class="card-inner">
+                            <div class="card-front">?</div>
+                            <div class="card-back ${card.type}">
+                                ${card.displayContent}
+                            </div>
+                        </div>
+                    `;
+
+                    cardElement.addEventListener('click', () => this.flipCard(cardElement, card));
+                    grid.appendChild(cardElement);
+                });
+            }
+
+            flipCard(element, card) {
+                // Prevent interaction during processing or if already matched
+                if (this.isProcessing ||
+                    element.classList.contains('flipped') ||
+                    element.classList.contains('matched')) {
+                    return;
+                }
+
+                // Flip the card
+                element.classList.add('flipped');
+                this.flippedCards.push({ element, card });
+
+                // Check if two cards are flipped
+                if (this.flippedCards.length === 2) {
+                    this.moves++;
+                    this.attempts++;
+                    this.updateStats();
+                    this.checkMatch();
+                }
+            }
+
+            checkMatch() {
+                this.isProcessing = true;
+                const [first, second] = this.flippedCards;
+
+                // Check if both cards have the same pairId
+                if (first.card.pairId === second.card.pairId) {
+                    // Match found!
+                    setTimeout(() => {
+                        first.element.classList.add('matched');
+                        second.element.classList.add('matched');
+                        this.matchedPairs++;
+                        this.updateStats();
+
+                        // Create star constellation effect
+                        this.createStarEffect(first.element, second.element);
+
+                        // Check if game is complete
+                        if (this.matchedPairs === 6) {
+                            setTimeout(() => this.gameComplete(), 1000);
+                        }
+
+                        this.flippedCards = [];
+                        this.isProcessing = false;
+                    }, 500);
+                } else {
+                    // No match - flip back
+                    setTimeout(() => {
+                        first.element.classList.remove('flipped');
+                        second.element.classList.remove('flipped');
+                        this.flippedCards = [];
+                        this.isProcessing = false;
+                    }, 1000);
+                }
+            }
+
+            createStarEffect(card1, card2) {
+                const rect1 = card1.getBoundingClientRect();
+                const rect2 = card2.getBoundingClientRect();
+
+                const center1 = {
+                    x: rect1.left + rect1.width / 2,
+                    y: rect1.top + rect1.height / 2
+                };
+                const center2 = {
+                    x: rect2.left + rect2.width / 2,
+                    y: rect2.top + rect2.height / 2
+                };
+
+                // Create stars along the line between cards
+                const numStars = 10;
+                for (let i = 0; i < numStars; i++) {
+                    const t = i / (numStars - 1);
+                    const x = center1.x + (center2.x - center1.x) * t;
+                    const y = center1.y + (center2.y - center1.y) * t;
+
+                    this.stars.push({
+                        x: x,
+                        y: y,
+                        size: Math.random() * 3 + 2,
+                        alpha: 1,
+                        fadeSpeed: Math.random() * 0.02 + 0.01
+                    });
+                }
+
+                // Animate stars
+                this.animateStars();
+            }
+
+            animateStars() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw connecting lines
+                this.ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+                this.ctx.lineWidth = 2;
+
+                for (let i = 0; i < this.stars.length - 1; i++) {
+                    const star = this.stars[i];
+                    const nextStar = this.stars[i + 1];
+
+                    if (star.alpha > 0 && nextStar.alpha > 0) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(star.x, star.y);
+                        this.ctx.lineTo(nextStar.x, nextStar.y);
+                        this.ctx.globalAlpha = Math.min(star.alpha, nextStar.alpha);
+                        this.ctx.stroke();
+                    }
+                }
+
+                // Draw stars
+                this.stars.forEach(star => {
+                    if (star.alpha > 0) {
+                        this.ctx.globalAlpha = star.alpha;
+                        this.ctx.fillStyle = '#667eea';
+                        this.ctx.beginPath();
+                        this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                        this.ctx.fill();
+
+                        // Add glow
+                        const gradient = this.ctx.createRadialGradient(
+                            star.x, star.y, 0,
+                            star.x, star.y, star.size * 2
+                        );
+                        gradient.addColorStop(0, 'rgba(102, 126, 234, ' + star.alpha + ')');
+                        gradient.addColorStop(1, 'rgba(102, 126, 234, 0)');
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(star.x, star.y, star.size * 2, 0, Math.PI * 2);
+                        this.ctx.fill();
+
+                        star.alpha -= star.fadeSpeed;
+                    }
+                });
+
+                // Continue animation if there are visible stars
+                if (this.stars.some(star => star.alpha > 0)) {
+                    requestAnimationFrame(() => this.animateStars());
+                } else {
+                    // Clean up faded stars
+                    this.stars = this.stars.filter(star => star.alpha > 0);
+                }
+
+                this.ctx.globalAlpha = 1;
+            }
+
+            updateStats() {
+                document.getElementById('moves').textContent = this.moves;
+                document.getElementById('matches').textContent = `${this.matchedPairs}/6`;
+            }
+
+            gameComplete() {
+                const endTime = Date.now();
+                const timeSeconds = Math.floor((endTime - this.startTime) / 1000);
+                const accuracy = this.matchedPairs > 0 ? Math.round((this.matchedPairs / this.attempts) * 100) : 0;
+
+                document.getElementById('finalMoves').textContent = this.moves;
+                document.getElementById('finalAccuracy').textContent = accuracy + '%';
+                document.getElementById('finalTime').textContent = this.utils.formatTime(timeSeconds);
+
+                // Show modal
+                document.getElementById('gameCompleteModal').classList.add('active');
+
+                // Create celebration stars
+                this.createCelebrationStars();
+            }
+
+            createCelebrationStars() {
+                // Create random stars across the screen
+                for (let i = 0; i < 50; i++) {
+                    setTimeout(() => {
+                        this.stars.push({
+                            x: Math.random() * this.canvas.width,
+                            y: Math.random() * this.canvas.height,
+                            size: Math.random() * 4 + 2,
+                            alpha: 1,
+                            fadeSpeed: Math.random() * 0.015 + 0.005
+                        });
+                    }, i * 50);
+                }
+
+                this.animateStars();
+            }
+        }
+
+        // Start the game when page loads
+        let game;
+        window.addEventListener('DOMContentLoaded', () => {
+            game = new MemoryConstellationGame();
+        });
+    </script>
+</body>
+</html>

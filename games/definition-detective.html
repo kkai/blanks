@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definition Detective - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        .question-container {
+            text-align: center;
+            margin: 40px 0;
+            min-height: 350px;
+        }
+
+        .question-label {
+            font-size: 1.2em;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .blanked-definition {
+            font-size: 1.8em;
+            color: var(--text-color);
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.8;
+            padding: 40px;
+            background: var(--bg-light);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            animation: slideIn 0.5s ease;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .blank-word {
+            color: var(--primary-color);
+            font-weight: bold;
+            border-bottom: 3px solid var(--primary-color);
+            padding: 0 5px;
+        }
+
+        .word-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .word-option {
+            padding: 25px 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            background: white;
+            color: var(--primary-color);
+            border: 3px solid var(--primary-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .word-option:hover:not(:disabled) {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .word-option:disabled {
+            cursor: not-allowed;
+        }
+
+        .word-option.correct {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .word-option.wrong {
+            background: var(--error-color);
+            border-color: var(--error-color);
+            color: white;
+            animation: shake 0.5s ease;
+        }
+
+        .word-option.disabled {
+            opacity: 0.5;
+        }
+
+        .next-button-container {
+            text-align: center;
+            margin-top: 30px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .next-button-container.visible {
+            opacity: 1;
+        }
+
+        .next-btn {
+            padding: 20px 60px;
+            font-size: 1.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .next-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .accuracy-display {
+            font-size: 1.1em;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .results-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .results-title {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .results-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .result-stat {
+            background: var(--bg-light);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .result-stat-value {
+            font-size: 3em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .result-stat-label {
+            font-size: 1.2em;
+            color: var(--text-color);
+            margin-top: 10px;
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .feedback-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5em;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        .feedback-overlay.show {
+            opacity: 1;
+            animation: feedbackPop 0.8s ease;
+        }
+
+        .feedback-overlay.correct {
+            color: var(--success-color);
+        }
+
+        .feedback-overlay.wrong {
+            color: var(--error-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes correctPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes feedbackPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .blanked-definition {
+                font-size: 1.3em;
+                padding: 25px;
+            }
+
+            .word-options {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .word-option {
+                padding: 20px;
+                font-size: 1.2em;
+            }
+
+            .next-btn {
+                padding: 15px 40px;
+                font-size: 1.2em;
+            }
+
+            .results-title {
+                font-size: 2em;
+            }
+
+            .result-stat-value {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">Definition Detective</div>
+            <div class="game-stats">
+                <div class="stat">
+                    <div class="stat-label">Question</div>
+                    <div class="stat-value" id="questionNumber">1/10</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Accuracy</div>
+                    <div class="stat-value" id="accuracyStat">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <div id="gameView">
+                <div class="question-container">
+                    <div class="question-label">What word fits this definition?</div>
+                    <div class="blanked-definition" id="definitionDisplay">
+                        Loading vocabulary...
+                    </div>
+                </div>
+
+                <div class="word-options" id="wordOptions">
+                    <!-- Options will be populated by JavaScript -->
+                </div>
+
+                <div class="next-button-container" id="nextButtonContainer">
+                    <button class="next-btn" id="nextBtn">Next Question →</button>
+                </div>
+            </div>
+
+            <div id="resultsView" style="display: none;">
+                <div class="results-container">
+                    <div class="results-title">Game Complete!</div>
+                    <div class="results-stats">
+                        <div class="result-stat">
+                            <div class="result-stat-value" id="finalScore">0</div>
+                            <div class="result-stat-label">Final Score</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value" id="correctAnswers">0</div>
+                            <div class="result-stat-label">Correct</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value" id="finalAccuracy">0%</div>
+                            <div class="result-stat-label">Accuracy</div>
+                        </div>
+                    </div>
+                    <div class="result-buttons">
+                        <button class="btn btn-primary" onclick="restartGame()">Play Again</button>
+                        <a href="../index.html" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">Back to Menu</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="feedback-overlay" id="feedbackOverlay"></div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        const utils = new VocabularyGameUtils();
+        let gameState = {
+            currentQuestion: 0,
+            totalQuestions: 10,
+            score: 0,
+            correctAnswers: 0,
+            currentWord: null,
+            currentOptions: [],
+            allWords: [],
+            answered: false
+        };
+
+        // Initialize game
+        async function initGame() {
+            gameState.allWords = await utils.loadWords();
+            if (gameState.allWords.length === 0) {
+                alert('Error loading vocabulary. Please refresh the page.');
+                return;
+            }
+            loadNextQuestion();
+        }
+
+        // Load next question
+        function loadNextQuestion() {
+            if (gameState.currentQuestion >= gameState.totalQuestions) {
+                showResults();
+                return;
+            }
+
+            gameState.answered = false;
+
+            // Hide next button
+            document.getElementById('nextButtonContainer').classList.remove('visible');
+
+            // Get word with options
+            const wordData = utils.getWordWithOptions();
+            gameState.currentWord = wordData.word;
+            gameState.currentOptions = wordData.options;
+
+            // Create blanked definition
+            const blankedDefinition = utils.createBlankedDefinition(wordData.definition);
+
+            // Update display
+            document.getElementById('definitionDisplay').textContent = blankedDefinition;
+            document.getElementById('questionNumber').textContent =
+                `${gameState.currentQuestion + 1}/${gameState.totalQuestions}`;
+
+            // Render options
+            renderOptions();
+        }
+
+        // Render word options
+        function renderOptions() {
+            const optionsContainer = document.getElementById('wordOptions');
+            optionsContainer.innerHTML = '';
+
+            gameState.currentOptions.forEach((word, index) => {
+                const button = document.createElement('button');
+                button.className = 'word-option';
+                button.textContent = word;
+                button.onclick = () => handleAnswer(word);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Handle answer selection
+        function handleAnswer(selectedWord) {
+            if (gameState.answered) return;
+            gameState.answered = true;
+
+            const isCorrect = selectedWord === gameState.currentWord;
+            const buttons = document.querySelectorAll('.word-option');
+
+            // Disable all buttons and mark correct/wrong
+            buttons.forEach(button => {
+                button.disabled = true;
+
+                if (button.textContent === gameState.currentWord) {
+                    // Mark the correct answer
+                    button.classList.add('correct');
+                } else if (button.textContent === selectedWord && !isCorrect) {
+                    // Mark the wrong answer if selected
+                    button.classList.add('wrong');
+                } else {
+                    // Dim other options
+                    button.classList.add('disabled');
+                }
+            });
+
+            // Update score and stats
+            if (isCorrect) {
+                gameState.correctAnswers++;
+                gameState.score += 10;
+                showFeedback(true);
+            } else {
+                showFeedback(false);
+            }
+
+            // Update displays
+            document.getElementById('score').textContent = gameState.score;
+            updateAccuracy();
+
+            // Show next button
+            setTimeout(() => {
+                document.getElementById('nextButtonContainer').classList.add('visible');
+            }, 500);
+        }
+
+        // Update accuracy display
+        function updateAccuracy() {
+            const totalAnswered = gameState.currentQuestion + 1;
+            const accuracy = Math.round((gameState.correctAnswers / totalAnswered) * 100);
+            document.getElementById('accuracyStat').textContent = `${accuracy}%`;
+        }
+
+        // Show feedback
+        function showFeedback(isCorrect) {
+            const overlay = document.getElementById('feedbackOverlay');
+            overlay.textContent = isCorrect ? '✓ CORRECT!' : '✗ WRONG!';
+            overlay.className = 'feedback-overlay show ' + (isCorrect ? 'correct' : 'wrong');
+
+            setTimeout(() => {
+                overlay.className = 'feedback-overlay';
+            }, 800);
+        }
+
+        // Move to next question
+        function nextQuestion() {
+            gameState.currentQuestion++;
+            loadNextQuestion();
+        }
+
+        // Show results
+        function showResults() {
+            document.getElementById('gameView').style.display = 'none';
+            document.getElementById('resultsView').style.display = 'block';
+
+            const accuracy = Math.round((gameState.correctAnswers / gameState.totalQuestions) * 100);
+
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('correctAnswers').textContent =
+                `${gameState.correctAnswers}/${gameState.totalQuestions}`;
+            document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+
+            // Save high score
+            const isNewHighScore = utils.saveHighScore('definition-detective', gameState.score);
+            if (isNewHighScore) {
+                document.querySelector('.results-title').textContent = 'New High Score!';
+            }
+        }
+
+        // Restart game
+        function restartGame() {
+            gameState = {
+                currentQuestion: 0,
+                totalQuestions: 10,
+                score: 0,
+                correctAnswers: 0,
+                currentWord: null,
+                currentOptions: [],
+                allWords: gameState.allWords,
+                answered: false
+            };
+
+            document.getElementById('gameView').style.display = 'block';
+            document.getElementById('resultsView').style.display = 'none';
+            document.getElementById('score').textContent = '0';
+            document.getElementById('accuracyStat').textContent = '0%';
+
+            loadNextQuestion();
+        }
+
+        // Event listeners
+        document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+
+        // Keyboard support (1-4 for options, Enter/Space for next)
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('gameView').style.display === 'none') return;
+
+            const options = document.querySelectorAll('.word-option');
+
+            // Number keys for options
+            if (e.key >= '1' && e.key <= '4') {
+                const index = parseInt(e.key) - 1;
+                if (options[index] && !gameState.answered) {
+                    options[index].click();
+                }
+            }
+
+            // Enter or Space for next button
+            if ((e.key === 'Enter' || e.key === ' ') && gameState.answered) {
+                e.preventDefault();
+                document.getElementById('nextBtn').click();
+            }
+        });
+
+        // Start game
+        initGame();
+    </script>
+</body>
+</html>

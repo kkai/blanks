@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Garden - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        /* Garden-specific styles */
+        .game-header {
+            position: relative;
+        }
+
+        .game-instructions {
+            text-align: center;
+            font-size: 1.1em;
+            color: var(--text-color);
+            margin-bottom: 30px;
+            padding: 15px;
+            background: var(--bg-light);
+            border-radius: 10px;
+        }
+
+        .garden-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Garden plots (drop zones) */
+        .garden-plots {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .garden-plot {
+            background: linear-gradient(to bottom, #8B7355 0%, #6B5345 100%);
+            border: 3px solid #5a4433;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 250px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .garden-plot.drag-over {
+            border-color: var(--success-color);
+            background: linear-gradient(to bottom, #9B8365 0%, #7B6355 100%);
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(56, 239, 125, 0.3);
+        }
+
+        .plot-label {
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.2em;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .plot-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 150px;
+            align-items: flex-start;
+            padding: 10px;
+        }
+
+        /* Seed bank (draggable words) */
+        .seed-bank-container {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .seed-bank-label {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .seed-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            min-height: 100px;
+        }
+
+        /* Seed cards (draggable) */
+        .seed-card {
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 15px 20px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            user-select: none;
+            position: relative;
+        }
+
+        .seed-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .seed-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .seed-word {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .seed-definition {
+            font-size: 0.85em;
+            color: var(--text-color);
+            line-height: 1.3;
+        }
+
+        /* Planted seed */
+        .planted-seed {
+            background: white;
+            border: 2px solid var(--success-color);
+            border-radius: 10px;
+            padding: 10px 15px;
+            position: relative;
+        }
+
+        .planted-word {
+            font-weight: bold;
+            color: var(--success-color);
+            font-size: 1em;
+        }
+
+        /* Flower animation */
+        @keyframes bloom {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.3) rotate(180deg);
+            }
+            100% {
+                transform: scale(1) rotate(360deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .flower {
+            display: inline-block;
+            font-size: 2em;
+            animation: bloom 0.6s ease-out, float 2s ease-in-out infinite;
+            margin-left: 5px;
+        }
+
+        /* Wilt animation */
+        @keyframes wilt {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(-15deg);
+            }
+            75% {
+                transform: rotate(15deg);
+            }
+        }
+
+        @keyframes fade-out {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        .wilting {
+            animation: wilt 0.5s ease, fade-out 0.5s ease 0.5s;
+        }
+
+        /* Score celebration */
+        @keyframes score-pop {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .score-pop {
+            animation: score-pop 0.5s ease;
+        }
+
+        /* Game complete */
+        .game-complete {
+            text-align: center;
+        }
+
+        .game-complete h2 {
+            color: var(--success-color);
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .garden-emoji {
+            font-size: 4em;
+            margin: 20px 0;
+        }
+
+        .final-stats {
+            margin: 30px 0;
+            font-size: 1.2em;
+        }
+
+        .final-stats div {
+            margin: 10px 0;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .garden-plots {
+                grid-template-columns: 1fr;
+            }
+
+            .seed-card {
+                font-size: 0.9em;
+                padding: 12px 16px;
+            }
+
+            .plot-label {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">Vocabulary Garden</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="score">0/9</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Planted</span>
+                    <span class="stat-value" id="planted">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <div class="loading" id="loading">Loading garden...</div>
+
+            <div class="garden-container" id="gardenContainer" style="display: none;">
+                <div class="game-instructions">
+                    Drag each word seed to the correct garden plot based on its definition!
+                </div>
+
+                <!-- Garden Plots (Drop Zones) -->
+                <div class="garden-plots" id="gardenPlots">
+                    <div class="garden-plot" data-category="actions">
+                        <div class="plot-label">Actions</div>
+                        <div class="plot-content"></div>
+                    </div>
+                    <div class="garden-plot" data-category="objects">
+                        <div class="plot-label">Objects</div>
+                        <div class="plot-content"></div>
+                    </div>
+                    <div class="garden-plot" data-category="qualities">
+                        <div class="plot-label">Qualities</div>
+                        <div class="plot-content"></div>
+                    </div>
+                </div>
+
+                <!-- Seed Bank (Draggable Words) -->
+                <div class="seed-bank-container">
+                    <div class="seed-bank-label">Seed Bank - Drag to Plant</div>
+                    <div class="seed-bank" id="seedBank"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game complete modal -->
+    <div class="modal" id="gameCompleteModal">
+        <div class="modal-content game-complete">
+            <h2>Garden Complete!</h2>
+            <div class="garden-emoji">🌸 🌺 🌻 🌼 🌷</div>
+            <div class="final-stats">
+                <div>Perfect Placements: <strong id="finalScore">0/9</strong></div>
+                <div>Accuracy: <strong id="finalAccuracy">0%</strong></div>
+                <div>Your garden is blooming beautifully!</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="location.reload()">Plant Again</button>
+                <button class="btn btn-secondary" onclick="location.href='../index.html'">Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        class VocabularyGardenGame {
+            constructor() {
+                this.utils = new VocabularyGameUtils();
+                this.words = [];
+                this.score = 0;
+                this.planted = 0;
+                this.totalAttempts = 0;
+                this.draggedElement = null;
+                this.flowers = ['🌸', '🌺', '🌻', '🌼', '🌷', '🌹'];
+
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.utils.loadWords();
+                    this.selectAndCategorizeWords();
+                    this.renderGame();
+                    this.setupDragAndDrop();
+                } catch (error) {
+                    console.error('Error initializing game:', error);
+                    document.getElementById('loading').textContent = 'Error loading game. Please refresh.';
+                }
+            }
+
+            // Categorize words based on their definitions
+            categorizeWord(wordObj) {
+                const def = wordObj.definition.toLowerCase();
+
+                // Action words (verbs) - look for action-related patterns
+                const actionPatterns = [
+                    /^to /,  // "to move", "to create"
+                    /act of /,  // "act of moving"
+                    /process of /,  // "process of creating"
+                    /\bmove\b/, /\bcreate\b/, /\bmake\b/, /\bdo\b/, /\bperform\b/,
+                    /\bblind\b/, /\bburn\b/, /\bwalk\b/, /\brun\b/, /\bjump\b/,
+                    /\bthrow\b/, /\bcatch\b/, /\bhold\b/, /\bgive\b/, /\btake\b/,
+                    /\bspeak\b/, /\btalk\b/, /\bsay\b/, /\btell\b/, /\bwrite\b/,
+                    /\bread\b/, /\blisten\b/, /\bhear\b/, /\bsee\b/, /\blook\b/,
+                    /\bstrike\b/, /\bhit\b/, /\bpush\b/, /\bpull\b/, /\bcarry\b/
+                ];
+
+                // Quality words (adjectives, traits, characteristics)
+                const qualityPatterns = [
+                    /trait of/, /quality of/, /characteristic of/,
+                    /state of being/, /condition of/,
+                    /\bhaving\b.*\bquality\b/, /\bhaving\b.*\bcharacter\b/,
+                    /freedom from/, /lack of/, /absence of/,
+                    /\breckless\b/, /\bbold\b/, /\bgentle\b/, /\bkind\b/,
+                    /\bbeautiful\b/, /\bugly\b/, /\bstrong\b/, /\bweak\b/
+                ];
+
+                // Object words (nouns - things, places, concepts)
+                const objectPatterns = [
+                    /^a (?!trait|quality|characteristic|state|condition|act|process)/,  // "a unit", "a place"
+                    /unit of/, /type of/, /kind of/, /form of/,
+                    /device/, /tool/, /instrument/, /machine/,
+                    /place/, /location/, /area/, /region/,
+                    /person/, /people/, /group/, /collection/,
+                    /substance/, /material/, /element/,
+                    /part of/, /section of/, /piece of/
+                ];
+
+                // Check patterns in order
+                for (let pattern of actionPatterns) {
+                    if (pattern.test(def)) return 'actions';
+                }
+
+                for (let pattern of qualityPatterns) {
+                    if (pattern.test(def)) return 'qualities';
+                }
+
+                for (let pattern of objectPatterns) {
+                    if (pattern.test(def)) return 'objects';
+                }
+
+                // Default categorization based on first word
+                if (def.startsWith('a ') || def.startsWith('an ') || def.startsWith('the ')) {
+                    return 'objects';
+                }
+
+                // Fallback
+                return 'objects';
+            }
+
+            selectAndCategorizeWords() {
+                const categories = {
+                    actions: [],
+                    objects: [],
+                    qualities: []
+                };
+
+                // Categorize all words
+                const allWords = this.utils.allWords;
+                for (let wordObj of allWords) {
+                    const category = this.categorizeWord(wordObj);
+                    categories[category].push({
+                        ...wordObj,
+                        category: category
+                    });
+                }
+
+                // Select 3 words from each category
+                this.words = [];
+
+                // Get 3 action words
+                const shuffledActions = this.utils.shuffle(categories.actions);
+                this.words.push(...shuffledActions.slice(0, 3));
+
+                // Get 3 object words
+                const shuffledObjects = this.utils.shuffle(categories.objects);
+                this.words.push(...shuffledObjects.slice(0, 3));
+
+                // Get 3 quality words
+                const shuffledQualities = this.utils.shuffle(categories.qualities);
+                this.words.push(...shuffledQualities.slice(0, 3));
+
+                // Shuffle all words for display
+                this.words = this.utils.shuffle(this.words);
+            }
+
+            renderGame() {
+                const seedBank = document.getElementById('seedBank');
+                seedBank.innerHTML = '';
+
+                // Create seed cards
+                this.words.forEach((wordObj, index) => {
+                    const seedCard = document.createElement('div');
+                    seedCard.className = 'seed-card';
+                    seedCard.draggable = true;
+                    seedCard.dataset.index = index;
+                    seedCard.dataset.category = wordObj.category;
+                    seedCard.dataset.word = wordObj.word;
+
+                    seedCard.innerHTML = `
+                        <div class="seed-word">${wordObj.word}</div>
+                        <div class="seed-definition">${wordObj.definition}</div>
+                    `;
+
+                    seedBank.appendChild(seedCard);
+                });
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('gardenContainer').style.display = 'flex';
+            }
+
+            setupDragAndDrop() {
+                const seedCards = document.querySelectorAll('.seed-card');
+                const gardenPlots = document.querySelectorAll('.garden-plot');
+
+                // Drag events for seed cards
+                seedCards.forEach(card => {
+                    card.addEventListener('dragstart', (e) => {
+                        this.draggedElement = card;
+                        card.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+
+                    card.addEventListener('dragend', (e) => {
+                        card.classList.remove('dragging');
+                    });
+                });
+
+                // Drop events for garden plots
+                gardenPlots.forEach(plot => {
+                    plot.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        plot.classList.add('drag-over');
+                    });
+
+                    plot.addEventListener('dragleave', (e) => {
+                        if (e.target === plot) {
+                            plot.classList.remove('drag-over');
+                        }
+                    });
+
+                    plot.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        plot.classList.remove('drag-over');
+                        this.handleDrop(plot);
+                    });
+                });
+            }
+
+            handleDrop(plot) {
+                if (!this.draggedElement) return;
+
+                const seedCategory = this.draggedElement.dataset.category;
+                const plotCategory = plot.dataset.category;
+                const word = this.draggedElement.dataset.word;
+
+                this.totalAttempts++;
+
+                if (seedCategory === plotCategory) {
+                    // Correct placement!
+                    this.plantSeed(plot, word);
+                    this.draggedElement.remove();
+                    this.score++;
+                    this.planted++;
+                    this.updateStats();
+                    this.checkGameComplete();
+                } else {
+                    // Wrong placement - wilt and return
+                    this.wiltSeed(this.draggedElement);
+                }
+
+                this.draggedElement = null;
+            }
+
+            plantSeed(plot, word) {
+                const plotContent = plot.querySelector('.plot-content');
+                const flower = this.flowers[Math.floor(Math.random() * this.flowers.length)];
+
+                const plantedSeed = document.createElement('div');
+                plantedSeed.className = 'planted-seed';
+                plantedSeed.innerHTML = `
+                    <span class="planted-word">${word}</span>
+                    <span class="flower">${flower}</span>
+                `;
+
+                plotContent.appendChild(plantedSeed);
+
+                // Animate score
+                const scoreElement = document.getElementById('score');
+                scoreElement.classList.add('score-pop');
+                setTimeout(() => scoreElement.classList.remove('score-pop'), 500);
+            }
+
+            wiltSeed(seedCard) {
+                const originalParent = seedCard.parentElement;
+                seedCard.classList.add('wilting');
+
+                // Create a "wilted" emoji to show failure
+                const wiltEmoji = document.createElement('div');
+                wiltEmoji.textContent = '🥀';
+                wiltEmoji.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    font-size: 4em;
+                    opacity: 0;
+                    animation: fade-out 1s ease;
+                    pointer-events: none;
+                    z-index: 1000;
+                `;
+                document.body.appendChild(wiltEmoji);
+
+                setTimeout(() => {
+                    seedCard.classList.remove('wilting');
+                    wiltEmoji.remove();
+                }, 1000);
+            }
+
+            updateStats() {
+                document.getElementById('score').textContent = `${this.score}/9`;
+                document.getElementById('planted').textContent = this.planted;
+            }
+
+            checkGameComplete() {
+                if (this.planted === 9) {
+                    setTimeout(() => this.gameComplete(), 1000);
+                }
+            }
+
+            gameComplete() {
+                const accuracy = Math.round((this.score / this.totalAttempts) * 100);
+
+                document.getElementById('finalScore').textContent = `${this.score}/9`;
+                document.getElementById('finalAccuracy').textContent = accuracy + '%';
+
+                // Save high score
+                this.utils.saveHighScore('vocabulary_garden', this.score);
+
+                // Show modal
+                document.getElementById('gameCompleteModal').classList.add('active');
+            }
+        }
+
+        // Start the game when page loads
+        let game;
+        window.addEventListener('DOMContentLoaded', () => {
+            game = new VocabularyGardenGame();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definition Duel - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        /* Game-specific styles */
+        .split-screen {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .divider {
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 100%;
+            opacity: 0.3;
+        }
+
+        .duel-side {
+            position: relative;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            min-height: 400px;
+        }
+
+        .duel-side.left {
+            border: 3px solid #667eea;
+        }
+
+        .duel-side.right {
+            border: 3px solid #764ba2;
+        }
+
+        .side-label {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .duel-side.left .side-label {
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .duel-side.right .side-label {
+            color: #764ba2;
+            border: 2px solid #764ba2;
+        }
+
+        .definition-box {
+            background: white;
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1.6;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e0e0e0;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .option-btn {
+            padding: 15px 10px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            word-wrap: break-word;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .option-btn.selected {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .option-btn.correct {
+            background: #38ef7d;
+            border-color: #38ef7d;
+            color: white;
+        }
+
+        .option-btn.wrong {
+            background: #f45c43;
+            border-color: #f45c43;
+            color: white;
+        }
+
+        .timer-display {
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #667eea;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-display.warning {
+            color: #f45c43;
+            animation: pulse 0.5s infinite;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 100px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-box-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-box-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 30px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .round-feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            font-weight: bold;
+            padding: 40px 60px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: none;
+        }
+
+        .round-feedback.show {
+            display: block;
+            animation: feedback-pop 1.5s ease;
+        }
+
+        .round-feedback.success {
+            color: #38ef7d;
+            border: 4px solid #38ef7d;
+        }
+
+        .round-feedback.failure {
+            color: #f45c43;
+            border: 4px solid #f45c43;
+        }
+
+        @keyframes feedback-pop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            30% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        .game-over-stats {
+            margin: 30px 0;
+        }
+
+        .game-over-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+
+        .game-over-stat-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .game-over-stat-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .new-high-score {
+            background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            font-size: 1.5em;
+            color: #667eea;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .start-screen h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .start-screen p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #666;
+            margin: 15px 0;
+        }
+
+        .start-screen ul {
+            text-align: left;
+            max-width: 600px;
+            margin: 20px auto;
+            line-height: 2;
+        }
+
+        .start-screen li {
+            margin: 10px 0;
+        }
+
+        @media (max-width: 968px) {
+            .split-screen {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .divider {
+                display: none;
+            }
+
+            .timer-display {
+                font-size: 2em;
+            }
+
+            .round-feedback {
+                font-size: 2em;
+                padding: 30px 40px;
+            }
+
+            .duel-side {
+                min-height: 350px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .option-btn {
+                font-size: 0.95em;
+                padding: 12px 8px;
+            }
+
+            .definition-box {
+                font-size: 1em;
+                padding: 20px;
+            }
+
+            .submit-btn {
+                font-size: 1.1em;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">Definition Duel</div>
+        </div>
+
+        <div class="game-content" id="gameContent">
+            <!-- Loading Screen -->
+            <div class="loading-screen" id="loadingScreen">
+                Loading game...
+            </div>
+
+            <!-- Start Screen -->
+            <div class="start-screen" id="startScreen" style="display: none;">
+                <h2>How to Play</h2>
+                <p>A split-screen rapid matching challenge!</p>
+                <ul>
+                    <li>Two definitions appear simultaneously on left and right sides</li>
+                    <li>Each definition has 4 word options below it</li>
+                    <li>You have 12 seconds per round to match BOTH definitions</li>
+                    <li>Select one word for each definition, then click Submit</li>
+                    <li>BOTH must be correct to score points</li>
+                    <li>If one is wrong, no points and move to next round</li>
+                    <li>Build a streak for consecutive perfect rounds</li>
+                    <li>Game ends after 15 rounds or if timer runs out</li>
+                </ul>
+                <button class="btn btn-primary" onclick="game.start()" style="font-size: 1.3em; padding: 15px 40px; margin-top: 20px;">
+                    Start Duel
+                </button>
+            </div>
+
+            <!-- Game Screen -->
+            <div id="gameScreen" style="display: none;">
+                <!-- Timer -->
+                <div class="timer-display" id="timer">12</div>
+
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-box-label">Score</div>
+                        <div class="stat-box-value" id="score">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-label">Round</div>
+                        <div class="stat-box-value" id="round">1/15</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-label">Streak</div>
+                        <div class="stat-box-value" id="streak">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-label">Perfect</div>
+                        <div class="stat-box-value" id="perfect">0</div>
+                    </div>
+                </div>
+
+                <!-- Split Screen -->
+                <div class="split-screen">
+                    <!-- Left Side -->
+                    <div class="duel-side left">
+                        <div class="side-label">Definition A</div>
+                        <div class="definition-box" id="definitionLeft">
+                            Loading...
+                        </div>
+                        <div class="options-grid" id="optionsLeft">
+                            <button class="option-btn" onclick="game.selectOption('left', 0)">Option 1</button>
+                            <button class="option-btn" onclick="game.selectOption('left', 1)">Option 2</button>
+                            <button class="option-btn" onclick="game.selectOption('left', 2)">Option 3</button>
+                            <button class="option-btn" onclick="game.selectOption('left', 3)">Option 4</button>
+                        </div>
+                    </div>
+
+                    <!-- Right Side -->
+                    <div class="duel-side right">
+                        <div class="side-label">Definition B</div>
+                        <div class="definition-box" id="definitionRight">
+                            Loading...
+                        </div>
+                        <div class="options-grid" id="optionsRight">
+                            <button class="option-btn" onclick="game.selectOption('right', 0)">Option 1</button>
+                            <button class="option-btn" onclick="game.selectOption('right', 1)">Option 2</button>
+                            <button class="option-btn" onclick="game.selectOption('right', 2)">Option 3</button>
+                            <button class="option-btn" onclick="game.selectOption('right', 3)">Option 4</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button class="submit-btn" id="submitBtn" onclick="game.submitAnswers()" disabled>
+                    Select Both Answers
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <div class="modal-title">Duel Complete!</div>
+
+            <div id="newHighScoreMessage" style="display: none;">
+                <div class="new-high-score">
+                    New High Score!
+                </div>
+            </div>
+
+            <div class="game-over-stats">
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Final Score</span>
+                    <span class="game-over-stat-value" id="finalScore">0</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Perfect Rounds</span>
+                    <span class="game-over-stat-value" id="finalPerfect">0</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Best Streak</span>
+                    <span class="game-over-stat-value" id="finalBestStreak">0</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Accuracy</span>
+                    <span class="game-over-stat-value" id="finalAccuracy">0%</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">High Score</span>
+                    <span class="game-over-stat-value" id="highScore">0</span>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="game.restart()">Play Again</button>
+                <button class="btn btn-secondary" onclick="window.location.href='../index.html'">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Round Feedback -->
+    <div class="round-feedback" id="roundFeedback"></div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        class DefinitionDuel {
+            constructor() {
+                this.utils = new VocabularyGameUtils();
+                this.score = 0;
+                this.currentRound = 0;
+                this.totalRounds = 15;
+                this.perfectRounds = 0;
+                this.streak = 0;
+                this.bestStreak = 0;
+                this.timeLeft = 12;
+                this.roundTime = 12;
+                this.timerInterval = null;
+                this.isPlaying = false;
+
+                this.leftQuestion = null;
+                this.rightQuestion = null;
+                this.leftSelected = null;
+                this.rightSelected = null;
+
+                this.basePoints = 200;
+            }
+
+            async init() {
+                // Load words
+                await this.utils.loadWords();
+
+                // Hide loading screen, show start screen
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('startScreen').style.display = 'block';
+            }
+
+            start() {
+                // Hide start screen, show game screen
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('gameScreen').style.display = 'block';
+
+                // Reset game state
+                this.score = 0;
+                this.currentRound = 0;
+                this.perfectRounds = 0;
+                this.streak = 0;
+                this.bestStreak = 0;
+                this.isPlaying = true;
+
+                // Update display
+                this.updateDisplay();
+
+                // Start first round
+                this.nextRound();
+            }
+
+            nextRound() {
+                if (!this.isPlaying) return;
+
+                this.currentRound++;
+
+                if (this.currentRound > this.totalRounds) {
+                    this.endGame();
+                    return;
+                }
+
+                // Reset selections
+                this.leftSelected = null;
+                this.rightSelected = null;
+
+                // Reset timer
+                this.timeLeft = this.roundTime;
+                this.startTimer();
+
+                // Get two different questions
+                this.leftQuestion = this.utils.getWordWithOptions();
+
+                // Make sure right question is different from left
+                do {
+                    this.rightQuestion = this.utils.getWordWithOptions();
+                } while (this.rightQuestion.word === this.leftQuestion.word);
+
+                // Update definitions
+                document.getElementById('definitionLeft').textContent = this.leftQuestion.definition;
+                document.getElementById('definitionRight').textContent = this.rightQuestion.definition;
+
+                // Update left options
+                const leftButtons = document.querySelectorAll('#optionsLeft .option-btn');
+                leftButtons.forEach((btn, index) => {
+                    btn.textContent = this.leftQuestion.options[index];
+                    btn.disabled = false;
+                    btn.classList.remove('selected', 'correct', 'wrong');
+                });
+
+                // Update right options
+                const rightButtons = document.querySelectorAll('#optionsRight .option-btn');
+                rightButtons.forEach((btn, index) => {
+                    btn.textContent = this.rightQuestion.options[index];
+                    btn.disabled = false;
+                    btn.classList.remove('selected', 'correct', 'wrong');
+                });
+
+                // Update submit button
+                this.updateSubmitButton();
+
+                // Update display
+                this.updateDisplay();
+            }
+
+            startTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                }
+
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft -= 1;
+                    this.updateTimer();
+
+                    if (this.timeLeft <= 0) {
+                        this.timeExpired();
+                    }
+                }, 1000);
+            }
+
+            updateTimer() {
+                const timerEl = document.getElementById('timer');
+                timerEl.textContent = this.timeLeft;
+
+                // Add warning class if time is low
+                if (this.timeLeft <= 5) {
+                    timerEl.classList.add('warning');
+                } else {
+                    timerEl.classList.remove('warning');
+                }
+            }
+
+            timeExpired() {
+                clearInterval(this.timerInterval);
+
+                // Auto-submit with current selections (likely incomplete)
+                if (this.leftSelected !== null && this.rightSelected !== null) {
+                    this.submitAnswers();
+                } else {
+                    // Show time's up feedback
+                    this.showRoundFeedback(false, "Time's Up!");
+                    this.streak = 0;
+
+                    setTimeout(() => {
+                        this.nextRound();
+                    }, 1500);
+                }
+            }
+
+            selectOption(side, index) {
+                if (!this.isPlaying) return;
+
+                const buttons = document.querySelectorAll(`#options${side.charAt(0).toUpperCase() + side.slice(1)} .option-btn`);
+
+                // Remove previous selection
+                buttons.forEach(btn => btn.classList.remove('selected'));
+
+                // Mark new selection
+                buttons[index].classList.add('selected');
+
+                // Store selection
+                if (side === 'left') {
+                    this.leftSelected = index;
+                } else {
+                    this.rightSelected = index;
+                }
+
+                // Update submit button
+                this.updateSubmitButton();
+            }
+
+            updateSubmitButton() {
+                const submitBtn = document.getElementById('submitBtn');
+
+                if (this.leftSelected !== null && this.rightSelected !== null) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Answers';
+                } else if (this.leftSelected !== null) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Select Answer B';
+                } else if (this.rightSelected !== null) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Select Answer A';
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Select Both Answers';
+                }
+            }
+
+            submitAnswers() {
+                if (!this.isPlaying || this.leftSelected === null || this.rightSelected === null) return;
+
+                // Stop timer
+                clearInterval(this.timerInterval);
+
+                // Check both answers
+                const leftWord = this.leftQuestion.options[this.leftSelected];
+                const rightWord = this.rightQuestion.options[this.rightSelected];
+
+                const leftCorrect = leftWord === this.leftQuestion.word;
+                const rightCorrect = rightWord === this.rightQuestion.word;
+
+                const bothCorrect = leftCorrect && rightCorrect;
+
+                // Disable all buttons
+                document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+
+                // Show feedback on buttons
+                const leftButtons = document.querySelectorAll('#optionsLeft .option-btn');
+                const rightButtons = document.querySelectorAll('#optionsRight .option-btn');
+
+                if (leftCorrect) {
+                    leftButtons[this.leftSelected].classList.add('correct');
+                } else {
+                    leftButtons[this.leftSelected].classList.add('wrong');
+                    // Show correct answer
+                    const correctIndex = this.leftQuestion.options.indexOf(this.leftQuestion.word);
+                    leftButtons[correctIndex].classList.add('correct');
+                }
+
+                if (rightCorrect) {
+                    rightButtons[this.rightSelected].classList.add('correct');
+                } else {
+                    rightButtons[this.rightSelected].classList.add('wrong');
+                    // Show correct answer
+                    const correctIndex = this.rightQuestion.options.indexOf(this.rightQuestion.word);
+                    rightButtons[correctIndex].classList.add('correct');
+                }
+
+                // Update score and streak
+                if (bothCorrect) {
+                    this.perfectRounds++;
+                    this.streak++;
+
+                    if (this.streak > this.bestStreak) {
+                        this.bestStreak = this.streak;
+                    }
+
+                    // Calculate score with streak bonus
+                    const timeBonus = Math.floor(this.timeLeft * 10);
+                    const streakMultiplier = 1 + (this.streak * 0.2);
+                    const points = Math.floor((this.basePoints + timeBonus) * streakMultiplier);
+                    this.score += points;
+
+                    this.showRoundFeedback(true, `Perfect! +${points}`);
+                } else {
+                    this.streak = 0;
+                    this.showRoundFeedback(false, 'Not Both Correct');
+                }
+
+                this.updateDisplay();
+
+                // Move to next round after delay
+                setTimeout(() => {
+                    this.nextRound();
+                }, 1500);
+            }
+
+            showRoundFeedback(success, message) {
+                const feedbackEl = document.getElementById('roundFeedback');
+                feedbackEl.textContent = message;
+                feedbackEl.className = 'round-feedback show ' + (success ? 'success' : 'failure');
+
+                setTimeout(() => {
+                    feedbackEl.classList.remove('show');
+                }, 1500);
+            }
+
+            updateDisplay() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('round').textContent = `${this.currentRound}/${this.totalRounds}`;
+                document.getElementById('streak').textContent = this.streak;
+                document.getElementById('perfect').textContent = this.perfectRounds;
+            }
+
+            endGame() {
+                this.isPlaying = false;
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                }
+
+                // Calculate accuracy
+                const accuracy = this.totalRounds > 0 ?
+                    Math.round((this.perfectRounds / this.totalRounds) * 100) : 0;
+
+                // Save high score
+                const isNewHighScore = this.utils.saveHighScore('definition-duel', this.score);
+                const highScore = this.utils.getHighScore('definition-duel');
+
+                // Show game over modal
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalPerfect').textContent = this.perfectRounds;
+                document.getElementById('finalBestStreak').textContent = this.bestStreak;
+                document.getElementById('finalAccuracy').textContent = accuracy + '%';
+                document.getElementById('highScore').textContent = highScore;
+
+                if (isNewHighScore) {
+                    document.getElementById('newHighScoreMessage').style.display = 'block';
+                } else {
+                    document.getElementById('newHighScoreMessage').style.display = 'none';
+                }
+
+                document.getElementById('gameOverModal').classList.add('active');
+            }
+
+            restart() {
+                // Hide modal
+                document.getElementById('gameOverModal').classList.remove('active');
+
+                // Restart game
+                this.start();
+            }
+        }
+
+        // Initialize game
+        const game = new DefinitionDuel();
+        game.init();
+    </script>
+</body>
+</html>
