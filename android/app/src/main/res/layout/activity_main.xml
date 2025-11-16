@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/md_theme_background">
+
+    <!-- Settings Icon -->
+    <ImageButton
+        android:id="@+id/settingsButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_settings"
+        android:contentDescription="@string/settings"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Score Display -->
+    <TextView
+        android:id="@+id/scoreText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/md_theme_onSurfaceVariant"
+        tools:text="Streak: 5    Words: 10    Accuracy: 80%"
+        app:layout_constraintTop_toTopOf="@id/settingsButton"
+        app:layout_constraintBottom_toBottomOf="@id/settingsButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/settingsButton"
+        android:gravity="center_vertical" />
+
+    <!-- Definition Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/definitionCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="12dp"
+        app:layout_constraintTop_toBottomOf="@id/settingsButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/definitionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp"
+            android:textSize="20sp"
+            android:textColor="@color/md_theme_onSurface"
+            android:lineSpacingExtra="4dp"
+            tools:text="blind by holding a red-hot metal plate before someone's eyes" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Gap Zone (for drag mode) -->
+    <FrameLayout
+        android:id="@+id/gapZone"
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@id/definitionCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/gapText"
+            style="@style/GapZone"
+            android:text="@string/gap_placeholder"
+            android:textColor="@color/md_theme_onSurfaceVariant" />
+
+    </FrameLayout>
+
+    <!-- Word Options Container -->
+    <LinearLayout
+        android:id="@+id/wordOptionsContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@id/gapZone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:gravity="center">
+
+        <!-- Word Option 1 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/wordOption1"
+            style="@style/WordOptionButton"
+            android:layout_width="match_parent"
+            android:layout_marginBottom="12dp"
+            tools:text="abacinate" />
+
+        <!-- Word Option 2 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/wordOption2"
+            style="@style/WordOptionButton"
+            android:layout_width="match_parent"
+            android:layout_marginBottom="12dp"
+            tools:text="reiterate" />
+
+        <!-- Word Option 3 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/wordOption3"
+            style="@style/WordOptionButton"
+            android:layout_width="match_parent"
+            android:layout_marginBottom="12dp"
+            tools:text="illustrate" />
+
+        <!-- Word Option 4 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/wordOption4"
+            style="@style/WordOptionButton"
+            android:layout_width="match_parent"
+            tools:text="hypnotize" />
+
+    </LinearLayout>
+
+    <!-- Result Feedback (Checkmark or X) -->
+    <ImageView
+        android:id="@+id/resultIcon"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:visibility="gone"
+        android:scaleType="fitCenter"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:src="@drawable/ic_correct"
+        tools:visibility="visible" />
+
+    <!-- Loading Indicator -->
+    <ProgressBar
+        android:id="@+id/loadingIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

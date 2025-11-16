@@ -1,0 +1,12 @@
+## This file must *NOT* be checked into Version Control Systems,
+# as it contains information specific to your local configuration.
+#
+# Location of the Android SDK. This should be set to your local Android SDK path.
+# For example:
+# sdk.dir=/Users/username/Library/Android/sdk
+# OR
+# sdk.dir=/home/username/Android/Sdk
+# OR (Windows)
+# sdk.dir=C\:\\Users\\username\\AppData\\Local\\Android\\Sdk
+
+sdk.dir=YOUR_ANDROID_SDK_PATH_HERE
