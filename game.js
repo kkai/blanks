@@ -239,5 +239,5 @@ class BlanksGame {
 
 // Initialize game when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    const game = new BlanksGame();
+    window.game = new BlanksGame();
 });
