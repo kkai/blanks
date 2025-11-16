@@ -8,14 +8,19 @@
 
 import UIKit
 
-class WordView: UIView {
-    @IBOutlet weak var label: UILabel!
+final class WordView: UIView {
+    @IBOutlet private weak var label: UILabel!
+
+    var word: String {
+        get { label.text ?? "" }
+        set { label.text = newValue }
+    }
 
     func addWord(_ word: String) {
-        label.text = word
+        self.word = word
     }
 
     func getWord() -> String {
-        return label.text ?? ""
+        return word
     }
 }
