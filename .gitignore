@@ -19,3 +19,21 @@ DerivedData
 
 #CocoaPods
 Pods
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+.server.pid
+
+# Temporary test files
+test-simple.js
+test-basic.js
+test-domcontentloaded.js
+test.html
+words-test.json
