@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blanks - Vocabulary Learning Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Blanks</h1>
+            <div class="score-board">
+                <span id="score">streak: 0 | word count: 0 | correct: 0%</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="game-area">
+                <!-- Drop zone for draggable words -->
+                <div class="drop-zone" id="dropZone">
+                    <span class="gap-label">Drag or tap the correct word</span>
+                </div>
+
+                <!-- Definition display -->
+                <div class="definition-container">
+                    <div class="definition" id="definition">
+                        Loading...
+                    </div>
+                </div>
+
+                <!-- Word options -->
+                <div class="word-options" id="wordOptions">
+                    <button class="word-button" data-index="0" draggable="true">
+                        <span class="word-text"></span>
+                    </button>
+                    <button class="word-button" data-index="1" draggable="true">
+                        <span class="word-text"></span>
+                    </button>
+                    <button class="word-button" data-index="2" draggable="true">
+                        <span class="word-text"></span>
+                    </button>
+                    <button class="word-button" data-index="3" draggable="true">
+                        <span class="word-text"></span>
+                    </button>
+                </div>
+
+                <!-- Feedback overlay -->
+                <div class="feedback" id="feedback">
+                    <img id="feedbackImage" src="" alt="feedback">
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="controls">
+                <label class="toggle">
+                    <input type="checkbox" id="tapMode">
+                    <span>Tap Mode (disable drag)</span>
+                </label>
+            </div>
+        </footer>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
