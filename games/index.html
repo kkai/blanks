@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Game Collection</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        body {
+            padding: 40px 20px;
+        }
+
+        .main-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .main-title {
+            font-size: 3.5em;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .main-subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .word-count {
+            font-size: 1.1em;
+            background: rgba(255, 255, 255, 0.2);
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+
+        .games-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            padding: 20px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .game-number {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .game-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .game-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .game-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-easy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-hard {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-type {
+            background: #e7f3ff;
+            color: #004085;
+        }
+
+        .play-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .back-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .back-home:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5em;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
+
+            .game-card {
+                padding: 20px;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.5em;
+            padding: 50px;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-home">← Original Game</a>
+
+    <div class="main-header">
+        <div class="main-title">🎮 Vocabulary Game Collection</div>
+        <div class="main-subtitle">15 Fun Ways to Master 8,109 Vocabulary Words</div>
+        <div class="word-count">📚 8,109 Words • 15 Games • Endless Learning</div>
+    </div>
+
+    <div class="games-container">
+        <div class="games-grid" id="gamesGrid">
+            <div class="loading">Loading games...</div>
+        </div>
+    </div>
+
+    <script>
+        const games = [
+            {
+                number: 1,
+                icon: "💧",
+                title: "Word Waterfall",
+                description: "Type the correct word before definitions cascade off the screen! Test your spelling and reaction time.",
+                difficulty: "medium",
+                type: "Speed Typing",
+                file: "word-waterfall.html"
+            },
+            {
+                number: 2,
+                icon: "⭐",
+                title: "Memory Constellation",
+                description: "Match words with definitions in this classic memory card game. Create beautiful star patterns!",
+                difficulty: "easy",
+                type: "Memory",
+                file: "memory-constellation.html"
+            },
+            {
+                number: 3,
+                icon: "🔍",
+                title: "Definition Detective",
+                description: "Deduce the correct word from partially blanked definitions. Use context clues to solve the mystery!",
+                difficulty: "medium",
+                type: "Deduction",
+                file: "definition-detective.html"
+            },
+            {
+                number: 4,
+                icon: "🔗",
+                title: "Word Chain Reaction",
+                description: "Connect words that share letters to build chains. Longer chains earn bigger points!",
+                difficulty: "hard",
+                type: "Strategy",
+                file: "word-chain-reaction.html"
+            },
+            {
+                number: 5,
+                icon: "⚡",
+                title: "Speed Synonym Swap",
+                description: "Race against time! Answer correctly to add seconds to the clock. Build combos for massive scores!",
+                difficulty: "easy",
+                type: "Speed Quiz",
+                file: "speed-synonym-swap.html"
+            },
+            {
+                number: 6,
+                icon: "🚢",
+                title: "Vocabulary Voyage",
+                description: "Navigate your ship through 10 waypoints. Answer questions to unlock the path to victory!",
+                difficulty: "medium",
+                type: "Adventure",
+                file: "vocabulary-voyage.html"
+            },
+            {
+                number: 7,
+                icon: "🔨",
+                title: "Word Constructor",
+                description: "Unscramble letters to build the correct word. Drag or click letters into the right order!",
+                difficulty: "easy",
+                type: "Puzzle",
+                file: "word-constructor.html"
+            },
+            {
+                number: 8,
+                icon: "⚔️",
+                title: "Definition Duel",
+                description: "Split-screen challenge! Match two definitions simultaneously before time runs out!",
+                difficulty: "medium",
+                type: "Dual Quiz",
+                file: "definition-duel.html"
+            },
+            {
+                number: 9,
+                icon: "🌻",
+                title: "Vocabulary Garden",
+                description: "Plant word seeds in the correct category gardens. Watch flowers bloom with each correct placement!",
+                difficulty: "hard",
+                type: "Categorization",
+                file: "vocabulary-garden.html"
+            },
+            {
+                number: 10,
+                icon: "🔊",
+                title: "Echo Chamber",
+                description: "Remember definitions as they fade away! Test your memory before the echo disappears.",
+                difficulty: "medium",
+                type: "Memory Challenge",
+                file: "echo-chamber.html"
+            },
+            {
+                number: 11,
+                icon: "🧗",
+                title: "Word Ladder Climb",
+                description: "Climb to the top by answering correctly! Wrong answers make you slip down the ladder.",
+                difficulty: "easy",
+                type: "Progressive Quiz",
+                file: "word-ladder-climb.html"
+            },
+            {
+                number: 12,
+                icon: "📝",
+                title: "Crossword Quickfire",
+                description: "Solve a mini crossword puzzle with vocabulary clues. Fill the grid to complete the challenge!",
+                difficulty: "hard",
+                type: "Crossword",
+                file: "crossword-quickfire.html"
+            },
+            {
+                number: 13,
+                icon: "✓✗",
+                title: "True or False Cascade",
+                description: "Judge if word-definition pairs are correct or wrong! Build streaks for bonus points.",
+                difficulty: "easy",
+                type: "Binary Choice",
+                file: "true-or-false-cascade.html"
+            },
+            {
+                number: 14,
+                icon: "💰",
+                title: "Word Auction",
+                description: "Bid virtual currency on words! Balance risk and reward to maximize your profit.",
+                difficulty: "medium",
+                type: "Strategy",
+                file: "word-auction.html"
+            },
+            {
+                number: 15,
+                icon: "⏱️",
+                title: "Timeline Challenge",
+                description: "Match 6 words to definitions in 60 seconds! Build combos for massive multipliers!",
+                difficulty: "medium",
+                type: "Rapid Matching",
+                file: "timeline-challenge.html"
+            }
+        ];
+
+        function renderGames() {
+            const grid = document.getElementById('gamesGrid');
+            grid.innerHTML = games.map(game => `
+                <div class="game-card" onclick="playGame('${game.file}')">
+                    <div class="game-number">${game.number}</div>
+                    <div class="game-icon">${game.icon}</div>
+                    <div class="game-title">${game.title}</div>
+                    <div class="game-description">${game.description}</div>
+                    <div class="game-meta">
+                        <span class="badge badge-${game.difficulty}">${game.difficulty.toUpperCase()}</span>
+                        <span class="badge badge-type">${game.type}</span>
+                    </div>
+                    <button class="play-btn" onclick="playGame('${game.file}'); event.stopPropagation();">
+                        Play Now →
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function playGame(filename) {
+            window.location.href = filename;
+        }
+
+        // Render games on load
+        renderGames();
+    </script>
+</body>
+</html>

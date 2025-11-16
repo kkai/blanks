@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Voyage - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        .voyage-container {
+            position: relative;
+            min-height: 600px;
+            padding: 40px 20px;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+            border-radius: 15px;
+        }
+
+        /* Path styling */
+        .voyage-path {
+            position: relative;
+            width: 100%;
+            height: 500px;
+        }
+
+        /* Waypoint nodes */
+        .waypoint {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            z-index: 2;
+        }
+
+        .waypoint.locked {
+            background: #ccc;
+            color: #888;
+            cursor: not-allowed;
+            border: 4px solid #999;
+        }
+
+        .waypoint.unlocked {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 4px solid #ffd700;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .waypoint.completed {
+            background: var(--success-color);
+            color: white;
+            border: 4px solid #2ecc71;
+        }
+
+        .waypoint.current {
+            animation: pulse-current 1s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            }
+        }
+
+        @keyframes pulse-current {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+        }
+
+        /* Path lines connecting waypoints */
+        .path-line {
+            position: absolute;
+            height: 4px;
+            background: #ddd;
+            transform-origin: left center;
+            z-index: 1;
+        }
+
+        .path-line.active {
+            background: linear-gradient(90deg, var(--success-color) 0%, #2ecc71 100%);
+        }
+
+        /* Ship icon */
+        .ship {
+            position: absolute;
+            font-size: 3em;
+            transition: all 0.8s ease-in-out;
+            z-index: 3;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        /* Treasure at the end */
+        .treasure {
+            position: absolute;
+            font-size: 3em;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        /* Question modal */
+        .question-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .question-modal.active {
+            display: flex;
+        }
+
+        .question-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: modal-slide-in 0.3s ease;
+        }
+
+        @keyframes modal-slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .waypoint-number {
+            font-size: 1.2em;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .question-definition {
+            font-size: 1.5em;
+            color: var(--text-color);
+            line-height: 1.6;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-light);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .answer-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .answer-option {
+            padding: 20px;
+            font-size: 1.2em;
+            font-weight: 600;
+            background: white;
+            color: var(--primary-color);
+            border: 3px solid var(--primary-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .answer-option:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .answer-option:disabled {
+            cursor: not-allowed;
+        }
+
+        .answer-option.correct {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .answer-option.wrong {
+            background: var(--error-color);
+            border-color: var(--error-color);
+            color: white;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .feedback-message {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-top: 20px;
+            min-height: 30px;
+        }
+
+        .feedback-message.correct {
+            color: var(--success-color);
+        }
+
+        .feedback-message.wrong {
+            color: var(--error-color);
+        }
+
+        .continue-btn {
+            display: none;
+            margin: 20px auto 0;
+            padding: 15px 40px;
+            font-size: 1.1em;
+        }
+
+        .continue-btn.show {
+            display: block;
+        }
+
+        /* Victory modal */
+        .victory-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .victory-modal.active {
+            display: flex;
+        }
+
+        .victory-content {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: victory-bounce 0.6s ease;
+        }
+
+        @keyframes victory-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .victory-title {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .victory-icon {
+            font-size: 5em;
+            margin: 20px 0;
+            animation: rotate-treasure 2s ease-in-out infinite;
+        }
+
+        @keyframes rotate-treasure {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+
+        .victory-stats {
+            font-size: 1.3em;
+            color: var(--text-color);
+            margin: 20px 0;
+        }
+
+        .victory-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .instructions h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .instructions p {
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .voyage-path {
+                height: 700px;
+            }
+
+            .waypoint {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2em;
+            }
+
+            .ship {
+                font-size: 2.5em;
+            }
+
+            .answer-options {
+                grid-template-columns: 1fr;
+            }
+
+            .question-content {
+                padding: 30px 20px;
+            }
+
+            .question-definition {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">🚢 Vocabulary Voyage</div>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Waypoint</span>
+                    <span class="stat-value" id="waypoint">1/10</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Attempts</span>
+                    <span class="stat-value" id="attempts">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <div class="instructions">
+                <h3>How to Play:</h3>
+                <p>Navigate your ship through 10 waypoints by answering vocabulary questions correctly. Click on the glowing waypoint to answer its question. Correct answers unlock the next waypoint and move your ship forward. Wrong answers let you retry. Reach the treasure to win!</p>
+            </div>
+
+            <div class="voyage-container">
+                <div class="voyage-path" id="voyagePath">
+                    <!-- Waypoints and ship will be dynamically created here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Modal -->
+    <div class="question-modal" id="questionModal">
+        <div class="question-content">
+            <div class="question-header">
+                <div class="waypoint-number" id="waypointNumber">Waypoint 1</div>
+                <div class="question-definition" id="questionDefinition"></div>
+            </div>
+            <div class="answer-options" id="answerOptions"></div>
+            <div class="feedback-message" id="feedbackMessage"></div>
+            <button class="btn btn-primary continue-btn" id="continueBtn">Continue Voyage</button>
+        </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div class="victory-modal" id="victoryModal">
+        <div class="victory-content">
+            <div class="victory-title">Victory!</div>
+            <div class="victory-icon">🏆</div>
+            <div class="victory-stats">
+                <p><strong>Final Score:</strong> <span id="finalScore">0</span></p>
+                <p><strong>Total Attempts:</strong> <span id="totalAttempts">0</span></p>
+                <p><strong>Accuracy:</strong> <span id="accuracy">100%</span></p>
+            </div>
+            <div class="victory-buttons">
+                <button class="btn btn-primary" onclick="location.reload()">Play Again</button>
+                <button class="btn btn-secondary" onclick="location.href='../index.html'">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        // Game state
+        const gameState = {
+            currentWaypoint: 0,
+            score: 0,
+            attempts: 0,
+            questions: [],
+            waypointPositions: []
+        };
+
+        // Initialize game utilities
+        const gameUtils = new VocabularyGameUtils();
+
+        // Waypoint positions (x, y coordinates as percentages)
+        const waypointCoordinates = [
+            { x: 5, y: 80 },    // Waypoint 1 - Start (bottom left)
+            { x: 20, y: 50 },   // Waypoint 2
+            { x: 15, y: 20 },   // Waypoint 3
+            { x: 30, y: 10 },   // Waypoint 4
+            { x: 45, y: 25 },   // Waypoint 5
+            { x: 55, y: 50 },   // Waypoint 6
+            { x: 50, y: 75 },   // Waypoint 7
+            { x: 65, y: 60 },   // Waypoint 8
+            { x: 80, y: 40 },   // Waypoint 9
+            { x: 90, y: 20 }    // Waypoint 10 - End (top right)
+        ];
+
+        // Initialize the game
+        async function initGame() {
+            await gameUtils.loadWords();
+            createWaypoints();
+            createPathLines();
+            createShip();
+            createTreasure();
+            generateQuestions();
+            updateUI();
+        }
+
+        // Create waypoint nodes
+        function createWaypoints() {
+            const pathContainer = document.getElementById('voyagePath');
+
+            waypointCoordinates.forEach((coord, index) => {
+                const waypoint = document.createElement('div');
+                waypoint.className = `waypoint ${index === 0 ? 'unlocked current' : 'locked'}`;
+                waypoint.style.left = `${coord.x}%`;
+                waypoint.style.top = `${coord.y}%`;
+                waypoint.textContent = index + 1;
+                waypoint.id = `waypoint-${index}`;
+
+                waypoint.addEventListener('click', () => handleWaypointClick(index));
+
+                pathContainer.appendChild(waypoint);
+                gameState.waypointPositions.push(coord);
+            });
+        }
+
+        // Create path lines connecting waypoints
+        function createPathLines() {
+            const pathContainer = document.getElementById('voyagePath');
+
+            for (let i = 0; i < waypointCoordinates.length - 1; i++) {
+                const start = waypointCoordinates[i];
+                const end = waypointCoordinates[i + 1];
+
+                const line = document.createElement('div');
+                line.className = 'path-line';
+                line.id = `line-${i}`;
+
+                // Calculate line position and angle
+                const dx = end.x - start.x;
+                const dy = end.y - start.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+                line.style.left = `${start.x}%`;
+                line.style.top = `${start.y}%`;
+                line.style.width = `${length}%`;
+                line.style.transform = `rotate(${angle}deg)`;
+
+                pathContainer.appendChild(line);
+            }
+        }
+
+        // Create ship element
+        function createShip() {
+            const pathContainer = document.getElementById('voyagePath');
+            const ship = document.createElement('div');
+            ship.className = 'ship';
+            ship.id = 'ship';
+            ship.textContent = '🚢';
+
+            // Position ship at first waypoint
+            const pos = waypointCoordinates[0];
+            ship.style.left = `${pos.x}%`;
+            ship.style.top = `${pos.y}%`;
+            ship.style.transform = 'translate(-50%, -50%)';
+
+            pathContainer.appendChild(ship);
+        }
+
+        // Create treasure at the end
+        function createTreasure() {
+            const pathContainer = document.getElementById('voyagePath');
+            const treasure = document.createElement('div');
+            treasure.className = 'treasure';
+            treasure.textContent = '🏆';
+
+            const pos = waypointCoordinates[waypointCoordinates.length - 1];
+            treasure.style.left = `${pos.x + 8}%`;
+            treasure.style.top = `${pos.y - 5}%`;
+
+            pathContainer.appendChild(treasure);
+        }
+
+        // Generate questions for all waypoints
+        function generateQuestions() {
+            for (let i = 0; i < 10; i++) {
+                const question = gameUtils.getWordWithOptions();
+                gameState.questions.push(question);
+            }
+        }
+
+        // Handle waypoint click
+        function handleWaypointClick(index) {
+            const waypoint = document.getElementById(`waypoint-${index}`);
+
+            // Only allow clicking on current unlocked waypoint
+            if (index !== gameState.currentWaypoint) {
+                return;
+            }
+
+            if (waypoint.classList.contains('unlocked')) {
+                showQuestion(index);
+            }
+        }
+
+        // Show question modal
+        function showQuestion(index) {
+            const modal = document.getElementById('questionModal');
+            const waypointNumber = document.getElementById('waypointNumber');
+            const questionDef = document.getElementById('questionDefinition');
+            const optionsContainer = document.getElementById('answerOptions');
+            const feedbackMsg = document.getElementById('feedbackMessage');
+            const continueBtn = document.getElementById('continueBtn');
+
+            const question = gameState.questions[index];
+
+            waypointNumber.textContent = `Waypoint ${index + 1}`;
+            questionDef.textContent = question.definition;
+
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            feedbackMsg.textContent = '';
+            feedbackMsg.className = 'feedback-message';
+            continueBtn.classList.remove('show');
+
+            // Create answer options
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'answer-option';
+                button.textContent = option;
+                button.addEventListener('click', () => handleAnswer(option, question.word, button));
+                optionsContainer.appendChild(button);
+            });
+
+            modal.classList.add('active');
+        }
+
+        // Handle answer selection
+        function handleAnswer(selectedAnswer, correctAnswer, button) {
+            const optionsContainer = document.getElementById('answerOptions');
+            const feedbackMsg = document.getElementById('feedbackMessage');
+            const continueBtn = document.getElementById('continueBtn');
+            const allButtons = optionsContainer.querySelectorAll('.answer-option');
+
+            // Disable all buttons
+            allButtons.forEach(btn => btn.disabled = true);
+
+            gameState.attempts++;
+
+            if (selectedAnswer === correctAnswer) {
+                // Correct answer
+                button.classList.add('correct');
+                feedbackMsg.textContent = '🎉 Correct! Well done!';
+                feedbackMsg.className = 'feedback-message correct';
+
+                // Award points (bonus for fewer attempts)
+                const points = Math.max(100 - (gameState.attempts - gameState.currentWaypoint - 1) * 20, 50);
+                gameState.score += points;
+
+                // Show continue button after a delay
+                setTimeout(() => {
+                    continueBtn.classList.add('show');
+                    continueBtn.onclick = () => {
+                        completeWaypoint();
+                        closeQuestionModal();
+                    };
+                }, 1000);
+            } else {
+                // Wrong answer
+                button.classList.add('wrong');
+                feedbackMsg.textContent = '❌ Try again!';
+                feedbackMsg.className = 'feedback-message wrong';
+
+                // Re-enable buttons after animation
+                setTimeout(() => {
+                    allButtons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove('wrong');
+                    });
+                }, 1000);
+            }
+
+            updateUI();
+        }
+
+        // Complete current waypoint and move to next
+        function completeWaypoint() {
+            const currentWaypoint = document.getElementById(`waypoint-${gameState.currentWaypoint}`);
+            currentWaypoint.classList.remove('unlocked', 'current');
+            currentWaypoint.classList.add('completed');
+
+            // Activate path line
+            if (gameState.currentWaypoint < 9) {
+                const line = document.getElementById(`line-${gameState.currentWaypoint}`);
+                line.classList.add('active');
+            }
+
+            // Move to next waypoint
+            gameState.currentWaypoint++;
+
+            // Move ship
+            moveShip();
+
+            // Check if game is complete
+            if (gameState.currentWaypoint >= 10) {
+                setTimeout(() => {
+                    showVictory();
+                }, 1000);
+            } else {
+                // Unlock next waypoint
+                const nextWaypoint = document.getElementById(`waypoint-${gameState.currentWaypoint}`);
+                nextWaypoint.classList.remove('locked');
+                nextWaypoint.classList.add('unlocked', 'current');
+            }
+
+            updateUI();
+        }
+
+        // Move ship to current waypoint
+        function moveShip() {
+            const ship = document.getElementById('ship');
+            const pos = waypointCoordinates[gameState.currentWaypoint];
+
+            ship.style.left = `${pos.x}%`;
+            ship.style.top = `${pos.y}%`;
+        }
+
+        // Close question modal
+        function closeQuestionModal() {
+            const modal = document.getElementById('questionModal');
+            modal.classList.remove('active');
+        }
+
+        // Show victory modal
+        function showVictory() {
+            const modal = document.getElementById('victoryModal');
+            const finalScore = document.getElementById('finalScore');
+            const totalAttempts = document.getElementById('totalAttempts');
+            const accuracy = document.getElementById('accuracy');
+
+            finalScore.textContent = gameState.score;
+            totalAttempts.textContent = gameState.attempts;
+
+            const accuracyPercent = Math.round((10 / gameState.attempts) * 100);
+            accuracy.textContent = `${accuracyPercent}%`;
+
+            // Save high score
+            const isNewHighScore = gameUtils.saveHighScore('vocabulary-voyage', gameState.score);
+            if (isNewHighScore) {
+                const victoryTitle = modal.querySelector('.victory-title');
+                victoryTitle.textContent = '🎊 New High Score! 🎊';
+            }
+
+            modal.classList.add('active');
+        }
+
+        // Update UI elements
+        function updateUI() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('waypoint').textContent = `${gameState.currentWaypoint + 1}/10`;
+            document.getElementById('attempts').textContent = gameState.attempts;
+        }
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>

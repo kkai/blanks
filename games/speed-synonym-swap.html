@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Synonym Swap - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        /* Game-specific styles */
+        .definition-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.3em;
+            line-height: 1.6;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .option-btn {
+            padding: 20px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            border-color: #764ba2;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .option-btn.correct {
+            background: #38ef7d;
+            border-color: #38ef7d;
+            color: white;
+        }
+
+        .option-btn.wrong {
+            background: #f45c43;
+            border-color: #f45c43;
+            color: white;
+        }
+
+        .timer-display {
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #667eea;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-display.warning {
+            color: #f45c43;
+            animation: pulse 0.5s infinite;
+        }
+
+        .timer-display.bonus {
+            animation: bonus-flash 0.5s ease;
+        }
+
+        @keyframes bonus-flash {
+            0%, 100% { transform: scale(1); color: #667eea; }
+            50% { transform: scale(1.2); color: #38ef7d; }
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-box-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-box-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .combo-badge {
+            display: inline-block;
+            background: #38ef7d;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .game-over-stats {
+            margin: 30px 0;
+        }
+
+        .game-over-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+
+        .game-over-stat-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .game-over-stat-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .new-high-score {
+            background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .definition-box {
+                font-size: 1.1em;
+                padding: 20px;
+            }
+
+            .timer-display {
+                font-size: 2em;
+            }
+
+            .option-btn {
+                font-size: 1em;
+                padding: 15px;
+            }
+        }
+
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            font-size: 1.5em;
+            color: #667eea;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .start-screen h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .start-screen p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #666;
+            margin: 15px 0;
+        }
+
+        .start-screen ul {
+            text-align: left;
+            max-width: 500px;
+            margin: 20px auto;
+            line-height: 2;
+        }
+
+        .start-screen li {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">Speed Synonym Swap</div>
+        </div>
+
+        <div class="game-content" id="gameContent">
+            <!-- Loading Screen -->
+            <div class="loading-screen" id="loadingScreen">
+                Loading game...
+            </div>
+
+            <!-- Start Screen -->
+            <div class="start-screen" id="startScreen" style="display: none;">
+                <h2>How to Play</h2>
+                <ul>
+                    <li>You have 30 seconds to start</li>
+                    <li>Match the correct word to the definition</li>
+                    <li>Correct answers add +3 seconds</li>
+                    <li>Wrong answers don't add time</li>
+                    <li>Build combos for score multipliers</li>
+                    <li>Game ends when time runs out</li>
+                </ul>
+                <button class="btn btn-primary" onclick="game.start()" style="font-size: 1.3em; padding: 15px 40px; margin-top: 20px;">
+                    Start Game
+                </button>
+            </div>
+
+            <!-- Game Screen -->
+            <div id="gameScreen" style="display: none;">
+                <!-- Timer -->
+                <div class="timer-display" id="timer">30</div>
+
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-box-label">Score</div>
+                        <div class="stat-box-value" id="score">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-label">Correct</div>
+                        <div class="stat-box-value" id="correct">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-label">Combo</div>
+                        <div class="stat-box-value" id="combo">0x</div>
+                    </div>
+                </div>
+
+                <!-- Definition -->
+                <div class="definition-box" id="definition">
+                    Loading...
+                </div>
+
+                <!-- Options -->
+                <div class="options-grid" id="optionsGrid">
+                    <button class="option-btn" onclick="game.checkAnswer(0)">Option 1</button>
+                    <button class="option-btn" onclick="game.checkAnswer(1)">Option 2</button>
+                    <button class="option-btn" onclick="game.checkAnswer(2)">Option 3</button>
+                    <button class="option-btn" onclick="game.checkAnswer(3)">Option 4</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <div class="modal-title">Game Over!</div>
+
+            <div id="newHighScoreMessage" style="display: none;">
+                <div class="new-high-score">
+                    New High Score!
+                </div>
+            </div>
+
+            <div class="game-over-stats">
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Final Score</span>
+                    <span class="game-over-stat-value" id="finalScore">0</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Words Correct</span>
+                    <span class="game-over-stat-value" id="finalCorrect">0</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Best Combo</span>
+                    <span class="game-over-stat-value" id="finalBestCombo">0x</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">High Score</span>
+                    <span class="game-over-stat-value" id="highScore">0</span>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="game.restart()">Play Again</button>
+                <button class="btn btn-secondary" onclick="window.location.href='../index.html'">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Combo Display -->
+    <div class="combo-display" id="comboDisplay"></div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        class SpeedSynonymSwap {
+            constructor() {
+                this.utils = new VocabularyGameUtils();
+                this.score = 0;
+                this.correctCount = 0;
+                this.combo = 0;
+                this.bestCombo = 0;
+                this.timeLeft = 30;
+                this.timerInterval = null;
+                this.isPlaying = false;
+                this.currentQuestion = null;
+                this.basePoints = 100;
+            }
+
+            async init() {
+                // Load words
+                await this.utils.loadWords();
+
+                // Hide loading screen, show start screen
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('startScreen').style.display = 'block';
+            }
+
+            start() {
+                // Hide start screen, show game screen
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('gameScreen').style.display = 'block';
+
+                // Reset game state
+                this.score = 0;
+                this.correctCount = 0;
+                this.combo = 0;
+                this.bestCombo = 0;
+                this.timeLeft = 30;
+                this.isPlaying = true;
+
+                // Update display
+                this.updateDisplay();
+
+                // Start timer
+                this.startTimer();
+
+                // Load first question
+                this.nextQuestion();
+            }
+
+            startTimer() {
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft -= 1;
+                    this.updateTimer();
+
+                    if (this.timeLeft <= 0) {
+                        this.endGame();
+                    }
+                }, 1000);
+            }
+
+            updateTimer() {
+                const timerEl = document.getElementById('timer');
+                timerEl.textContent = this.timeLeft;
+
+                // Add warning class if time is low
+                if (this.timeLeft <= 10) {
+                    timerEl.classList.add('warning');
+                } else {
+                    timerEl.classList.remove('warning');
+                }
+            }
+
+            addTime(seconds) {
+                this.timeLeft += seconds;
+                const timerEl = document.getElementById('timer');
+
+                // Flash timer to show bonus
+                timerEl.classList.add('bonus');
+                setTimeout(() => {
+                    timerEl.classList.remove('bonus');
+                }, 500);
+
+                this.updateTimer();
+            }
+
+            nextQuestion() {
+                if (!this.isPlaying) return;
+
+                // Get a new question with options
+                this.currentQuestion = this.utils.getWordWithOptions();
+
+                // Update definition
+                document.getElementById('definition').textContent = this.currentQuestion.definition;
+
+                // Update options
+                const buttons = document.querySelectorAll('.option-btn');
+                buttons.forEach((btn, index) => {
+                    btn.textContent = this.currentQuestion.options[index];
+                    btn.disabled = false;
+                    btn.classList.remove('correct', 'wrong');
+                });
+            }
+
+            checkAnswer(index) {
+                if (!this.isPlaying) return;
+
+                const selectedWord = this.currentQuestion.options[index];
+                const isCorrect = selectedWord === this.currentQuestion.word;
+                const buttons = document.querySelectorAll('.option-btn');
+
+                // Disable all buttons temporarily
+                buttons.forEach(btn => btn.disabled = true);
+
+                if (isCorrect) {
+                    // Correct answer
+                    buttons[index].classList.add('correct');
+                    this.correctCount++;
+                    this.combo++;
+
+                    // Update best combo
+                    if (this.combo > this.bestCombo) {
+                        this.bestCombo = this.combo;
+                    }
+
+                    // Calculate score with combo multiplier
+                    const points = this.utils.calculateScore(this.basePoints, this.combo);
+                    this.score += points;
+
+                    // Add time bonus
+                    this.addTime(3);
+
+                    // Show combo if > 1
+                    if (this.combo > 1) {
+                        this.showCombo();
+                    }
+
+                    // Wait a bit then load next question
+                    setTimeout(() => {
+                        this.nextQuestion();
+                    }, 500);
+                } else {
+                    // Wrong answer
+                    buttons[index].classList.add('wrong');
+
+                    // Show correct answer
+                    const correctIndex = this.currentQuestion.options.indexOf(this.currentQuestion.word);
+                    buttons[correctIndex].classList.add('correct');
+
+                    // Reset combo
+                    this.combo = 0;
+
+                    // Wait a bit then load next question
+                    setTimeout(() => {
+                        this.nextQuestion();
+                    }, 1000);
+                }
+
+                this.updateDisplay();
+            }
+
+            showCombo() {
+                const comboEl = document.getElementById('comboDisplay');
+                const multiplier = Math.min(1 + (this.combo * 0.5), 5).toFixed(1);
+                comboEl.textContent = `${this.combo}x COMBO! (${multiplier}x points)`;
+                comboEl.classList.add('show');
+
+                setTimeout(() => {
+                    comboEl.classList.remove('show');
+                }, 1000);
+            }
+
+            updateDisplay() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('correct').textContent = this.correctCount;
+                document.getElementById('combo').textContent = this.combo + 'x';
+            }
+
+            endGame() {
+                this.isPlaying = false;
+                clearInterval(this.timerInterval);
+
+                // Save high score
+                const isNewHighScore = this.utils.saveHighScore('speed-synonym-swap', this.score);
+                const highScore = this.utils.getHighScore('speed-synonym-swap');
+
+                // Show game over modal
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalCorrect').textContent = this.correctCount;
+                document.getElementById('finalBestCombo').textContent = this.bestCombo + 'x';
+                document.getElementById('highScore').textContent = highScore;
+
+                if (isNewHighScore) {
+                    document.getElementById('newHighScoreMessage').style.display = 'block';
+                } else {
+                    document.getElementById('newHighScoreMessage').style.display = 'none';
+                }
+
+                document.getElementById('gameOverModal').classList.add('active');
+            }
+
+            restart() {
+                // Hide modal
+                document.getElementById('gameOverModal').classList.remove('active');
+
+                // Restart game
+                this.start();
+            }
+        }
+
+        // Initialize game
+        const game = new SpeedSynonymSwap();
+        game.init();
+    </script>
+</body>
+</html>

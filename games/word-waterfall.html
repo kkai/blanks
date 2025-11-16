@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Waterfall - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        /* Game-specific styles */
+        .game-area {
+            position: relative;
+            height: 500px;
+            background: linear-gradient(to bottom, #e0e7ff 0%, #f0f4ff 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid #667eea;
+            margin: 20px 0;
+        }
+
+        .falling-block {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 80%;
+            text-align: center;
+            transition: all 0.05s linear;
+        }
+
+        .falling-block.active {
+            animation: none;
+        }
+
+        .block-definition {
+            font-size: 1.1em;
+            line-height: 1.5;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .input-area {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .word-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 20px;
+            font-size: 1.3em;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .word-input:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .word-input.correct {
+            border-color: #38ef7d;
+            background: #e8fdf1;
+        }
+
+        .word-input.wrong {
+            border-color: #f45c43;
+            background: #ffe8e5;
+        }
+
+        .lives-display {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .life-heart {
+            font-size: 2em;
+            color: #f45c43;
+            animation: heartbeat 1.5s infinite;
+        }
+
+        .life-heart.lost {
+            opacity: 0.2;
+            animation: none;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .stats-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .speed-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .bonus-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #38ef7d;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .bonus-popup.show {
+            animation: bonus-pop 1s ease;
+        }
+
+        @keyframes bonus-pop {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .start-screen,
+        .game-over-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .start-title {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .instructions {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #666;
+            margin: 20px 0;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .instructions li {
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        .game-over-title {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 2em;
+            color: #764ba2;
+            margin: 20px 0;
+        }
+
+        .high-score-badge {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                height: 400px;
+            }
+
+            .falling-block {
+                padding: 15px;
+                max-width: 90%;
+            }
+
+            .block-definition {
+                font-size: 1em;
+            }
+
+            .word-input {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">Word Waterfall</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Correct</span>
+                    <span class="stat-value" id="correct">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">High Score</span>
+                    <span class="stat-value" id="highScore">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <!-- Start Screen -->
+            <div id="startScreen" class="start-screen">
+                <h2 class="start-title">Word Waterfall</h2>
+                <ul class="instructions">
+                    <li>Definitions fall from the top of the screen like Tetris blocks</li>
+                    <li>Type the correct word before the block reaches the bottom</li>
+                    <li>Faster typing earns bonus points</li>
+                    <li>Speed increases every 5 correct answers</li>
+                    <li>You have 3 lives - don't let blocks reach the bottom!</li>
+                </ul>
+                <button class="btn btn-primary" onclick="game.startGame()">Start Game</button>
+            </div>
+
+            <!-- Game Screen -->
+            <div id="gameScreen" style="display: none;">
+                <div class="lives-display" id="livesDisplay"></div>
+
+                <div class="game-area" id="gameArea">
+                    <div class="speed-indicator" id="speedIndicator">Speed: 1x</div>
+                </div>
+
+                <div class="input-area">
+                    <input
+                        type="text"
+                        id="wordInput"
+                        class="word-input"
+                        placeholder="Type the word..."
+                        autocomplete="off"
+                        autocorrect="off"
+                        spellcheck="false"
+                    >
+                </div>
+
+                <div class="stats-display">
+                    <div class="stat-item">
+                        <div class="stat-label">Current Streak</div>
+                        <div class="stat-value" id="streak">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Speed Level</div>
+                        <div class="stat-value" id="speedLevel">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="gameOverScreen" class="game-over-screen" style="display: none;">
+                <h2 class="game-over-title">Game Over!</h2>
+                <div class="final-score">Final Score: <span id="finalScore">0</span></div>
+                <div id="highScoreBadge"></div>
+                <div class="stats-display" style="margin-top: 30px;">
+                    <div class="stat-item">
+                        <div class="stat-label">Words Typed</div>
+                        <div class="stat-value" id="finalCorrect">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Best Streak</div>
+                        <div class="stat-value" id="bestStreak">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Max Speed</div>
+                        <div class="stat-value" id="maxSpeed">1x</div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="game.startGame()">Play Again</button>
+                    <button class="btn btn-secondary" onclick="window.location.href='../index.html'">Back to Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bonus-popup" id="bonusPopup"></div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        class WordWaterfallGame {
+            constructor() {
+                this.utils = new VocabularyGameUtils();
+                this.score = 0;
+                this.lives = 3;
+                this.correctCount = 0;
+                this.currentWord = null;
+                this.currentBlock = null;
+                this.speedLevel = 1;
+                this.baseSpeed = 8000; // 8 seconds for level 1
+                this.currentSpeed = this.baseSpeed;
+                this.isPlaying = false;
+                this.fallInterval = null;
+                this.blockStartTime = 0;
+                this.streak = 0;
+                this.bestStreak = 0;
+                this.maxSpeed = 1;
+            }
+
+            async init() {
+                await this.utils.loadWords();
+                this.updateHighScore();
+            }
+
+            startGame() {
+                // Reset game state
+                this.score = 0;
+                this.lives = 3;
+                this.correctCount = 0;
+                this.speedLevel = 1;
+                this.currentSpeed = this.baseSpeed;
+                this.streak = 0;
+                this.bestStreak = 0;
+                this.maxSpeed = 1;
+                this.isPlaying = true;
+
+                // Show game screen
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('gameOverScreen').style.display = 'none';
+                document.getElementById('gameScreen').style.display = 'block';
+
+                // Reset input
+                const input = document.getElementById('wordInput');
+                input.value = '';
+                input.disabled = false;
+                input.focus();
+
+                // Update displays
+                this.updateScore();
+                this.updateLives();
+                this.updateStreak();
+                this.updateSpeedLevel();
+
+                // Start first block
+                this.spawnBlock();
+
+                // Add input listener
+                input.addEventListener('input', () => this.checkInput());
+            }
+
+            spawnBlock() {
+                if (!this.isPlaying) return;
+
+                // Get random word
+                this.currentWord = this.utils.getRandomWord();
+                this.blockStartTime = Date.now();
+
+                // Create falling block
+                const gameArea = document.getElementById('gameArea');
+                const block = document.createElement('div');
+                block.className = 'falling-block active';
+                block.innerHTML = `<div class="block-definition">${this.currentWord.definition}</div>`;
+
+                // Position at top
+                block.style.top = '10px';
+
+                this.currentBlock = block;
+                gameArea.appendChild(block);
+
+                // Start falling animation
+                this.startFalling();
+            }
+
+            startFalling() {
+                let position = 10;
+                const gameArea = document.getElementById('gameArea');
+                const maxPosition = gameArea.offsetHeight - this.currentBlock.offsetHeight - 10;
+                const stepTime = 50; // Update every 50ms
+                const stepDistance = (maxPosition / this.currentSpeed) * stepTime;
+
+                this.fallInterval = setInterval(() => {
+                    position += stepDistance;
+
+                    if (position >= maxPosition) {
+                        // Block reached bottom
+                        this.loseLife();
+                        clearInterval(this.fallInterval);
+                    } else {
+                        this.currentBlock.style.top = position + 'px';
+                    }
+                }, stepTime);
+            }
+
+            checkInput() {
+                if (!this.isPlaying || !this.currentWord) return;
+
+                const input = document.getElementById('wordInput');
+                const typed = input.value.trim().toLowerCase();
+                const correct = this.currentWord.word.toLowerCase();
+
+                // Check if word is correct
+                if (typed === correct) {
+                    this.handleCorrectAnswer();
+                } else {
+                    // Visual feedback for partial match
+                    if (correct.startsWith(typed) && typed.length > 0) {
+                        input.classList.remove('wrong');
+                    } else if (typed.length > 0) {
+                        input.classList.add('wrong');
+                    }
+                }
+            }
+
+            handleCorrectAnswer() {
+                clearInterval(this.fallInterval);
+
+                const input = document.getElementById('wordInput');
+                input.classList.add('correct');
+                input.classList.remove('wrong');
+                input.disabled = true;
+
+                // Calculate time bonus
+                const timeElapsed = Date.now() - this.blockStartTime;
+                const percentTime = timeElapsed / this.currentSpeed;
+                let bonus = 0;
+
+                if (percentTime < 0.3) {
+                    bonus = 50; // Super fast
+                } else if (percentTime < 0.5) {
+                    bonus = 30; // Fast
+                } else if (percentTime < 0.7) {
+                    bonus = 15; // Good
+                }
+
+                // Base points
+                const basePoints = 100;
+                const streakMultiplier = Math.min(1 + (this.streak * 0.1), 2);
+                const points = Math.floor((basePoints + bonus) * streakMultiplier);
+
+                this.score += points;
+                this.correctCount++;
+                this.streak++;
+
+                if (this.streak > this.bestStreak) {
+                    this.bestStreak = this.streak;
+                }
+
+                // Show bonus popup
+                if (bonus > 0) {
+                    this.showBonus(`+${points} points!`);
+                }
+
+                // Update displays
+                this.updateScore();
+                this.updateStreak();
+
+                // Remove block
+                if (this.currentBlock) {
+                    this.currentBlock.style.transition = 'all 0.3s ease';
+                    this.currentBlock.style.transform = 'translateX(-50%) scale(0)';
+                    setTimeout(() => {
+                        if (this.currentBlock && this.currentBlock.parentNode) {
+                            this.currentBlock.remove();
+                        }
+                    }, 300);
+                }
+
+                // Increase speed every 5 correct answers
+                if (this.correctCount % 5 === 0) {
+                    this.increaseSpeed();
+                }
+
+                // Spawn next block after delay
+                setTimeout(() => {
+                    input.classList.remove('correct');
+                    input.value = '';
+                    input.disabled = false;
+                    input.focus();
+                    this.spawnBlock();
+                }, 500);
+            }
+
+            loseLife() {
+                this.lives--;
+                this.streak = 0;
+                this.updateLives();
+                this.updateStreak();
+
+                const input = document.getElementById('wordInput');
+                input.classList.add('wrong');
+
+                // Remove current block
+                if (this.currentBlock) {
+                    this.currentBlock.style.background = '#f45c43';
+                    this.currentBlock.style.color = 'white';
+                    setTimeout(() => {
+                        if (this.currentBlock && this.currentBlock.parentNode) {
+                            this.currentBlock.remove();
+                        }
+                    }, 500);
+                }
+
+                if (this.lives <= 0) {
+                    this.gameOver();
+                } else {
+                    // Spawn next block after delay
+                    setTimeout(() => {
+                        input.classList.remove('wrong');
+                        input.value = '';
+                        input.focus();
+                        this.spawnBlock();
+                    }, 1000);
+                }
+            }
+
+            increaseSpeed() {
+                this.speedLevel++;
+                this.currentSpeed = Math.max(2000, this.baseSpeed - (this.speedLevel - 1) * 800);
+
+                if (this.speedLevel > this.maxSpeed) {
+                    this.maxSpeed = this.speedLevel;
+                }
+
+                this.updateSpeedLevel();
+                this.showBonus(`Speed Level ${this.speedLevel}!`);
+            }
+
+            showBonus(text) {
+                const popup = document.getElementById('bonusPopup');
+                popup.textContent = text;
+                popup.classList.remove('show');
+                void popup.offsetWidth; // Trigger reflow
+                popup.classList.add('show');
+            }
+
+            updateScore() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('correct').textContent = this.correctCount;
+            }
+
+            updateLives() {
+                const livesDisplay = document.getElementById('livesDisplay');
+                livesDisplay.innerHTML = '';
+
+                for (let i = 0; i < 3; i++) {
+                    const heart = document.createElement('span');
+                    heart.className = 'life-heart';
+                    if (i >= this.lives) {
+                        heart.classList.add('lost');
+                    }
+                    heart.textContent = '❤';
+                    livesDisplay.appendChild(heart);
+                }
+            }
+
+            updateStreak() {
+                document.getElementById('streak').textContent = this.streak;
+            }
+
+            updateSpeedLevel() {
+                document.getElementById('speedLevel').textContent = this.speedLevel;
+                document.getElementById('speedIndicator').textContent = `Speed: ${this.speedLevel}x`;
+            }
+
+            updateHighScore() {
+                const highScore = this.utils.getHighScore('word-waterfall');
+                document.getElementById('highScore').textContent = highScore;
+            }
+
+            gameOver() {
+                this.isPlaying = false;
+                clearInterval(this.fallInterval);
+
+                // Save high score
+                const isNewHigh = this.utils.saveHighScore('word-waterfall', this.score);
+
+                // Show game over screen
+                document.getElementById('gameScreen').style.display = 'none';
+                document.getElementById('gameOverScreen').style.display = 'block';
+
+                // Update final stats
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalCorrect').textContent = this.correctCount;
+                document.getElementById('bestStreak').textContent = this.bestStreak;
+                document.getElementById('maxSpeed').textContent = this.maxSpeed + 'x';
+
+                // Show high score badge
+                const badgeDiv = document.getElementById('highScoreBadge');
+                if (isNewHigh) {
+                    badgeDiv.innerHTML = '<div class="high-score-badge">🏆 NEW HIGH SCORE! 🏆</div>';
+                } else {
+                    badgeDiv.innerHTML = '';
+                }
+
+                // Update high score display
+                this.updateHighScore();
+            }
+        }
+
+        // Initialize game
+        const game = new WordWaterfallGame();
+        game.init();
+    </script>
+</body>
+</html>

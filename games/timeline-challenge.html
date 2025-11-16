@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeline Challenge - Vocabulary Game</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        /* Game-specific styles */
+        .matching-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .column-header {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .match-item {
+            padding: 18px 20px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .match-item:hover:not(.matched):not(.disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            border-color: #764ba2;
+            background: #f8f9fa;
+        }
+
+        .match-item.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .match-item.matched {
+            background: #38ef7d;
+            border-color: #38ef7d;
+            color: white;
+            cursor: default;
+            animation: match-success 0.5s ease;
+        }
+
+        .match-item.wrong {
+            animation: shake 0.5s ease;
+            border-color: #f45c43;
+        }
+
+        .match-item.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        @keyframes match-success {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .timer-display {
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #667eea;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-display.warning {
+            color: #f45c43;
+            animation: pulse 0.5s infinite;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-box-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-box-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .game-over-stats {
+            margin: 30px 0;
+        }
+
+        .game-over-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+
+        .game-over-stat-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .game-over-stat-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .new-high-score {
+            background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            font-size: 1.5em;
+            color: #667eea;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .start-screen h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .start-screen p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #666;
+            margin: 15px 0;
+        }
+
+        .start-screen ul {
+            text-align: left;
+            max-width: 500px;
+            margin: 20px auto;
+            line-height: 2;
+        }
+
+        .start-screen li {
+            margin: 10px 0;
+        }
+
+        .progress-display {
+            text-align: center;
+            font-size: 1.2em;
+            color: #667eea;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .matching-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .match-item {
+                font-size: 1em;
+                padding: 15px;
+                min-height: 60px;
+            }
+
+            .timer-display {
+                font-size: 2em;
+            }
+
+            .column-header {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">Timeline Challenge</div>
+        </div>
+
+        <div class="game-content" id="gameContent">
+            <!-- Loading Screen -->
+            <div class="loading-screen" id="loadingScreen">
+                Loading game...
+            </div>
+
+            <!-- Start Screen -->
+            <div class="start-screen" id="startScreen" style="display: none;">
+                <h2>How to Play</h2>
+                <ul>
+                    <li>Match 6 words with their definitions</li>
+                    <li>You have 60 seconds to complete all matches</li>
+                    <li>Click a word, then click its matching definition</li>
+                    <li>Matched pairs turn green and disappear</li>
+                    <li>Wrong matches shake - try again!</li>
+                    <li>Build combos for score multipliers (up to 5x)</li>
+                    <li>Game ends when time runs out or all pairs matched</li>
+                </ul>
+                <button class="btn btn-primary" onclick="game.start()" style="font-size: 1.3em; padding: 15px 40px; margin-top: 20px;">
+                    Start Game
+                </button>
+            </div>
+
+            <!-- Game Screen -->
+            <div id="gameScreen" style="display: none;">
+                <!-- Timer -->
+                <div class="timer-display" id="timer">60</div>
+
+                <!-- Progress -->
+                <div class="progress-display" id="progress">0 / 6 matched</div>
+
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-box-label">Score</div>
+                        <div class="stat-box-value" id="score">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-label">Matches</div>
+                        <div class="stat-box-value" id="matches">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-label">Combo</div>
+                        <div class="stat-box-value" id="combo">0x</div>
+                    </div>
+                </div>
+
+                <!-- Matching Grid -->
+                <div class="matching-container">
+                    <div class="column">
+                        <div class="column-header">Words</div>
+                        <div id="wordsColumn"></div>
+                    </div>
+                    <div class="column">
+                        <div class="column-header">Definitions</div>
+                        <div id="definitionsColumn"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <div class="modal-title" id="gameOverTitle">Game Over!</div>
+
+            <div id="newHighScoreMessage" style="display: none;">
+                <div class="new-high-score">
+                    New High Score!
+                </div>
+            </div>
+
+            <div class="game-over-stats">
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Final Score</span>
+                    <span class="game-over-stat-value" id="finalScore">0</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Matches Made</span>
+                    <span class="game-over-stat-value" id="finalMatches">0</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Best Combo</span>
+                    <span class="game-over-stat-value" id="finalBestCombo">0x</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">Time Remaining</span>
+                    <span class="game-over-stat-value" id="finalTime">0s</span>
+                </div>
+                <div class="game-over-stat">
+                    <span class="game-over-stat-label">High Score</span>
+                    <span class="game-over-stat-value" id="highScore">0</span>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="game.restart()">Play Again</button>
+                <button class="btn btn-secondary" onclick="window.location.href='../index.html'">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Combo Display -->
+    <div class="combo-display" id="comboDisplay"></div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        class TimelineChallenge {
+            constructor() {
+                this.utils = new VocabularyGameUtils();
+                this.score = 0;
+                this.matchesCount = 0;
+                this.combo = 0;
+                this.bestCombo = 0;
+                this.timeLeft = 60;
+                this.timerInterval = null;
+                this.isPlaying = false;
+                this.pairs = [];
+                this.selectedWord = null;
+                this.selectedDefinition = null;
+                this.matchedPairs = new Set();
+                this.basePoints = 200;
+                this.totalPairs = 6;
+            }
+
+            async init() {
+                // Load words
+                await this.utils.loadWords();
+
+                // Hide loading screen, show start screen
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('startScreen').style.display = 'block';
+            }
+
+            start() {
+                // Hide start screen, show game screen
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('gameScreen').style.display = 'block';
+
+                // Reset game state
+                this.score = 0;
+                this.matchesCount = 0;
+                this.combo = 0;
+                this.bestCombo = 0;
+                this.timeLeft = 60;
+                this.isPlaying = true;
+                this.selectedWord = null;
+                this.selectedDefinition = null;
+                this.matchedPairs = new Set();
+
+                // Generate pairs
+                this.generatePairs();
+
+                // Update display
+                this.updateDisplay();
+
+                // Start timer
+                this.startTimer();
+            }
+
+            generatePairs() {
+                // Get 6 random words
+                const words = this.utils.getRandomWords(this.totalPairs);
+
+                // Create pairs with unique IDs
+                this.pairs = words.map((wordObj, index) => ({
+                    id: index,
+                    word: wordObj.word,
+                    definition: wordObj.definition
+                }));
+
+                // Render the pairs
+                this.renderPairs();
+            }
+
+            renderPairs() {
+                const wordsColumn = document.getElementById('wordsColumn');
+                const definitionsColumn = document.getElementById('definitionsColumn');
+
+                // Clear columns
+                wordsColumn.innerHTML = '';
+                definitionsColumn.innerHTML = '';
+
+                // Shuffle definitions separately from words
+                const shuffledDefinitions = this.utils.shuffle([...this.pairs]);
+
+                // Render words
+                this.pairs.forEach(pair => {
+                    const wordEl = document.createElement('div');
+                    wordEl.className = 'match-item';
+                    wordEl.textContent = pair.word;
+                    wordEl.dataset.id = pair.id;
+                    wordEl.dataset.type = 'word';
+                    wordEl.onclick = () => this.selectWord(pair.id);
+                    wordsColumn.appendChild(wordEl);
+                });
+
+                // Render definitions (shuffled)
+                shuffledDefinitions.forEach(pair => {
+                    const defEl = document.createElement('div');
+                    defEl.className = 'match-item';
+                    defEl.textContent = pair.definition;
+                    defEl.dataset.id = pair.id;
+                    defEl.dataset.type = 'definition';
+                    defEl.onclick = () => this.selectDefinition(pair.id);
+                    definitionsColumn.appendChild(defEl);
+                });
+            }
+
+            selectWord(id) {
+                if (!this.isPlaying || this.matchedPairs.has(id)) return;
+
+                // Deselect previous word if any
+                const prevSelected = document.querySelector('.match-item[data-type="word"].selected');
+                if (prevSelected) {
+                    prevSelected.classList.remove('selected');
+                }
+
+                // Select new word
+                this.selectedWord = id;
+                const wordEl = document.querySelector(`.match-item[data-type="word"][data-id="${id}"]`);
+                wordEl.classList.add('selected');
+
+                // If definition already selected, check match
+                if (this.selectedDefinition !== null) {
+                    this.checkMatch();
+                }
+            }
+
+            selectDefinition(id) {
+                if (!this.isPlaying || this.matchedPairs.has(id)) return;
+
+                // Deselect previous definition if any
+                const prevSelected = document.querySelector('.match-item[data-type="definition"].selected');
+                if (prevSelected) {
+                    prevSelected.classList.remove('selected');
+                }
+
+                // Select new definition
+                this.selectedDefinition = id;
+                const defEl = document.querySelector(`.match-item[data-type="definition"][data-id="${id}"]`);
+                defEl.classList.add('selected');
+
+                // If word already selected, check match
+                if (this.selectedWord !== null) {
+                    this.checkMatch();
+                }
+            }
+
+            checkMatch() {
+                const isCorrect = this.selectedWord === this.selectedDefinition;
+
+                const wordEl = document.querySelector(`.match-item[data-type="word"][data-id="${this.selectedWord}"]`);
+                const defEl = document.querySelector(`.match-item[data-type="definition"][data-id="${this.selectedDefinition}"]`);
+
+                if (isCorrect) {
+                    // Correct match!
+                    this.matchesCount++;
+                    this.combo++;
+
+                    // Update best combo
+                    if (this.combo > this.bestCombo) {
+                        this.bestCombo = this.combo;
+                    }
+
+                    // Calculate score with combo multiplier
+                    const points = this.utils.calculateScore(this.basePoints, this.combo);
+                    this.score += points;
+
+                    // Mark as matched
+                    this.matchedPairs.add(this.selectedWord);
+
+                    wordEl.classList.remove('selected');
+                    defEl.classList.remove('selected');
+                    wordEl.classList.add('matched');
+                    defEl.classList.add('matched');
+
+                    // Show combo if > 1
+                    if (this.combo > 1) {
+                        this.showCombo();
+                    }
+
+                    // After animation, hide matched items
+                    setTimeout(() => {
+                        wordEl.classList.add('disabled');
+                        defEl.classList.add('disabled');
+                    }, 500);
+
+                    // Check if all pairs matched
+                    if (this.matchesCount === this.totalPairs) {
+                        setTimeout(() => {
+                            this.endGame(true);
+                        }, 800);
+                    }
+                } else {
+                    // Wrong match
+                    this.combo = 0;
+
+                    wordEl.classList.add('wrong');
+                    defEl.classList.add('wrong');
+
+                    // Reset selection after animation
+                    setTimeout(() => {
+                        wordEl.classList.remove('selected', 'wrong');
+                        defEl.classList.remove('selected', 'wrong');
+                    }, 500);
+                }
+
+                // Reset selections
+                this.selectedWord = null;
+                this.selectedDefinition = null;
+
+                // Update display
+                this.updateDisplay();
+            }
+
+            startTimer() {
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft -= 1;
+                    this.updateTimer();
+
+                    if (this.timeLeft <= 0) {
+                        this.endGame(false);
+                    }
+                }, 1000);
+            }
+
+            updateTimer() {
+                const timerEl = document.getElementById('timer');
+                timerEl.textContent = this.timeLeft;
+
+                // Add warning class if time is low
+                if (this.timeLeft <= 10) {
+                    timerEl.classList.add('warning');
+                } else {
+                    timerEl.classList.remove('warning');
+                }
+            }
+
+            showCombo() {
+                const comboEl = document.getElementById('comboDisplay');
+                const multiplier = Math.min(1 + (this.combo * 0.5), 5).toFixed(1);
+                comboEl.textContent = `${this.combo}x COMBO! (${multiplier}x points)`;
+                comboEl.classList.add('show');
+
+                setTimeout(() => {
+                    comboEl.classList.remove('show');
+                }, 1000);
+            }
+
+            updateDisplay() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('matches').textContent = this.matchesCount;
+                document.getElementById('combo').textContent = this.combo + 'x';
+                document.getElementById('progress').textContent = `${this.matchesCount} / ${this.totalPairs} matched`;
+            }
+
+            endGame(completedAll) {
+                this.isPlaying = false;
+                clearInterval(this.timerInterval);
+
+                // Add time bonus if completed all
+                let timeBonus = 0;
+                if (completedAll) {
+                    timeBonus = this.timeLeft * 50; // 50 points per second remaining
+                    this.score += timeBonus;
+                }
+
+                // Save high score
+                const isNewHighScore = this.utils.saveHighScore('timeline-challenge', this.score);
+                const highScore = this.utils.getHighScore('timeline-challenge');
+
+                // Show game over modal
+                document.getElementById('gameOverTitle').textContent =
+                    completedAll ? 'Congratulations!' : 'Time\'s Up!';
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalMatches').textContent = this.matchesCount + ' / ' + this.totalPairs;
+                document.getElementById('finalBestCombo').textContent = this.bestCombo + 'x';
+                document.getElementById('finalTime').textContent = this.timeLeft + 's' +
+                    (timeBonus > 0 ? ` (+${timeBonus} pts)` : '');
+                document.getElementById('highScore').textContent = highScore;
+
+                if (isNewHighScore) {
+                    document.getElementById('newHighScoreMessage').style.display = 'block';
+                } else {
+                    document.getElementById('newHighScoreMessage').style.display = 'none';
+                }
+
+                document.getElementById('gameOverModal').classList.add('active');
+            }
+
+            restart() {
+                // Hide modal
+                document.getElementById('gameOverModal').classList.remove('active');
+
+                // Restart game
+                this.start();
+            }
+        }
+
+        // Initialize game
+        const game = new TimelineChallenge();
+        game.init();
+    </script>
+</body>
+</html>

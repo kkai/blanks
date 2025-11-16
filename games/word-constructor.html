@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Constructor - Anagram Puzzle</title>
+    <link rel="stylesheet" href="../shared/game-styles.css">
+    <style>
+        .definition-box {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .definition-label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .definition-text {
+            font-size: 1.4em;
+            color: var(--text-color);
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .letters-container {
+            margin: 40px 0;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .scrambled-letters {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: var(--bg-light);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            min-height: 80px;
+        }
+
+        .letter-tile {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 3px solid var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: grab;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            user-select: none;
+        }
+
+        .letter-tile:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .letter-tile:active {
+            cursor: grabbing;
+        }
+
+        .letter-tile.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .letter-tile.placed {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        .build-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 30px;
+            background: white;
+            border: 3px dashed #ccc;
+            border-radius: 12px;
+            min-height: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .build-area.drag-over {
+            background: #e8f0fe;
+            border-color: var(--primary-color);
+            transform: scale(1.02);
+        }
+
+        .build-area.correct {
+            background: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .build-area.wrong {
+            background: var(--error-color);
+            border-color: var(--error-color);
+        }
+
+        .build-area-placeholder {
+            color: #999;
+            font-size: 1.2em;
+            font-style: italic;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .controls .btn {
+            min-width: 150px;
+        }
+
+        .hint-section {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff8e1;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .hint-text {
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        .game-mode-toggle {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            background: var(--bg-light);
+            border-radius: 8px;
+        }
+
+        .toggle-label {
+            font-size: 0.95em;
+            color: #666;
+            margin-left: 8px;
+        }
+
+        #modeToggle {
+            cursor: pointer;
+        }
+
+        .feedback-message {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback-message.show {
+            display: block;
+        }
+
+        .feedback-message.correct {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .feedback-message.wrong {
+            background: var(--error-color);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .letter-tile {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5em;
+            }
+
+            .definition-text {
+                font-size: 1.1em;
+            }
+
+            .scrambled-letters, .build-area {
+                gap: 8px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← Back to Menu</a>
+
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">Word Constructor</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="scoreValue">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Words</span>
+                    <span class="stat-value" id="wordsValue">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Streak</span>
+                    <span class="stat-value" id="streakValue">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <div class="definition-box">
+                <div class="definition-label">Definition</div>
+                <div class="definition-text" id="definitionText">Loading...</div>
+            </div>
+
+            <div class="game-mode-toggle">
+                <label>
+                    <input type="checkbox" id="modeToggle">
+                    <span class="toggle-label">Click Mode (disable drag & drop)</span>
+                </label>
+            </div>
+
+            <div class="hint-section">
+                <div class="hint-text" id="hintText">
+                    Drag letters to the build area or click to select them in order
+                </div>
+            </div>
+
+            <div class="letters-container">
+                <div class="section-title">Scrambled Letters</div>
+                <div class="scrambled-letters" id="scrambledLetters"></div>
+
+                <div class="section-title">Build Your Word</div>
+                <div class="build-area" id="buildArea">
+                    <span class="build-area-placeholder">Drag letters here or click them in order</span>
+                </div>
+            </div>
+
+            <div class="feedback-message" id="feedbackMessage"></div>
+
+            <div class="controls">
+                <button class="btn btn-secondary" id="clearBtn">Clear</button>
+                <button class="btn btn-primary" id="checkBtn">Check Answer</button>
+                <button class="btn btn-success" id="nextBtn" style="display: none;">Next Word</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/game-utils.js"></script>
+    <script>
+        class WordConstructorGame {
+            constructor() {
+                this.utils = new VocabularyGameUtils();
+                this.currentWord = null;
+                this.scrambledWord = '';
+                this.buildAreaLetters = [];
+                this.score = 0;
+                this.wordsCompleted = 0;
+                this.streak = 0;
+                this.isClickMode = false;
+                this.isDragging = false;
+
+                this.initElements();
+                this.initGame();
+            }
+
+            initElements() {
+                this.definitionText = document.getElementById('definitionText');
+                this.scrambledLetters = document.getElementById('scrambledLetters');
+                this.buildArea = document.getElementById('buildArea');
+                this.scoreValue = document.getElementById('scoreValue');
+                this.wordsValue = document.getElementById('wordsValue');
+                this.streakValue = document.getElementById('streakValue');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.checkBtn = document.getElementById('checkBtn');
+                this.nextBtn = document.getElementById('nextBtn');
+                this.modeToggle = document.getElementById('modeToggle');
+                this.hintText = document.getElementById('hintText');
+                this.feedbackMessage = document.getElementById('feedbackMessage');
+
+                // Event listeners
+                this.clearBtn.addEventListener('click', () => this.clearBuildArea());
+                this.checkBtn.addEventListener('click', () => this.checkAnswer());
+                this.nextBtn.addEventListener('click', () => this.loadNextWord());
+                this.modeToggle.addEventListener('change', (e) => this.toggleMode(e.target.checked));
+
+                // Drag and drop events for build area
+                this.buildArea.addEventListener('dragover', (e) => this.handleDragOver(e));
+                this.buildArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+                this.buildArea.addEventListener('drop', (e) => this.handleDrop(e));
+            }
+
+            async initGame() {
+                this.definitionText.textContent = 'Loading words...';
+                await this.utils.loadWords();
+                this.loadNextWord();
+            }
+
+            loadNextWord() {
+                // Get random word
+                this.currentWord = this.utils.getRandomWord();
+
+                // Scramble the word (make sure it's different from original)
+                do {
+                    this.scrambledWord = this.utils.scrambleWord(this.currentWord.word);
+                } while (this.scrambledWord === this.currentWord.word && this.currentWord.word.length > 1);
+
+                // Update UI
+                this.definitionText.textContent = this.currentWord.definition;
+                this.buildAreaLetters = [];
+                this.renderScrambledLetters();
+                this.renderBuildArea();
+                this.updateHint();
+
+                // Hide next button, show check button
+                this.nextBtn.style.display = 'none';
+                this.checkBtn.style.display = 'inline-block';
+                this.clearBtn.style.display = 'inline-block';
+                this.hideFeedback();
+
+                // Remove feedback classes
+                this.buildArea.classList.remove('correct', 'wrong');
+            }
+
+            renderScrambledLetters() {
+                this.scrambledLetters.innerHTML = '';
+
+                const letters = this.scrambledWord.split('');
+                letters.forEach((letter, index) => {
+                    const tile = this.createLetterTile(letter, index);
+                    this.scrambledLetters.appendChild(tile);
+                });
+            }
+
+            createLetterTile(letter, index) {
+                const tile = document.createElement('div');
+                tile.className = 'letter-tile';
+                tile.textContent = letter;
+                tile.dataset.letter = letter;
+                tile.dataset.index = index;
+                tile.draggable = !this.isClickMode;
+
+                // Drag events
+                if (!this.isClickMode) {
+                    tile.addEventListener('dragstart', (e) => this.handleDragStart(e));
+                    tile.addEventListener('dragend', (e) => this.handleDragEnd(e));
+                }
+
+                // Click event
+                tile.addEventListener('click', () => this.handleLetterClick(tile));
+
+                return tile;
+            }
+
+            handleLetterClick(tile) {
+                if (this.isClickMode || !this.isDragging) {
+                    // Add letter to build area
+                    this.buildAreaLetters.push({
+                        letter: tile.dataset.letter,
+                        originalIndex: tile.dataset.index
+                    });
+
+                    tile.classList.add('placed');
+                    tile.style.opacity = '0.3';
+                    tile.style.pointerEvents = 'none';
+
+                    this.renderBuildArea();
+                }
+            }
+
+            handleDragStart(e) {
+                this.isDragging = true;
+                e.target.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', JSON.stringify({
+                    letter: e.target.dataset.letter,
+                    index: e.target.dataset.index
+                }));
+            }
+
+            handleDragEnd(e) {
+                this.isDragging = false;
+                e.target.classList.remove('dragging');
+            }
+
+            handleDragOver(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                this.buildArea.classList.add('drag-over');
+            }
+
+            handleDragLeave(e) {
+                if (e.target === this.buildArea) {
+                    this.buildArea.classList.remove('drag-over');
+                }
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                this.buildArea.classList.remove('drag-over');
+
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+
+                // Add to build area
+                this.buildAreaLetters.push({
+                    letter: data.letter,
+                    originalIndex: data.index
+                });
+
+                // Mark original tile as placed
+                const originalTile = this.scrambledLetters.querySelector(`[data-index="${data.index}"]`);
+                if (originalTile) {
+                    originalTile.classList.add('placed');
+                    originalTile.style.opacity = '0.3';
+                    originalTile.style.pointerEvents = 'none';
+                }
+
+                this.renderBuildArea();
+            }
+
+            renderBuildArea() {
+                this.buildArea.innerHTML = '';
+
+                if (this.buildAreaLetters.length === 0) {
+                    const placeholder = document.createElement('span');
+                    placeholder.className = 'build-area-placeholder';
+                    placeholder.textContent = 'Drag letters here or click them in order';
+                    this.buildArea.appendChild(placeholder);
+                    return;
+                }
+
+                this.buildAreaLetters.forEach((item, index) => {
+                    const tile = document.createElement('div');
+                    tile.className = 'letter-tile placed';
+                    tile.textContent = item.letter;
+                    tile.dataset.buildIndex = index;
+
+                    // Allow removing from build area
+                    tile.addEventListener('click', () => this.removeFromBuildArea(index));
+
+                    this.buildArea.appendChild(tile);
+                });
+            }
+
+            removeFromBuildArea(buildIndex) {
+                const removed = this.buildAreaLetters[buildIndex];
+
+                // Remove from build area
+                this.buildAreaLetters.splice(buildIndex, 1);
+
+                // Restore original tile
+                const originalTile = this.scrambledLetters.querySelector(`[data-index="${removed.originalIndex}"]`);
+                if (originalTile) {
+                    originalTile.classList.remove('placed');
+                    originalTile.style.opacity = '1';
+                    originalTile.style.pointerEvents = 'auto';
+                }
+
+                this.renderBuildArea();
+            }
+
+            clearBuildArea() {
+                // Restore all tiles
+                this.buildAreaLetters.forEach(item => {
+                    const originalTile = this.scrambledLetters.querySelector(`[data-index="${item.originalIndex}"]`);
+                    if (originalTile) {
+                        originalTile.classList.remove('placed');
+                        originalTile.style.opacity = '1';
+                        originalTile.style.pointerEvents = 'auto';
+                    }
+                });
+
+                this.buildAreaLetters = [];
+                this.renderBuildArea();
+                this.hideFeedback();
+                this.buildArea.classList.remove('correct', 'wrong');
+            }
+
+            checkAnswer() {
+                const builtWord = this.buildAreaLetters.map(item => item.letter).join('');
+                const correctWord = this.currentWord.word;
+
+                if (builtWord.toLowerCase() === correctWord.toLowerCase()) {
+                    this.handleCorrectAnswer();
+                } else {
+                    this.handleWrongAnswer();
+                }
+            }
+
+            handleCorrectAnswer() {
+                this.streak++;
+                this.wordsCompleted++;
+
+                // Calculate score with streak bonus
+                const basePoints = 100;
+                const points = this.utils.calculateScore(basePoints, this.streak - 1);
+                this.score += points;
+
+                // Update UI
+                this.updateStats();
+                this.buildArea.classList.add('correct');
+                this.showFeedback('Correct! +' + points + ' points', true);
+
+                // Show next button
+                this.checkBtn.style.display = 'none';
+                this.clearBtn.style.display = 'none';
+                this.nextBtn.style.display = 'inline-block';
+
+                // Save high score
+                this.utils.saveHighScore('word-constructor', this.score);
+            }
+
+            handleWrongAnswer() {
+                this.streak = 0;
+                this.buildArea.classList.add('wrong');
+                this.showFeedback('Wrong! Try again.', false);
+
+                this.updateStats();
+
+                // Shake animation
+                setTimeout(() => {
+                    this.buildArea.classList.remove('wrong');
+                }, 500);
+            }
+
+            showFeedback(message, isCorrect) {
+                this.feedbackMessage.textContent = message;
+                this.feedbackMessage.className = 'feedback-message show ' + (isCorrect ? 'correct' : 'wrong');
+            }
+
+            hideFeedback() {
+                this.feedbackMessage.classList.remove('show');
+            }
+
+            updateStats() {
+                this.scoreValue.textContent = this.score;
+                this.wordsValue.textContent = this.wordsCompleted;
+                this.streakValue.textContent = this.streak;
+            }
+
+            toggleMode(isClickMode) {
+                this.isClickMode = isClickMode;
+
+                // Re-render scrambled letters with new mode
+                this.clearBuildArea();
+                this.renderScrambledLetters();
+                this.updateHint();
+            }
+
+            updateHint() {
+                if (this.isClickMode) {
+                    this.hintText.textContent = 'Click letters in the correct order to build the word';
+                } else {
+                    this.hintText.textContent = 'Drag letters to the build area or click to select them in order';
+                }
+            }
+        }
+
+        // Start game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new WordConstructorGame();
+        });
+    </script>
+</body>
+</html>
