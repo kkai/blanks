@@ -12,40 +12,26 @@ protocol OptionsViewControllerDelegate: AnyObject {
     func optionsViewControllerDidFinish(_ controller: OptionsViewController)
 }
 
-class OptionsViewController: UIViewController {
-    @IBOutlet weak var dragSwitch: UISwitch!
+final class OptionsViewController: UIViewController {
+    @IBOutlet private weak var dragSwitch: UISwitch!
     weak var delegate: OptionsViewControllerDelegate?
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         let defaults = UserDefaults.standard
-        var tapping = dragSwitch.isOn
-
-        if defaults.object(forKey: "TappingUI") != nil {
-            tapping = defaults.bool(forKey: "TappingUI")
-        }
+        let tapping = defaults.object(forKey: .tappingUI) != nil
+            ? defaults.bool(forKey: .tappingUI)
+            : false
 
         dragSwitch.isOn = tapping
-        // Do any additional setup after loading the view, typically from a nib.
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
 
     // MARK: - Actions
 
     @IBAction func toggleDragging(_ sender: Any) {
         let prefs = UserDefaults.standard
-        print(dragSwitch.isOn)
-
-        prefs.set(dragSwitch.isOn, forKey: "TappingUI")
+        prefs.set(dragSwitch.isOn, forKey: .tappingUI)
     }
 
     @IBAction func done(_ sender: Any) {

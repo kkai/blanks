@@ -26,59 +26,35 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
     @IBOutlet weak var tickView: UIImageView!
     @IBOutlet weak var crossView: UIImageView!
 
-    var word1: WordView!
-    var word2: WordView!
-    var word3: WordView!
-    var word4: WordView!
+    private var word1: WordView!
+    private var word2: WordView!
+    private var word3: WordView!
+    private var word4: WordView!
 
-    // XXX TODO better in word model??
-    var correctCount: Float = 0.0
-    var wrongCount: Float = 0.0
-    var streak: Float = 0.0
-    var highestStreak: NSNumber = 0
+    private let gameStats = GameStats()
 
-    var selected: String = ""
-    var correct = false
+    private var selected: String = ""
+    private var correct = false
 
     // MARK: - Constants
 
-    let GROW_ANIMATION_DURATION_SECONDS = 0.15
-    let SHRINK_ANIMATION_DURATION_SECONDS = 0.15
+    private let growAnimationDuration = 0.15
+    private let shrinkAnimationDuration = 0.15
 
     // MARK: - View Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
 
         wordModel = WordModel()
-        streak = 0.0
-
-        if let savedHighScore = UserDefaults.standard.object(forKey: "HighScore") as? NSNumber {
-            highestStreak = savedHighScore
-        } else {
-            highestStreak = NSNumber(value: 0.0)
-            UserDefaults.standard.set(highestStreak, forKey: "HighScore")
-        }
 
         let words = wordModel.getWords()
 
         // Load word views from XIB
-        word1 = Bundle.main.loadNibNamed("WordView", owner: self, options: nil)?.first as? WordView
-        word1.isOpaque = true
-        word1.backgroundColor = .clear
-
-        word2 = Bundle.main.loadNibNamed("WordView", owner: self, options: nil)?.first as? WordView
-        word2.isOpaque = true
-        word2.backgroundColor = .clear
-
-        word3 = Bundle.main.loadNibNamed("WordView", owner: self, options: nil)?.first as? WordView
-        word3.isOpaque = true
-        word3.backgroundColor = .clear
-
-        word4 = Bundle.main.loadNibNamed("WordView", owner: self, options: nil)?.first as? WordView
-        word4.isOpaque = true
-        word4.backgroundColor = .clear
+        word1 = loadWordView()
+        word2 = loadWordView()
+        word3 = loadWordView()
+        word4 = loadWordView()
 
         // Set button titles and word view text
         wordButton1.setTitle(words[0], for: .normal)
@@ -92,17 +68,17 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
         word3.addWord(words[2])
         word4.addWord(words[3])
 
-        score.text = String(format: "streak: %5.0f\t\tword count: %.0f\t\tcorrect: %.0f%%", 0.0, 0.0, 0.0 * 100)
+        score.text = gameStats.displayString
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         let defaults = UserDefaults.standard
-        if defaults.object(forKey: "TappingUI") != nil {
-            isTapping = defaults.bool(forKey: "TappingUI")
+        if defaults.object(forKey: .tappingUI) != nil {
+            isTapping = defaults.bool(forKey: .tappingUI)
         } else {
-            defaults.set(false, forKey: "TappingUI")
+            defaults.set(false, forKey: .tappingUI)
             isTapping = false
         }
 
@@ -144,11 +120,6 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
         view.addSubview(word4)
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
     // MARK: - Check Answer
 
     @IBAction func answerPressed(_ sender: Any) {
@@ -157,32 +128,11 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
                   let titleText = button.titleLabel?.text else { return }
 
             selected = titleText
-            var result: UIImageView
-
-            if selected == wordModel.correct {
-                correct = true
-                result = tickView
-                // put this in WordModel or Statsmodel
-                correctCount += 1
-                streak += 1
-
-                if streak > highestStreak.floatValue {
-                    highestStreak = NSNumber(value: streak)
-                    UserDefaults.standard.set(highestStreak, forKey: "HighScore")
-                }
-            } else {
-                correct = false
-                result = crossView
-                wrongCount += 1
-                streak = 0.0
-            }
-
-            result.isHidden = false
-            animateCorrectWrongView(result)
+            checkAnswerAndShowResult()
         }
     }
 
-    func animateCorrectWrongView(_ selectedView: UIImageView) {
+    private func animateCorrectWrongView(_ selectedView: UIImageView) {
         UIView.animate(withDuration: 0.6, animations: {
             let transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
             selectedView.transform = transform
@@ -198,7 +148,7 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showAlternate" {
+        if segue.identifier == SegueIdentifier.showAlternate.rawValue {
             if let destination = segue.destination as? OptionsViewController {
                 destination.delegate = self
             }
@@ -208,7 +158,7 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
     // MARK: - Handling Touch
 
     // adds a set of gesture recognizers to one of our piece subviews
-    func addGestureRecognizers(to piece: UIView) {
+    private func addGestureRecognizers(to piece: UIView) {
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(panPiece(_:)))
         panGesture.maximumNumberOfTouches = 1
         panGesture.minimumNumberOfTouches = 1
@@ -249,7 +199,7 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
 
     // scale and rotation transforms are applied relative to the layer's anchor point
     // this method moves a gesture recognizer's view's anchor point between the user's fingers
-    func adjustAnchorPoint(for gestureRecognizer: UIGestureRecognizer) {
+    private func adjustAnchorPoint(for gestureRecognizer: UIGestureRecognizer) {
         if gestureRecognizer.state == .began {
             guard let piece = gestureRecognizer.view else { return }
             let locationInSuperview = gestureRecognizer.location(in: piece.superview)
@@ -257,51 +207,47 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
         }
     }
 
-    func animateFirstTouch(at touchPoint: CGPoint, on selectedView: WordView) {
-        UIView.animate(withDuration: GROW_ANIMATION_DURATION_SECONDS, animations: {
+    private func animateFirstTouch(at touchPoint: CGPoint, on selectedView: WordView) {
+        UIView.animate(withDuration: growAnimationDuration, animations: {
             let transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
             selectedView.transform = transform
         }, completion: { _ in
             self.growAnimationDidStop()
         })
 
-        UIView.animate(withDuration: GROW_ANIMATION_DURATION_SECONDS + SHRINK_ANIMATION_DURATION_SECONDS) {
+        UIView.animate(withDuration: growAnimationDuration + shrinkAnimationDuration) {
             selectedView.center = touchPoint
         }
     }
 
-    func growAnimationDidStop() {
-        UIView.animate(withDuration: SHRINK_ANIMATION_DURATION_SECONDS) {
+    private func growAnimationDidStop() {
+        UIView.animate(withDuration: shrinkAnimationDuration) {
             // Animation completion
         }
     }
 
-    func animationDidStop(_ theAnimation: CAAnimation, finished flag: Bool) {
-        var result: UIImageView
+    private func animationDidStop(_ theAnimation: CAAnimation, finished flag: Bool) {
+        checkAnswerAndShowResult()
+    }
+
+    private func checkAnswerAndShowResult() {
+        let result: UIImageView
 
         if selected == wordModel.correct {
             correct = true
             result = tickView
-            // put this in WordModel or Statsmodel
-            correctCount += 1
-            streak += 1
-
-            if streak > highestStreak.floatValue {
-                highestStreak = NSNumber(value: streak)
-                UserDefaults.standard.set(highestStreak, forKey: "HighScore")
-            }
+            gameStats.recordCorrectAnswer()
         } else {
             correct = false
             result = crossView
-            wrongCount += 1
-            streak = 0.0
+            gameStats.recordWrongAnswer()
         }
 
         result.isHidden = false
         animateCorrectWrongView(result)
     }
 
-    func grow3AnimationDidStop() {
+    private func grow3AnimationDidStop() {
         word1.frame = wordButton1.frame
         word2.frame = wordButton2.frame
         word3.frame = wordButton3.frame
@@ -332,17 +278,10 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
             definitionTV.text = wordModel.definition
         }
 
-        var percentage = correctCount / (correctCount + wrongCount)
-        if correctCount == 0 {
-            percentage = 0.0
-        }
-
-        // XXX TODO String extern def
-        let showing = String(format: "streak: %5.0f\t\tword count: %.0f\t\tcorrect: %.0f%%", streak, correctCount, percentage * 100)
-        score.text = showing
+        score.text = gameStats.displayString
     }
 
-    func animateWord(toPlace selectedView: WordView) {
+    private func animateWord(toPlace selectedView: WordView) {
         // Bounces the placard back to the center
         guard let welcomeLayer = selectedView.layer as? CALayer else { return }
 
@@ -403,12 +342,22 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         return true
     }
+
+    // MARK: - Helper Methods
+
+    private func loadWordView() -> WordView? {
+        guard let view = Bundle.main.loadNibNamed("WordView", owner: self, options: nil)?.first as? WordView else {
+            return nil
+        }
+        view.isOpaque = true
+        view.backgroundColor = .clear
+        return view
+    }
 }
 
 // MARK: - CAAnimationDelegate
 
 extension BlanksViewController: CAAnimationDelegate {
-    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
-        animationDidStop(anim, finished: flag)
-    }
+    // This extension is needed to conform to CAAnimationDelegate protocol
+    // The actual implementation is in the main class body at line 279
 }

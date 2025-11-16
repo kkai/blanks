@@ -8,17 +8,7 @@
 
 import UIKit
 
-class MainViewController: UIViewController, FlipsideViewControllerDelegate {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
+final class MainViewController: UIViewController, FlipsideViewControllerDelegate {
 
     // MARK: - Flipside View
 
@@ -27,7 +17,7 @@ class MainViewController: UIViewController, FlipsideViewControllerDelegate {
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showAlternate" {
+        if segue.identifier == SegueIdentifier.showAlternate.rawValue {
             if let destination = segue.destination as? FlipsideViewController {
                 destination.delegate = self
             }
