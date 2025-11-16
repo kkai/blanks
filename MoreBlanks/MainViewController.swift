@@ -8,13 +8,16 @@
 
 import UIKit
 
+/// Main view controller for the MoreBlanks application
 final class MainViewController: UIViewController, FlipsideViewControllerDelegate {
 
-    // MARK: - Flipside View
+    // MARK: - FlipsideViewControllerDelegate
 
     func flipsideViewControllerDidFinish(_ controller: FlipsideViewController) {
         dismiss(animated: true, completion: nil)
     }
+
+    // MARK: - Navigation
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == SegueIdentifier.showAlternate.rawValue {

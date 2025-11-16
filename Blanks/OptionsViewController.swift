@@ -8,30 +8,36 @@
 
 import UIKit
 
+/// Delegate protocol for options screen dismissal
 protocol OptionsViewControllerDelegate: AnyObject {
     func optionsViewControllerDidFinish(_ controller: OptionsViewController)
 }
 
+/// View controller for game settings and preferences
+///
+/// Allows users to configure:
+/// - Interaction mode (tap vs. drag)
+/// - Other game preferences (future)
 final class OptionsViewController: UIViewController {
+    // MARK: - Properties
+
     @IBOutlet private weak var dragSwitch: UISwitch!
     weak var delegate: OptionsViewControllerDelegate?
 
+    @UserDefault(.tappingUI, defaultValue: false)
+    private var isTappingMode: Bool
+
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        let defaults = UserDefaults.standard
-        let tapping = defaults.object(forKey: .tappingUI) != nil
-            ? defaults.bool(forKey: .tappingUI)
-            : false
-
-        dragSwitch.isOn = tapping
+        dragSwitch.isOn = isTappingMode
     }
 
     // MARK: - Actions
 
     @IBAction func toggleDragging(_ sender: Any) {
-        let prefs = UserDefaults.standard
-        prefs.set(dragSwitch.isOn, forKey: .tappingUI)
+        isTappingMode = dragSwitch.isOn
     }
 
     @IBAction func done(_ sender: Any) {

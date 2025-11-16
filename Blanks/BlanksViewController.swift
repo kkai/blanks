@@ -9,12 +9,52 @@
 import UIKit
 import QuartzCore
 
+/// Main game view controller for the Blanks vocabulary quiz game
+///
+/// BlanksViewController manages the quiz game UI and interactions including:
+/// - Displaying word options and definitions
+/// - Handling both tap and drag-based answer selection
+/// - Animating answer feedback
+/// - Tracking game statistics
 class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIGestureRecognizerDelegate {
 
-    // MARK: - Properties
+    // MARK: - Interaction Mode
 
-    var wordModel: WordModel!
-    var isTapping = false
+    /// Defines how the user interacts with word options
+    enum InteractionMode {
+        case dragging  /// User drags words to the answer gap
+        case tapping   /// User taps words to select them
+
+        init(isTapping: Bool) {
+            self = isTapping ? .tapping : .dragging
+        }
+
+        var isTapping: Bool {
+            self == .tapping
+        }
+    }
+
+    // MARK: - Constants
+
+    private enum AnimationDuration {
+        static let grow: TimeInterval = 0.15
+        static let shrink: TimeInterval = 0.15
+        static let result: TimeInterval = 0.6
+    }
+
+    private enum Layout {
+        static let dropZoneYThreshold: CGFloat = 110
+        static let selectedWordScale: CGFloat = 1.3
+    }
+
+    // MARK: - Dependencies
+
+    private var wordModel: WordModel!
+    private let gameStats = GameStats()
+
+    // MARK: - Interaction State
+
+    private var interactionMode: InteractionMode = .dragging
 
     @IBOutlet weak var wordButton1: UIButton!
     @IBOutlet weak var wordButton2: UIButton!
@@ -26,20 +66,13 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
     @IBOutlet weak var tickView: UIImageView!
     @IBOutlet weak var crossView: UIImageView!
 
-    private var word1: WordView!
-    private var word2: WordView!
-    private var word3: WordView!
-    private var word4: WordView!
-
-    private let gameStats = GameStats()
+    private var word1: WordView?
+    private var word2: WordView?
+    private var word3: WordView?
+    private var word4: WordView?
 
     private var selected: String = ""
     private var correct = false
-
-    // MARK: - Constants
-
-    private let growAnimationDuration = 0.15
-    private let shrinkAnimationDuration = 0.15
 
     // MARK: - View Lifecycle
 
@@ -63,10 +96,10 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
         wordButton4.setTitle(words[3], for: .normal)
         definitionTV.text = wordModel.definition
 
-        word1.addWord(words[0])
-        word2.addWord(words[1])
-        word3.addWord(words[2])
-        word4.addWord(words[3])
+        word1.word = words[0]
+        word2.word = words[1]
+        word3.word = words[2]
+        word4.word = words[3]
 
         score.text = gameStats.displayString
     }
@@ -74,71 +107,75 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        let defaults = UserDefaults.standard
-        if defaults.object(forKey: .tappingUI) != nil {
-            isTapping = defaults.bool(forKey: .tappingUI)
-        } else {
-            defaults.set(false, forKey: .tappingUI)
-            isTapping = false
+        // Load interaction mode preference
+        let isTappingMode = UserDefaults.standard.object(forKey: .tappingUI) != nil
+            ? UserDefaults.standard.bool(forKey: .tappingUI)
+            : false
+        interactionMode = InteractionMode(isTapping: isTappingMode)
+
+        setupWordViews()
+    }
+
+    // MARK: - Setup
+
+    private func setupWordViews() {
+        guard let word1 = word1, let word2 = word2,
+              let word3 = word3, let word4 = word4 else {
+            return
         }
 
-        if !isTapping {
-            addGestureRecognizers(to: word1)
-            addGestureRecognizers(to: word2)
-            addGestureRecognizers(to: word3)
-            addGestureRecognizers(to: word4)
+        let wordViews = [word1, word2, word3, word4]
+        let wordButtons = [wordButton1, wordButton2, wordButton3, wordButton4]
 
-            word1.isHidden = false
-            word2.isHidden = false
-            word3.isHidden = false
-            word4.isHidden = false
+        // Configure based on interaction mode
+        switch interactionMode {
+        case .dragging:
+            wordViews.forEach { wordView in
+                addGestureRecognizers(to: wordView)
+                wordView.isHidden = false
+            }
+            wordButtons.forEach { $0?.isHidden = true }
 
-            wordButton1.isHidden = true
-            wordButton2.isHidden = true
-            wordButton3.isHidden = true
-            wordButton4.isHidden = true
-        } else {
-            word1.isHidden = true
-            word2.isHidden = true
-            word3.isHidden = true
-            word4.isHidden = true
-
-            wordButton1.isHidden = false
-            wordButton2.isHidden = false
-            wordButton3.isHidden = false
-            wordButton4.isHidden = false
+        case .tapping:
+            wordViews.forEach { $0.isHidden = true }
+            wordButtons.forEach { $0?.isHidden = false }
         }
 
-        word1.frame = wordButton1.frame
-        word2.frame = wordButton2.frame
-        word3.frame = wordButton3.frame
-        word4.frame = wordButton4.frame
+        // Position word views over buttons
+        zip(wordViews, wordButtons).forEach { wordView, button in
+            if let button = button {
+                wordView.frame = button.frame
+            }
+        }
 
-        view.addSubview(word1)
-        view.addSubview(word2)
-        view.addSubview(word3)
-        view.addSubview(word4)
+        // Add word views to view hierarchy
+        wordViews.forEach { view.addSubview($0) }
     }
 
     // MARK: - Check Answer
 
     @IBAction func answerPressed(_ sender: Any) {
-        if isTapping {
-            guard let button = sender as? UIButton,
-                  let titleText = button.titleLabel?.text else { return }
+        guard interactionMode.isTapping else { return }
+        guard let button = sender as? UIButton,
+              let titleText = button.titleLabel?.text else { return }
 
-            selected = titleText
-            checkAnswerAndShowResult()
-        }
+        selected = titleText
+        checkAnswerAndShowResult()
     }
 
     private func animateCorrectWrongView(_ selectedView: UIImageView) {
-        UIView.animate(withDuration: 0.6, animations: {
-            let transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
-            selectedView.transform = transform
-        }, completion: { _ in
-            self.grow3AnimationDidStop()
-        })
+        UIView.animate(
+            withDuration: AnimationDuration.result,
+            animations: {
+                selectedView.transform = CGAffineTransform(
+                    scaleX: Layout.selectedWordScale,
+                    y: Layout.selectedWordScale
+                )
+            },
+            completion: { _ in
+                self.grow3AnimationDidStop()
+            }
+        )
     }
 
     // MARK: - Option View
@@ -188,7 +225,7 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
         }
 
         if gestureRecognizer.state == .ended {
-            if piece.center.y <= 110 {
+            if piece.center.y <= Layout.dropZoneYThreshold {
                 if let wordView = piece as? WordView {
                     animateWord(toPlace: wordView)
                 }
@@ -208,20 +245,26 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
     }
 
     private func animateFirstTouch(at touchPoint: CGPoint, on selectedView: WordView) {
-        UIView.animate(withDuration: growAnimationDuration, animations: {
-            let transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
-            selectedView.transform = transform
-        }, completion: { _ in
-            self.growAnimationDidStop()
-        })
+        UIView.animate(
+            withDuration: AnimationDuration.grow,
+            animations: {
+                selectedView.transform = CGAffineTransform(
+                    scaleX: Layout.selectedWordScale,
+                    y: Layout.selectedWordScale
+                )
+            },
+            completion: { _ in
+                self.growAnimationDidStop()
+            }
+        )
 
-        UIView.animate(withDuration: growAnimationDuration + shrinkAnimationDuration) {
+        UIView.animate(withDuration: AnimationDuration.grow + AnimationDuration.shrink) {
             selectedView.center = touchPoint
         }
     }
 
     private func growAnimationDidStop() {
-        UIView.animate(withDuration: shrinkAnimationDuration) {
+        UIView.animate(withDuration: AnimationDuration.shrink) {
             // Animation completion
         }
     }
@@ -248,6 +291,12 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
     }
 
     private func grow3AnimationDidStop() {
+        guard let word1 = word1, let word2 = word2,
+              let word3 = word3, let word4 = word4 else {
+            return
+        }
+
+        // Reset word view positions
         word1.frame = wordButton1.frame
         word2.frame = wordButton2.frame
         word3.frame = wordButton3.frame
@@ -256,29 +305,44 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
         view.bringSubviewToFront(word3)
         view.bringSubviewToFront(word4)
 
+        // Hide and reset result indicators
         tickView.isHidden = true
         crossView.isHidden = true
         tickView.transform = .identity
         crossView.transform = .identity
 
+        // Load next word if answer was correct
         if correct {
-            wordModel.selectNextWord()
-            let words = wordModel.getWords()
-
-            word1.addWord(words[0])
-            word2.addWord(words[1])
-            word3.addWord(words[2])
-            word4.addWord(words[3])
-
-            wordButton1.setTitle(words[0], for: .normal)
-            wordButton2.setTitle(words[1], for: .normal)
-            wordButton3.setTitle(words[2], for: .normal)
-            wordButton4.setTitle(words[3], for: .normal)
-
-            definitionTV.text = wordModel.definition
+            loadNextWord()
         }
 
+        // Update score display
         score.text = gameStats.displayString
+    }
+
+    private func loadNextWord() {
+        guard let word1 = word1, let word2 = word2,
+              let word3 = word3, let word4 = word4 else {
+            return
+        }
+
+        wordModel.selectNextWord()
+        let words = wordModel.getWords()
+
+        // Update word views
+        word1.word = words[0]
+        word2.word = words[1]
+        word3.word = words[2]
+        word4.word = words[3]
+
+        // Update buttons
+        wordButton1.setTitle(words[0], for: .normal)
+        wordButton2.setTitle(words[1], for: .normal)
+        wordButton3.setTitle(words[2], for: .normal)
+        wordButton4.setTitle(words[3], for: .normal)
+
+        // Update definition
+        definitionTV.text = wordModel.definition
     }
 
     private func animateWord(toPlace selectedView: WordView) {
@@ -336,7 +400,7 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
         // Set the placard view's center and transformation to the original values in preparation for the end of the animation
         selectedView.center = gapLabel.center
         selectedView.transform = .identity
-        selected = selectedView.getWord()
+        selected = selectedView.word
     }
 
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
@@ -345,8 +409,11 @@ class BlanksViewController: UIViewController, OptionsViewControllerDelegate, UIG
 
     // MARK: - Helper Methods
 
+    /// Loads a WordView from the XIB file
+    /// - Returns: Configured WordView instance, or nil if loading fails
     private func loadWordView() -> WordView? {
         guard let view = Bundle.main.loadNibNamed("WordView", owner: self, options: nil)?.first as? WordView else {
+            print("Warning: Failed to load WordView from XIB")
             return nil
         }
         view.isOpaque = true

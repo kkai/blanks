@@ -8,34 +8,54 @@
 import Foundation
 
 /// Manages game statistics including correct/wrong answers and streak tracking
+///
+/// GameStats tracks the player's performance including:
+/// - Number of correct and incorrect answers
+/// - Current streak of consecutive correct answers
+/// - Highest streak achieved (persisted across sessions)
 class GameStats {
     // MARK: - Properties
 
+    /// Number of correct answers in the current session
     private(set) var correctCount: Int = 0
+
+    /// Number of wrong answers in the current session
     private(set) var wrongCount: Int = 0
-    private(set) var currentStreak: Double = 0.0
-    private(set) var highestStreak: Double = 0.0
+
+    /// Current consecutive correct answer streak
+    private(set) var currentStreak: Int = 0
+
+    /// Highest streak achieved (persisted to UserDefaults)
+    @UserDefault(.highScore, defaultValue: 0)
+    private(set) var highestStreak: Int
 
     // MARK: - Computed Properties
 
+    /// Total number of questions answered in the current session
     var totalCount: Int {
-        return correctCount + wrongCount
+        correctCount + wrongCount
     }
 
+    /// Percentage of correct answers (0.0 to 1.0)
     var correctPercentage: Double {
         guard totalCount > 0 else { return 0.0 }
         return Double(correctCount) / Double(totalCount)
     }
 
+    /// Formatted display string for UI presentation
     var displayString: String {
-        return String(format: "streak: %5.0f\t\tword count: %d\t\tcorrect: %.0f%%",
-                     currentStreak, correctCount, correctPercentage * 100)
+        String(
+            format: "Streak: %d  •  Words: %d  •  Accuracy: %.0f%%",
+            currentStreak,
+            correctCount,
+            correctPercentage * 100
+        )
     }
 
     // MARK: - Initialization
 
     init() {
-        loadHighScore()
+        // highestStreak loaded automatically via @UserDefault property wrapper
     }
 
     // MARK: - Public Methods
@@ -46,31 +66,20 @@ class GameStats {
         currentStreak += 1
 
         if currentStreak > highestStreak {
-            highestStreak = currentStreak
-            saveHighScore()
+            highestStreak = currentStreak // Auto-saves via property wrapper
         }
     }
 
-    /// Records a wrong answer and resets streak
+    /// Records a wrong answer and resets streak to zero
     func recordWrongAnswer() {
         wrongCount += 1
-        currentStreak = 0.0
+        currentStreak = 0
     }
 
-    /// Resets all statistics
+    /// Resets all session statistics (does not affect high score)
     func reset() {
         correctCount = 0
         wrongCount = 0
-        currentStreak = 0.0
-    }
-
-    // MARK: - Private Methods
-
-    private func loadHighScore() {
-        highestStreak = UserDefaults.standard.double(forKey: .highScore)
-    }
-
-    private func saveHighScore() {
-        UserDefaults.standard.set(highestStreak, forKey: .highScore)
+        currentStreak = 0
     }
 }

@@ -8,86 +8,159 @@
 
 import Foundation
 
-class WordModel: NSObject {
-    private(set) var correct: String = ""
-    private(set) var definition: String = ""
-    private var difficulty: String = "average"
+// MARK: - Word Model
 
-    private var wordsArray: [[String: Any]] = []
-    private var falseWordArray: [String] = []
+/// Represents a vocabulary word with definition and incorrect options
+struct Word: Codable, Equatable {
+    let word: String
+    let definition: String
+    let falseWords: [String]
 
-    override init() {
-        super.init()
-
-        // Load difficulty from UserDefaults
-        if let savedDifficulty = UserDefaults.standard.string(forKey: .difficulty) {
-            difficulty = savedDifficulty
-        } else {
-            difficulty = DifficultyLevel.average.rawValue
-            UserDefaults.standard.set(difficulty, forKey: .difficulty)
-        }
-
-        // XXX TODO fix filename stuff
-        difficulty = DifficultyLevel.average.rawValue
-
-        // Load words for current difficulty
-        loadWordList(for: difficulty)
-
-        // Select initial random word
-        selectNextWord()
+    enum CodingKeys: String, CodingKey {
+        case word
+        case definition
+        case falseWords = "false"
     }
 
+    /// Returns an array of word options including the correct word and 3 random false words
+    /// - Parameter count: Number of false words to include (default: 3)
+    /// - Returns: Shuffled array of word options
+    func options(falseWordCount count: Int = 3) -> [String] {
+        guard falseWords.count >= count else {
+            return [word]
+        }
+
+        var result = Array(falseWords.shuffled().prefix(count))
+        result.append(word)
+        return result.shuffled()
+    }
+}
+
+// MARK: - Word Loading Error
+
+/// Errors that can occur during word list loading
+enum WordLoadingError: Error, LocalizedError {
+    case fileNotFound(String)
+    case invalidFormat
+    case decodingFailed(Error)
+
+    var errorDescription: String? {
+        switch self {
+        case .fileNotFound(let filename):
+            return "Could not find word list file: \(filename)"
+        case .invalidFormat:
+            return "Word list file has invalid format"
+        case .decodingFailed(let error):
+            return "Failed to decode word list: \(error.localizedDescription)"
+        }
+    }
+}
+
+// MARK: - Word Model
+
+/// Manages vocabulary words and provides random word selection
+///
+/// WordModel handles loading words from plist files and maintaining the current word state.
+/// It uses Codable for type-safe deserialization and provides clean APIs for word selection.
+class WordModel {
+    // MARK: - Properties
+
+    /// Current correct word
+    private(set) var correct: String = ""
+
+    /// Definition for the current word
+    private(set) var definition: String = ""
+
+    /// Current difficulty level (persisted to UserDefaults)
+    @UserDefault(.difficulty, defaultValue: DifficultyLevel.average.rawValue)
+    private var difficulty: String
+
+    /// Array of all loaded words for the current difficulty
+    private var words: [Word] = []
+
+    /// Currently selected word options (including false words)
+    private var currentOptions: [String] = []
+
+    // MARK: - Initialization
+
+    init() {
+        // Note: Due to limitations with difficulty file loading,
+        // we currently hardcode to "average" difficulty
+        // TODO: Implement proper difficulty file management
+        difficulty = DifficultyLevel.average.rawValue
+
+        do {
+            try loadWordList(for: difficulty)
+            selectNextWord()
+        } catch {
+            print("Error loading word list: \(error.localizedDescription)")
+            // Provide a fallback empty state
+            words = []
+        }
+    }
+
+    // MARK: - Public Methods
+
+    /// Checks if difficulty setting has changed and reloads if needed
     func checkOptions() {
         if let newDifficulty = UserDefaults.standard.string(forKey: .difficulty),
            difficulty != newDifficulty {
             difficulty = newDifficulty
-            loadWordList(for: difficulty)
-            selectNextWord()
+
+            do {
+                try loadWordList(for: difficulty)
+                selectNextWord()
+            } catch {
+                print("Error reloading word list: \(error.localizedDescription)")
+            }
         }
     }
 
+    /// Selects a new random word and generates options
     func selectNextWord() {
-        guard !wordsArray.isEmpty else { return }
+        guard let word = words.randomElement() else {
+            correct = ""
+            definition = ""
+            currentOptions = []
+            return
+        }
 
-        let randWordID = Int.random(in: 0..<wordsArray.count)
-        let element = wordsArray[randWordID]
-        self.correct = element["word"] as? String ?? ""
-        self.definition = element["definition"] as? String ?? ""
-        self.falseWordArray = element["false"] as? [String] ?? []
+        correct = word.word
+        definition = word.definition
+        currentOptions = word.options()
     }
 
+    /// Returns the current word options (1 correct + 3 false words, shuffled)
     func getWords() -> [String] {
-        var words: [String] = []
-
-        guard falseWordArray.count >= 3 else {
-            return [correct]
+        guard !currentOptions.isEmpty else {
+            selectNextWord()
+            return currentOptions
         }
-
-        // Select 3 unique false words
-        var indices: Set<Int> = []
-        while indices.count < 3 {
-            let randomIndex = Int.random(in: 0..<falseWordArray.count)
-            indices.insert(randomIndex)
-        }
-
-        let indicesArray = Array(indices)
-        words.append(falseWordArray[indicesArray[0]])
-        words.append(falseWordArray[indicesArray[1]])
-        words.append(falseWordArray[indicesArray[2]])
-        words.append(correct)
-
-        // Shuffle the array
-        words.shuffle()
-
-        return words
+        return currentOptions
     }
 
     // MARK: - Private Helpers
 
-    private func loadWordList(for difficulty: String) {
-        if let path = Bundle.main.path(forResource: difficulty, ofType: "plist"),
-           let array = NSArray(contentsOfFile: path) as? [[String: Any]] {
-            wordsArray = array
+    /// Loads word list from plist file for the given difficulty
+    /// - Parameter difficulty: Difficulty level string (matches plist filename)
+    /// - Throws: WordLoadingError if loading or decoding fails
+    private func loadWordList(for difficulty: String) throws {
+        guard let url = Bundle.main.url(forResource: difficulty, withExtension: "plist") else {
+            throw WordLoadingError.fileNotFound("\(difficulty).plist")
+        }
+
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = PropertyListDecoder()
+            words = try decoder.decode([Word].self, from: data)
+
+            guard !words.isEmpty else {
+                throw WordLoadingError.invalidFormat
+            }
+        } catch let error as DecodingError {
+            throw WordLoadingError.decodingFailed(error)
+        } catch {
+            throw error
         }
     }
 }
