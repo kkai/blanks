@@ -1,0 +1,115 @@
+{
+  "identifier" : "E70960CC",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "5.99",
+      "familyShareable" : false,
+      "internalID" : "6502370900",
+      "localizations" : [
+        {
+          "description" : "Giving the developer a free lunch.",
+          "displayName" : "Lunch",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "bento",
+      "referenceName" : "Bento",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "6502370753",
+      "localizations" : [
+        {
+          "description" : "A hot beverage for the developer",
+          "displayName" : "Coffee",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "coffee",
+      "referenceName" : "Coffee",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "6502371040",
+      "localizations" : [
+        {
+          "description" : "A hot pizza for the developer.",
+          "displayName" : "Pizza",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "pizza",
+      "referenceName" : "Pizza",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "286883373",
+    "_developerTeamID" : "8H42EZRCCP",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 736800376.92276096,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
