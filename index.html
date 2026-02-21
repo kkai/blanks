@@ -1,56 +1,787 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Blanks by kkai</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blanks — Learn Vocabulary by Filling in the Blanks</title>
+  <meta name="description" content="Blanks and MoreBlanks help you build vocabulary naturally. See a definition, pick the right word, and build a streak. Free on iOS.">
+  <meta name="theme-color" content="#0A0A0F">
+  <link rel="icon" href="assets/blanks-icon.png">
+  <link rel="canonical" href="https://kkai.github.io/blanks/">
 
-  </head>
-  <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/kkai/Blanks">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/kkai/Blanks/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/kkai/Blanks/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Blanks — Learn Vocabulary by Filling in the Blanks">
+  <meta property="og:description" content="Build vocabulary naturally with fill-in-the-blank exercises. See a definition, pick the right word, build a streak. Free on iOS.">
+  <meta property="og:url" content="https://kkai.github.io/blanks/">
+  <meta property="og:image" content="https://kkai.github.io/blanks/assets/blanks-icon.png">
+  <meta property="og:site_name" content="Blanks">
 
-    <div class="wrapper">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Blanks — Learn Vocabulary by Filling in the Blanks">
+  <meta name="twitter:description" content="Build vocabulary naturally with fill-in-the-blank exercises. Free on iOS.">
+  <meta name="twitter:image" content="https://kkai.github.io/blanks/assets/blanks-icon.png">
 
-      <section>
-        <div id="title">
-          <h1>Blanks</h1>
-          <p>Simple iPhone App to learn new words.</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/kkai">kkai</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Blanks",
+    "operatingSystem": "iOS",
+    "applicationCategory": "EducationApplication",
+    "description": "Build vocabulary naturally with fill-in-the-blank exercises. See a definition, pick the right word, and build a streak.",
+    "offers": [
+      { "@type": "Offer", "price": "0", "priceCurrency": "USD", "name": "Blanks (Free)" },
+      { "@type": "Offer", "price": "0", "priceCurrency": "USD", "name": "MoreBlanks (Free)" }
+    ],
+    "url": "https://kkai.github.io/blanks/"
+  }
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              warm: '#D97706',
+              amber: '#F59E0B',
+              paper: '#FDE68A',
+              dark: '#78350F'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0A0A0F;
+      --bg-card: rgba(255, 255, 255, 0.03);
+      --text: #EEEEF0;
+      --text-dim: #8B8B9E;
+      --text-muted: #55556A;
+      --amber: #F59E0B;
+      --amber-soft: rgba(245, 158, 11, 0.12);
+      --amber-glow: rgba(245, 158, 11, 0.3);
+      --warm: #D97706;
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --glass: rgba(255, 255, 255, 0.04);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Noise overlay */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; height: auto; display: block; }
+
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+    /* ========== NAV ========== */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      transition: background 0.4s, backdrop-filter 0.4s;
+    }
+
+    .nav.scrolled {
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(24px) saturate(1.2);
+      -webkit-backdrop-filter: blur(24px) saturate(1.2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav .container { display: flex; align-items: center; justify-content: space-between; }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-brand img { width: 32px; height: 32px; border-radius: 8px; }
+
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+
+    .nav-links a {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--warm);
+      color: #fff !important;
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      transition: transform 0.2s var(--ease), box-shadow 0.2s;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 24px var(--amber-glow);
+    }
+
+    @media (max-width: 640px) {
+      .nav-link-text { display: none; }
+      .nav-links { gap: 16px; }
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 120px 24px 80px;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 900px;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 40%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 720px;
+    }
+
+    .hero-icons {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 36px;
+    }
+
+    .hero-icon {
+      width: 100px;
+      height: 100px;
+      border-radius: 24px;
+      box-shadow: 0 0 60px rgba(245, 158, 11, 0.15), 0 0 120px rgba(245, 158, 11, 0.08);
+      animation: icon-float 6s ease-in-out infinite;
+    }
+
+    .hero-icon:nth-child(2) {
+      animation-delay: -3s;
+    }
+
+    @keyframes icon-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+
+    .hero-tagline {
+      font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+      color: var(--text-dim);
+      font-weight: 400;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-sub {
+      font-size: 0.9375rem;
+      color: var(--text-muted);
+      max-width: 480px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .badge-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+
+    .badge-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .app-store-badge {
+      display: inline-block;
+      transition: transform 0.2s var(--ease), opacity 0.2s;
+    }
+
+    .app-store-badge:hover { transform: translateY(-2px); opacity: 0.85; }
+    .app-store-badge svg { height: 44px; width: auto; }
+
+    @media (min-width: 768px) {
+      .app-store-badge svg { height: 50px; }
+    }
+
+    /* ========== SECTION COMMON ========== */
+    .section-eyebrow {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--amber);
+      margin-bottom: 12px;
+    }
+
+    .section-heading {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 1rem;
+      color: var(--text-dim);
+      max-width: 520px;
+      line-height: 1.7;
+    }
+
+    /* ========== DIVIDER ========== */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0;
+      border: none;
+    }
+
+    /* ========== HOW IT WORKS ========== */
+    .how-it-works { padding: 100px 0 120px; }
+
+    .how-it-works-header { text-align: center; margin-bottom: 64px; }
+
+    .how-it-works-header .section-desc { margin: 0 auto; }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (min-width: 768px) {
+      .steps-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .step-card {
+      position: relative;
+      padding: 36px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      transition: border-color 0.4s, transform 0.4s var(--ease);
+      overflow: hidden;
+    }
+
+    .step-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      padding: 1px;
+      background: linear-gradient(135deg, transparent 40%, var(--amber) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+
+    .step-card:hover::before { opacity: 0.4; }
+    .step-card:hover { transform: translateY(-4px); }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--amber-soft);
+      color: var(--amber);
+      font-weight: 800;
+      font-size: 1.125rem;
+      margin-bottom: 20px;
+    }
+
+    .step-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+
+    .step-card p {
+      color: var(--text-dim);
+      font-size: 0.9375rem;
+      line-height: 1.7;
+    }
+
+    /* ========== SCREENSHOTS ========== */
+    .screenshots { padding: 100px 0 120px; }
+
+    .screenshots-header { text-align: center; margin-bottom: 64px; }
+
+    .screenshots-header .section-desc { margin: 0 auto; }
+
+    .phone-showcase {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .phone-frame {
+      flex: 0 0 auto;
+      width: 280px;
+      border-radius: 24px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 8px;
+      transition: transform 0.4s var(--ease);
+    }
+
+    .phone-frame:hover { transform: translateY(-8px); }
+
+    .phone-frame img {
+      width: 100%;
+      border-radius: 18px;
+    }
+
+    .phone-label {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding-bottom: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .phone-frame { width: 220px; }
+      .phone-showcase { gap: 16px; }
+    }
+
+    /* ========== FEATURES ========== */
+    .features { padding: 100px 0 120px; position: relative; }
+
+    .features-header { text-align: center; margin-bottom: 64px; }
+
+    .features-header .section-desc { margin: 0 auto; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .feature-card {
+      padding: 32px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      transition: border-color 0.4s, transform 0.4s var(--ease);
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      color: var(--amber);
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      color: var(--text-dim);
+      font-size: 0.9375rem;
+      line-height: 1.7;
+    }
+
+    /* ========== FOOTER ========== */
+    .footer {
+      padding: 48px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+
+    .footer-links svg { width: 20px; height: 20px; }
+
+    .footer-copy {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* ========== SCROLL ANIMATIONS ========== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* ========== A11Y ========== */
+    a:focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .hero-icon { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <a href="#" class="nav-brand" aria-label="Blanks home">
+        <img src="assets/blanks-icon.png" alt="" width="32" height="32" loading="eager">
+        Blanks
+      </a>
+      <ul class="nav-links">
+        <li><a href="#how-it-works" class="nav-link-text">How It Works</a></li>
+        <li><a href="#features" class="nav-link-text">Features</a></li>
+        <li>
+          <a href="https://apps.apple.com/us/app/blanks/id286883373" class="nav-cta" target="_blank" rel="noopener">
+            Get the App
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="hero-heading">
+    <div class="hero-content">
+      <div class="hero-icons">
+        <img src="assets/blanks-icon.png" alt="Blanks app icon" width="100" height="100" class="hero-icon" fetchpriority="high">
+        <img src="assets/moreblanks-icon.png" alt="MoreBlanks app icon" width="100" height="100" class="hero-icon" fetchpriority="high">
+      </div>
+
+      <h1 id="hero-heading">Fill in the <span class="text-amber-400">blanks.</span></h1>
+      <p class="hero-tagline">Build vocabulary, one word at a time.</p>
+      <p class="hero-sub">
+        See a definition, pick the right word, and watch your streak grow. A simple, effective way to expand your vocabulary on iPhone and iPad.
+      </p>
+
+      <div class="hero-badges">
+        <div class="badge-group">
+          <span class="badge-label">Blanks</span>
+          <a href="https://apps.apple.com/us/app/blanks/id286883373" class="app-store-badge" target="_blank" rel="noopener" aria-label="Download Blanks on the App Store">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" width="120" height="40" role="img" aria-hidden="true">
+              <rect width="120" height="40" rx="6" fill="#000"/>
+              <rect x="0.5" y="0.5" width="119" height="39" rx="5.5" fill="none" stroke="#A6A6A6" stroke-width="1"/>
+              <path d="M24.769 20.3a4.949 4.949 0 012.356-4.151 5.066 5.066 0 00-3.99-2.158c-1.68-.176-3.308 1.005-4.164 1.005-.872 0-2.19-.988-3.608-.958a5.315 5.315 0 00-4.473 2.728c-1.934 3.348-.491 8.269 1.361 10.976.927 1.325 2.01 2.805 3.428 2.753 1.387-.058 1.905-.885 3.58-.885 1.658 0 2.144.885 3.59.852 1.489-.025 2.426-1.332 3.32-2.67a10.962 10.962 0 001.52-3.092 4.782 4.782 0 01-2.92-4.4zM22.037 12.21a4.872 4.872 0 001.115-3.49 4.957 4.957 0 00-3.208 1.66 4.636 4.636 0 00-1.144 3.36 4.1 4.1 0 003.237-1.53z" fill="#fff"/>
+              <g fill="#fff"><path d="M42.302 27.14h-4.738l-1.138 3.36h-2.008l4.486-12.418h2.083l4.486 12.418h-2.039l-1.132-3.36zm-4.243-1.55h3.752l-1.85-5.446h-.05l-1.852 5.447zM55.16 25.97c0 2.813-1.506 4.62-3.778 4.62a3.07 3.07 0 01-2.848-1.583h-.043v4.484H46.63V21.442h1.8v1.506h.033a3.212 3.212 0 012.883-1.6c2.298 0 3.813 1.816 3.813 4.622zm-1.91 0c0-1.833-.947-3.038-2.393-3.038-1.42 0-2.375 1.23-2.375 3.038 0 1.824.955 3.046 2.375 3.046 1.446 0 2.393-1.197 2.393-3.046zM65.125 25.97c0 2.813-1.506 4.62-3.778 4.62a3.07 3.07 0 01-2.848-1.583h-.043v4.484h-1.859V21.442h1.799v1.506h.034a3.212 3.212 0 012.883-1.6c2.298 0 3.812 1.816 3.812 4.622zm-1.91 0c0-1.833-.947-3.038-2.393-3.038-1.42 0-2.375 1.23-2.375 3.038 0 1.824.955 3.046 2.375 3.046 1.446 0 2.392-1.197 2.392-3.046zM71.71 27.036c.138 1.232 1.334 2.04 2.97 2.04 1.566 0 2.693-.808 2.693-1.919 0-.964-.68-1.54-2.29-1.936l-1.609-.388c-2.28-.55-3.339-1.617-3.339-3.348 0-2.142 1.867-3.614 4.519-3.614 2.624 0 4.423 1.472 4.483 3.614h-1.876c-.112-1.239-1.137-1.987-2.634-1.987s-2.521.757-2.521 1.858c0 .878.654 1.395 2.255 1.79l1.368.336c2.548.604 3.606 1.626 3.606 3.443 0 2.323-1.85 3.778-4.794 3.778-2.754 0-4.613-1.42-4.734-3.667h1.903zM83.346 19.3v2.142h1.722v1.472h-1.722v5.007c0 .778.347 1.142 1.107 1.142.2-.003.4-.018.598-.043v1.462c-.334.063-.673.09-1.012.085-1.842 0-2.563-.691-2.563-2.454v-5.2h-1.316v-1.47h1.316V19.3h1.87zM85.978 25.97c0-2.849 1.678-4.639 4.294-4.639 2.625 0 4.295 1.79 4.295 4.639 0 2.856-1.661 4.638-4.295 4.638-2.633 0-4.294-1.782-4.294-4.638zm6.695 0c0-1.954-.895-3.108-2.401-3.108s-2.4 1.162-2.4 3.108c0 1.962.894 3.106 2.4 3.106s2.4-1.144 2.4-3.106zM96.186 21.442h1.773v1.54h.043a2.16 2.16 0 012.177-1.635c.214 0 .428.023.637.068v1.738a2.594 2.594 0 00-.835-.112 1.873 1.873 0 00-1.937 2.083v5.377h-1.858v-9.06zM109.384 27.837c-.25 1.644-1.85 2.771-3.898 2.771-2.634 0-4.269-1.764-4.269-4.595 0-2.84 1.644-4.682 4.19-4.682 2.505 0 4.08 1.72 4.08 4.466v.637h-6.394v.112a2.358 2.358 0 002.436 2.564 2.048 2.048 0 002.09-1.273h1.765zm-6.282-2.702h4.526a2.177 2.177 0 00-2.22-2.298 2.292 2.292 0 00-2.306 2.298z"/></g>
+              <g fill="#fff"><path d="M37.826 8.731a2.64 2.64 0 012.808 2.965c0 1.906-1.03 3.002-2.808 3.002h-2.155V8.731h2.155zm-1.228 5.123h1.125a1.876 1.876 0 001.967-2.146 1.881 1.881 0 00-1.967-2.134h-1.125v4.28zM41.68 12.444a2.133 2.133 0 114.248 0 2.134 2.134 0 11-4.247 0zm3.334 0c0-.976-.439-1.547-1.208-1.547-.773 0-1.207.571-1.207 1.547 0 .984.434 1.55 1.207 1.55.77 0 1.208-.57 1.208-1.55zM51.573 14.698h-.922l-.93-3.317h-.07l-.927 3.317h-.913l-1.242-4.503h.902l.806 3.436h.067l.926-3.436h.852l.926 3.436h.07l.803-3.436h.889l-1.237 4.503zM53.854 10.195h.855v.715h.066a1.348 1.348 0 011.344-.802 1.465 1.465 0 011.559 1.675v2.915h-.89v-2.692c0-.724-.314-1.084-.972-1.084a1.033 1.033 0 00-1.075 1.141v2.635h-.889v-4.503zM59.094 8.437h.889v6.261h-.89V8.437zM61.218 12.444a2.133 2.133 0 114.247 0 2.134 2.134 0 11-4.247 0zm3.333 0c0-.976-.438-1.547-1.208-1.547-.773 0-1.207.571-1.207 1.547 0 .984.434 1.55 1.207 1.55.77 0 1.208-.57 1.208-1.55zM66.4 13.424c0-.81.604-1.278 1.676-1.344l1.22-.07v-.389c0-.476-.315-.744-.922-.744-.497 0-.84.182-.94.5h-.86c.09-.773.818-1.27 1.84-1.27 1.128 0 1.765.563 1.765 1.514v3.077h-.855v-.633h-.07a1.515 1.515 0 01-1.353.707 1.36 1.36 0 01-1.501-1.348zm2.895-.384v-.377l-1.1.07c-.62.042-.9.253-.9.649 0 .402.351.636.834.636a1.062 1.062 0 001.166-.978zM71.348 12.444c0-1.423.731-2.324 1.87-2.324a1.484 1.484 0 011.38.79h.067V8.437h.888v6.261h-.851v-.71h-.07a1.563 1.563 0 01-1.415.785c-1.145 0-1.869-.901-1.869-2.329zm.918 0c0 .955.45 1.53 1.203 1.53.749 0 1.212-.583 1.212-1.526 0-.938-.468-1.53-1.212-1.53-.748 0-1.203.579-1.203 1.526zM79.23 12.444a2.133 2.133 0 114.247 0 2.134 2.134 0 11-4.247 0zm3.333 0c0-.976-.438-1.547-1.208-1.547-.773 0-1.207.571-1.207 1.547 0 .984.434 1.55 1.207 1.55.77 0 1.208-.57 1.208-1.55zM84.67 10.195h.855v.715h.066a1.348 1.348 0 011.344-.802 1.465 1.465 0 011.559 1.675v2.915h-.89v-2.692c0-.724-.314-1.084-.972-1.084a1.033 1.033 0 00-1.075 1.141v2.635h-.889v-4.503zM93.515 9.074v1.141h.976v.749h-.976v2.315c0 .472.194.679.637.679.113 0 .226-.007.338-.02v.74a2.95 2.95 0 01-.484.046c-.988 0-1.381-.348-1.381-1.216v-2.544h-.714v-.749h.714V9.074h.89zM95.705 8.437h.88v2.481h.07a1.386 1.386 0 011.374-.806 1.483 1.483 0 011.55 1.679v2.907h-.889v-2.688c0-.72-.335-1.084-.963-1.084a1.052 1.052 0 00-1.134 1.142v2.63h-.888V8.437zM104.761 13.482a1.828 1.828 0 01-1.95 1.303 2.045 2.045 0 01-2.081-2.325 2.077 2.077 0 012.076-2.352c1.253 0 2.009.856 2.009 2.27v.31h-3.18v.05a1.19 1.19 0 001.2 1.29 1.08 1.08 0 001.07-.546h.856zm-3.126-1.45h2.275a1.086 1.086 0 00-1.109-1.167 1.152 1.152 0 00-1.166 1.167z"/></g>
+            </svg>
+          </a>
+        </div>
+        <div class="badge-group">
+          <span class="badge-label">MoreBlanks</span>
+          <a href="https://apps.apple.com/us/app/moreblanks/id288808376" class="app-store-badge" target="_blank" rel="noopener" aria-label="Download MoreBlanks on the App Store">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" width="120" height="40" role="img" aria-hidden="true">
+              <rect width="120" height="40" rx="6" fill="#000"/>
+              <rect x="0.5" y="0.5" width="119" height="39" rx="5.5" fill="none" stroke="#A6A6A6" stroke-width="1"/>
+              <path d="M24.769 20.3a4.949 4.949 0 012.356-4.151 5.066 5.066 0 00-3.99-2.158c-1.68-.176-3.308 1.005-4.164 1.005-.872 0-2.19-.988-3.608-.958a5.315 5.315 0 00-4.473 2.728c-1.934 3.348-.491 8.269 1.361 10.976.927 1.325 2.01 2.805 3.428 2.753 1.387-.058 1.905-.885 3.58-.885 1.658 0 2.144.885 3.59.852 1.489-.025 2.426-1.332 3.32-2.67a10.962 10.962 0 001.52-3.092 4.782 4.782 0 01-2.92-4.4zM22.037 12.21a4.872 4.872 0 001.115-3.49 4.957 4.957 0 00-3.208 1.66 4.636 4.636 0 00-1.144 3.36 4.1 4.1 0 003.237-1.53z" fill="#fff"/>
+              <g fill="#fff"><path d="M42.302 27.14h-4.738l-1.138 3.36h-2.008l4.486-12.418h2.083l4.486 12.418h-2.039l-1.132-3.36zm-4.243-1.55h3.752l-1.85-5.446h-.05l-1.852 5.447zM55.16 25.97c0 2.813-1.506 4.62-3.778 4.62a3.07 3.07 0 01-2.848-1.583h-.043v4.484H46.63V21.442h1.8v1.506h.033a3.212 3.212 0 012.883-1.6c2.298 0 3.813 1.816 3.813 4.622zm-1.91 0c0-1.833-.947-3.038-2.393-3.038-1.42 0-2.375 1.23-2.375 3.038 0 1.824.955 3.046 2.375 3.046 1.446 0 2.393-1.197 2.393-3.046zM65.125 25.97c0 2.813-1.506 4.62-3.778 4.62a3.07 3.07 0 01-2.848-1.583h-.043v4.484h-1.859V21.442h1.799v1.506h.034a3.212 3.212 0 012.883-1.6c2.298 0 3.812 1.816 3.812 4.622zm-1.91 0c0-1.833-.947-3.038-2.393-3.038-1.42 0-2.375 1.23-2.375 3.038 0 1.824.955 3.046 2.375 3.046 1.446 0 2.392-1.197 2.392-3.046zM71.71 27.036c.138 1.232 1.334 2.04 2.97 2.04 1.566 0 2.693-.808 2.693-1.919 0-.964-.68-1.54-2.29-1.936l-1.609-.388c-2.28-.55-3.339-1.617-3.339-3.348 0-2.142 1.867-3.614 4.519-3.614 2.624 0 4.423 1.472 4.483 3.614h-1.876c-.112-1.239-1.137-1.987-2.634-1.987s-2.521.757-2.521 1.858c0 .878.654 1.395 2.255 1.79l1.368.336c2.548.604 3.606 1.626 3.606 3.443 0 2.323-1.85 3.778-4.794 3.778-2.754 0-4.613-1.42-4.734-3.667h1.903zM83.346 19.3v2.142h1.722v1.472h-1.722v5.007c0 .778.347 1.142 1.107 1.142.2-.003.4-.018.598-.043v1.462c-.334.063-.673.09-1.012.085-1.842 0-2.563-.691-2.563-2.454v-5.2h-1.316v-1.47h1.316V19.3h1.87zM85.978 25.97c0-2.849 1.678-4.639 4.294-4.639 2.625 0 4.295 1.79 4.295 4.639 0 2.856-1.661 4.638-4.295 4.638-2.633 0-4.294-1.782-4.294-4.638zm6.695 0c0-1.954-.895-3.108-2.401-3.108s-2.4 1.162-2.4 3.108c0 1.962.894 3.106 2.4 3.106s2.4-1.144 2.4-3.106zM96.186 21.442h1.773v1.54h.043a2.16 2.16 0 012.177-1.635c.214 0 .428.023.637.068v1.738a2.594 2.594 0 00-.835-.112 1.873 1.873 0 00-1.937 2.083v5.377h-1.858v-9.06zM109.384 27.837c-.25 1.644-1.85 2.771-3.898 2.771-2.634 0-4.269-1.764-4.269-4.595 0-2.84 1.644-4.682 4.19-4.682 2.505 0 4.08 1.72 4.08 4.466v.637h-6.394v.112a2.358 2.358 0 002.436 2.564 2.048 2.048 0 002.09-1.273h1.765zm-6.282-2.702h4.526a2.177 2.177 0 00-2.22-2.298 2.292 2.292 0 00-2.306 2.298z"/></g>
+              <g fill="#fff"><path d="M37.826 8.731a2.64 2.64 0 012.808 2.965c0 1.906-1.03 3.002-2.808 3.002h-2.155V8.731h2.155zm-1.228 5.123h1.125a1.876 1.876 0 001.967-2.146 1.881 1.881 0 00-1.967-2.134h-1.125v4.28zM41.68 12.444a2.133 2.133 0 114.248 0 2.134 2.134 0 11-4.247 0zm3.334 0c0-.976-.439-1.547-1.208-1.547-.773 0-1.207.571-1.207 1.547 0 .984.434 1.55 1.207 1.55.77 0 1.208-.57 1.208-1.55zM51.573 14.698h-.922l-.93-3.317h-.07l-.927 3.317h-.913l-1.242-4.503h.902l.806 3.436h.067l.926-3.436h.852l.926 3.436h.07l.803-3.436h.889l-1.237 4.503zM53.854 10.195h.855v.715h.066a1.348 1.348 0 011.344-.802 1.465 1.465 0 011.559 1.675v2.915h-.89v-2.692c0-.724-.314-1.084-.972-1.084a1.033 1.033 0 00-1.075 1.141v2.635h-.889v-4.503zM59.094 8.437h.889v6.261h-.89V8.437zM61.218 12.444a2.133 2.133 0 114.247 0 2.134 2.134 0 11-4.247 0zm3.333 0c0-.976-.438-1.547-1.208-1.547-.773 0-1.207.571-1.207 1.547 0 .984.434 1.55 1.207 1.55.77 0 1.208-.57 1.208-1.55zM66.4 13.424c0-.81.604-1.278 1.676-1.344l1.22-.07v-.389c0-.476-.315-.744-.922-.744-.497 0-.84.182-.94.5h-.86c.09-.773.818-1.27 1.84-1.27 1.128 0 1.765.563 1.765 1.514v3.077h-.855v-.633h-.07a1.515 1.515 0 01-1.353.707 1.36 1.36 0 01-1.501-1.348zm2.895-.384v-.377l-1.1.07c-.62.042-.9.253-.9.649 0 .402.351.636.834.636a1.062 1.062 0 001.166-.978zM71.348 12.444c0-1.423.731-2.324 1.87-2.324a1.484 1.484 0 011.38.79h.067V8.437h.888v6.261h-.851v-.71h-.07a1.563 1.563 0 01-1.415.785c-1.145 0-1.869-.901-1.869-2.329zm.918 0c0 .955.45 1.53 1.203 1.53.749 0 1.212-.583 1.212-1.526 0-.938-.468-1.53-1.212-1.53-.748 0-1.203.579-1.203 1.526zM79.23 12.444a2.133 2.133 0 114.247 0 2.134 2.134 0 11-4.247 0zm3.333 0c0-.976-.438-1.547-1.208-1.547-.773 0-1.207.571-1.207 1.547 0 .984.434 1.55 1.207 1.55.77 0 1.208-.57 1.208-1.55zM84.67 10.195h.855v.715h.066a1.348 1.348 0 011.344-.802 1.465 1.465 0 011.559 1.675v2.915h-.89v-2.692c0-.724-.314-1.084-.972-1.084a1.033 1.033 0 00-1.075 1.141v2.635h-.889v-4.503zM93.515 9.074v1.141h.976v.749h-.976v2.315c0 .472.194.679.637.679.113 0 .226-.007.338-.02v.74a2.95 2.95 0 01-.484.046c-.988 0-1.381-.348-1.381-1.216v-2.544h-.714v-.749h.714V9.074h.89zM95.705 8.437h.88v2.481h.07a1.386 1.386 0 011.374-.806 1.483 1.483 0 011.55 1.679v2.907h-.889v-2.688c0-.72-.335-1.084-.963-1.084a1.052 1.052 0 00-1.134 1.142v2.63h-.888V8.437zM104.761 13.482a1.828 1.828 0 01-1.95 1.303 2.045 2.045 0 01-2.081-2.325 2.077 2.077 0 012.076-2.352c1.253 0 2.009.856 2.009 2.27v.31h-3.18v.05a1.19 1.19 0 001.2 1.29 1.08 1.08 0 001.07-.546h.856zm-3.126-1.45h2.275a1.086 1.086 0 00-1.109-1.167 1.152 1.152 0 00-1.166 1.167z"/></g>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works" id="how-it-works" aria-labelledby="how-heading">
+    <div class="container">
+      <div class="how-it-works-header">
+        <p class="section-eyebrow">How It Works</p>
+        <h2 class="section-heading reveal" id="how-heading">Three simple steps</h2>
+        <p class="section-desc reveal reveal-delay-1">No complicated setup. Just open the app and start learning.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card reveal">
+          <div class="step-number">1</div>
+          <h3>Read the definition</h3>
+          <p>A definition appears on screen with the answer word blanked out from the example sentence.</p>
+        </div>
+        <div class="step-card reveal reveal-delay-1">
+          <div class="step-number">2</div>
+          <h3>Pick the right word</h3>
+          <p>Drag and drop letter tiles to spell out the correct word that matches the definition.</p>
+        </div>
+        <div class="step-card reveal reveal-delay-2">
+          <div class="step-number">3</div>
+          <h3>Build your streak</h3>
+          <p>Get it right to keep your streak going. Track your progress and watch your vocabulary grow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- SCREENSHOTS -->
+  <section class="screenshots" id="screenshots" aria-labelledby="screenshots-heading">
+    <div class="container">
+      <div class="screenshots-header">
+        <p class="section-eyebrow">See It in Action</p>
+        <h2 class="section-heading reveal" id="screenshots-heading">Two apps, endless words</h2>
+        <p class="section-desc reveal reveal-delay-1">Blanks covers the essentials. MoreBlanks expands with additional vocabulary packs.</p>
+      </div>
+
+      <div class="phone-showcase">
+        <div class="phone-frame reveal">
+          <img src="assets/screenshot-blanks.png" alt="Blanks app screenshot showing fill-in-the-blank vocabulary exercise" loading="lazy">
+          <p class="phone-label">Blanks</p>
+        </div>
+        <div class="phone-frame reveal reveal-delay-1">
+          <img src="assets/screenshot-moreblanks.png" alt="MoreBlanks app screenshot with expanded vocabulary" loading="lazy">
+          <p class="phone-label">MoreBlanks</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- FEATURES -->
+  <section class="features" id="features" aria-labelledby="features-heading">
+    <div class="container">
+      <div class="features-header">
+        <p class="section-eyebrow">Features</p>
+        <h2 class="section-heading reveal" id="features-heading">Simple, effective, free</h2>
+        <p class="section-desc reveal reveal-delay-1">Everything you need to build a stronger vocabulary.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <svg class="feature-icon" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+            <rect x="6" y="6" width="32" height="32" rx="4" stroke="currentColor" stroke-width="2.5" fill="none"/>
+            <path d="M14 22h16M22 14v16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <h3>Vocabulary building</h3>
+          <p>Learn new words through context. See definitions and fill in the blanks to reinforce understanding.</p>
         </div>
 
-        <p>'Blanks' is a simple application helping you to learn new 
-English words. It shows you word definition and gives 4 choices as answer.
-Select one of the choices by dragging it on the hole in the paper.
-If you are correct, a green hock is displayed.
-If the selected word does not fit to the definition, you will see a red cross. </p>
+        <div class="feature-card reveal reveal-delay-1">
+          <svg class="feature-icon" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+            <rect x="8" y="14" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2.5" fill="none"/>
+            <path d="M24 20h12M30 14v12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+            <path d="M20 20l6-6M20 26l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 3"/>
+          </svg>
+          <h3>Drag & drop letters</h3>
+          <p>Interactive tile-based input makes spelling words tactile and engaging. Drag letters into place.</p>
+        </div>
 
-<p>The word definitions are from Wordnet. The application developer is not associated in any way with Wordnet.</p>
+        <div class="feature-card reveal reveal-delay-2">
+          <svg class="feature-icon" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+            <path d="M10 34V22M18 34V16M26 34V24M34 34V10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <h3>Streak tracking</h3>
+          <p>Keep your streak alive by answering correctly. A simple motivator that keeps you coming back.</p>
+        </div>
 
-<p><a href="https://itunes.apple.com/us/app/blanks/id286883373">Download it for free</a> from the app store.</p>
-      </section>
-
+        <div class="feature-card reveal reveal-delay-3">
+          <svg class="feature-icon" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+            <circle cx="22" cy="22" r="15" stroke="currentColor" stroke-width="2.5" fill="none"/>
+            <path d="M16 22l4 4 8-8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h3>Completely free</h3>
+          <p>Both Blanks and MoreBlanks are free to download. No subscriptions, no in-app purchases.</p>
+        </div>
+      </div>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
-  </body>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <ul class="footer-links">
+        <li>
+          <a href="https://apps.apple.com/us/app/blanks/id286883373" target="_blank" rel="noopener" aria-label="Blanks on the App Store">
+            App Store
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/kkai/blanks" target="_blank" rel="noopener" aria-label="Blanks on GitHub">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61-.55-1.38-1.34-1.74-1.34-1.74-1.1-.75.08-.74.08-.74 1.22.09 1.87 1.25 1.87 1.25 1.08 1.86 2.84 1.32 3.53 1.01.11-.79.42-1.32.76-1.63-2.66-.3-5.46-1.34-5.46-5.96 0-1.32.47-2.4 1.24-3.24-.12-.31-.54-1.56.12-3.25 0 0 1.02-.33 3.35 1.24a11.6 11.6 0 0 1 6.1 0c2.33-1.57 3.35-1.24 3.35-1.24.66 1.69.24 2.94.12 3.25.77.84 1.24 1.92 1.24 3.24 0 4.63-2.81 5.66-5.49 5.96.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57A12 12 0 0 0 12 .5Z"/></svg>
+          </a>
+        </li>
+      </ul>
+      <p class="footer-copy">&copy; <span id="year"></span> Blanks</p>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    (function() {
+      var reveals = document.querySelectorAll('.reveal');
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+      reveals.forEach(function(el) { observer.observe(el); });
+    })();
+
+    // Nav scroll effect
+    (function() {
+      var nav = document.querySelector('.nav');
+      var scrolled = false;
+      window.addEventListener('scroll', function() {
+        var s = window.scrollY > 40;
+        if (s !== scrolled) {
+          scrolled = s;
+          nav.classList.toggle('scrolled', s);
+        }
+      }, { passive: true });
+    })();
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+      a.addEventListener('click', function(e) {
+        var target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
 </html>
