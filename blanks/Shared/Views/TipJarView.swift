@@ -2,10 +2,11 @@ import SwiftUI
 import StoreKit
 
 struct TipJarView: View {
-    private let productIds = ["coffee", "bento", "pizza"]
-    @State private var products: [Product] = []
+    @Environment(TipStore.self) private var store
 
     var body: some View {
+        @Bindable var store = store
+
         ZStack {
             Image("optionback")
                 .resizable()
@@ -19,17 +20,27 @@ struct TipJarView: View {
                 }
 
                 Section("Tips") {
-                    ForEach(products) { product in
-                        Button {
-                            Task {
-                                try? await purchase(product)
-                            }
-                        } label: {
-                            HStack {
-                                Text(product.displayName)
-                                Spacer()
-                                Text(product.displayPrice)
-                                    .foregroundStyle(.secondary)
+                    if store.products.isEmpty {
+                        if store.loadFailed {
+                            Text("Tips are unavailable right now. Please try again later.")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                        }
+                    } else {
+                        ForEach(store.products) { product in
+                            Button {
+                                Task {
+                                    await store.purchase(product)
+                                }
+                            } label: {
+                                HStack {
+                                    Text(product.displayName)
+                                    Spacer()
+                                    Text(product.displayPrice)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                         }
                     }
@@ -39,11 +50,12 @@ struct TipJarView: View {
         }
         .navigationTitle("Tip Jar")
         .task {
-            products = (try? await Product.products(for: productIds)) ?? []
+            await store.loadProducts()
         }
-    }
-
-    private func purchase(_ product: Product) async throws {
-        let _ = try await product.purchase()
+        .alert("Thank You!", isPresented: $store.showThanks) {
+            Button("You're Welcome") {}
+        } message: {
+            Text("Your tip helps keep Blanks going.")
+        }
     }
 }
