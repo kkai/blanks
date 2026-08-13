@@ -1,9 +1,11 @@
 import SwiftUI
 
 @Observable
+@MainActor
 final class GameState {
-    private let wordModel = WordModel()
+    private let wordModel: WordModel
     private var currentEntry: WordEntry?
+    private var feedbackTask: Task<Void, Never>?
 
     var options: [String] = []
     var definition: String = ""
@@ -14,12 +16,17 @@ final class GameState {
     var wrongCount: Int = 0
 
     var highScore: Int {
-        get { UserDefaults.standard.integer(forKey: "HighScore") }
-        set { UserDefaults.standard.set(newValue, forKey: "HighScore") }
+        didSet { UserDefaults.standard.set(highScore, forKey: "HighScore") }
     }
 
     var lastAnswerCorrect: Bool?
     var showFeedback: Bool = false
+
+    /// Answers are ignored while feedback for the previous answer is on screen.
+    private(set) var isAcceptingAnswers = true
+
+    /// True when the bundled word list could not be loaded.
+    var contentUnavailable: Bool { wordModel.loadFailed }
 
     var correctPercentage: Int {
         let total = correctCount + wrongCount
@@ -31,36 +38,44 @@ final class GameState {
         correctCount + wrongCount
     }
 
-    init() {
+    init(wordModel: WordModel? = nil) {
+        self.wordModel = wordModel ?? WordModel()
+        highScore = UserDefaults.standard.integer(forKey: "HighScore")
         nextWord()
     }
 
-    func checkAnswer(_ answer: String) {
-        if answer == correctWord {
+    /// Scores the answer and advances to the next word after feedback.
+    /// Returns false if the answer was ignored (feedback still showing).
+    @discardableResult
+    func checkAnswer(_ answer: String) -> Bool {
+        guard isAcceptingAnswers else { return false }
+        isAcceptingAnswers = false
+
+        let wasCorrect = answer == correctWord
+        if wasCorrect {
             correctCount += 1
             streak += 1
-            lastAnswerCorrect = true
             if streak > highScore {
                 highScore = streak
             }
         } else {
             wrongCount += 1
             streak = 0
-            lastAnswerCorrect = false
         }
-
+        lastAnswerCorrect = wasCorrect
         showFeedback = true
 
-        let wasCorrect = lastAnswerCorrect == true
-        Task {
-            try? await Task.sleep(for: .seconds(0.6))
-            await MainActor.run {
-                self.showFeedback = false
-                if wasCorrect {
-                    self.nextWord()
-                }
-            }
+        // A miss reveals the correct word, so it stays up longer.
+        let feedbackDuration: Duration = wasCorrect ? .seconds(0.6) : .seconds(1.4)
+        feedbackTask?.cancel()
+        feedbackTask = Task {
+            try? await Task.sleep(for: feedbackDuration)
+            guard !Task.isCancelled else { return }
+            showFeedback = false
+            isAcceptingAnswers = true
+            nextWord()
         }
+        return true
     }
 
     func nextWord() {

@@ -3,13 +3,27 @@ import Foundation
 struct WordModel {
     private let words: [WordEntry]
 
-    init() {
+    /// True when no usable word list is available; views show an error state.
+    let loadFailed: Bool
+
+    // Parsed once per process; the plist is 2.5 MB and identical for every instance.
+    private static let bundledWords: [WordEntry]? = {
         guard let url = Bundle.main.url(forResource: "average", withExtension: "plist"),
-              let data = try? Data(contentsOf: url) else {
-            words = []
-            return
+              let data = try? Data(contentsOf: url),
+              let entries = try? PropertyListDecoder().decode([WordEntry].self, from: data),
+              !entries.isEmpty else {
+            return nil
         }
-        words = (try? PropertyListDecoder().decode([WordEntry].self, from: data)) ?? []
+        return entries
+    }()
+
+    init() {
+        self.init(words: Self.bundledWords ?? [])
+    }
+
+    init(words: [WordEntry]) {
+        self.words = words
+        loadFailed = words.isEmpty
     }
 
     func randomEntry() -> WordEntry? {
@@ -17,18 +31,10 @@ struct WordModel {
     }
 
     func shuffledOptions(for entry: WordEntry) -> [String] {
-        var selected = Set<String>()
-        var falseWords: [String] = []
-
-        let available = entry.falseOptions
-        while falseWords.count < 3, falseWords.count < available.count {
-            let candidate = available.randomElement()!
-            if selected.insert(candidate).inserted {
-                falseWords.append(candidate)
-            }
-        }
-
-        var options = falseWords
+        // Some entries repeat a false option; dedupe (and drop the answer if
+        // it ever appears among the distractors) before sampling.
+        let distractors = Set(entry.falseOptions).subtracting([entry.word])
+        var options = Array(distractors.shuffled().prefix(3))
         options.append(entry.word)
         options.shuffle()
         return options
