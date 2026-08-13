@@ -21,10 +21,15 @@ struct MoreBlanksGameView: View {
                         Image("top")
                             .resizable()
                             .scaledToFit()
-                        Image("middle")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        // Color.clear keeps layout at the proposed size; a bare
+                        // scaledToFill image reports its covering size and
+                        // widens the whole ZStack past the screen.
+                        Color.clear
+                            .overlay {
+                                Image("middle")
+                                    .resizable()
+                                    .scaledToFill()
+                            }
                             .clipped()
                         Image("bottom")
                             .resizable()
@@ -45,6 +50,7 @@ struct MoreBlanksGameView: View {
                             Text("_____")
                                 .font(.title.bold())
                                 .foregroundStyle(.brown.opacity(0.4))
+                                .accessibilityHidden(true)
                         }
                         .frame(height: topHeight)
 
@@ -55,6 +61,7 @@ struct MoreBlanksGameView: View {
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                                 .padding(.top, 16)
+                                .accessibilityLabel("Definition: \(game.definition)")
                             Spacer()
                         }
                         .frame(maxHeight: .infinity)
@@ -75,9 +82,14 @@ struct MoreBlanksGameView: View {
                                             Text(word)
                                                 .font(.headline.bold())
                                                 .foregroundStyle(.primary)
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.5)
+                                                .padding(.horizontal, 8)
                                         }
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel(word)
+                                .accessibilityHint("Selects this word as your answer")
                             }
                         }
                         .padding(.horizontal, 16)
@@ -87,7 +99,21 @@ struct MoreBlanksGameView: View {
             }
             .overlay {
                 if game.showFeedback, let isCorrect = game.lastAnswerCorrect {
-                    FeedbackOverlayView(isCorrect: isCorrect, isVisible: game.showFeedback)
+                    FeedbackOverlayView(
+                        isCorrect: isCorrect,
+                        isVisible: game.showFeedback,
+                        correctWord: game.correctWord
+                    )
+                }
+            }
+            .overlay {
+                if game.contentUnavailable {
+                    ContentUnavailableView(
+                        "Word List Unavailable",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text("The bundled word list could not be loaded. Try reinstalling the app.")
+                    )
+                    .background(.regularMaterial)
                 }
             }
             .sensoryFeedback(.success, trigger: game.correctCount)

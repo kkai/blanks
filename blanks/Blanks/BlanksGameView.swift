@@ -4,6 +4,8 @@ struct BlanksGameView: View {
     @Environment(GameState.self) private var game
     @State private var showSettings = false
     @State private var dropZoneFrame: CGRect = .zero
+    @State private var isDragOverBlank = false
+    @AppStorage("hasSeenDragHint") private var hasSeenDragHint = false
 
     // Original image dimensions in points (1x assets, 320pt wide)
     private let originalWidth: CGFloat = 320
@@ -23,10 +25,15 @@ struct BlanksGameView: View {
                         Image("top")
                             .resizable()
                             .scaledToFit()
-                        Image("middle")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        // Color.clear keeps layout at the proposed size; a bare
+                        // scaledToFill image reports its covering size and
+                        // widens the whole ZStack past the screen.
+                        Color.clear
+                            .overlay {
+                                Image("middle")
+                                    .resizable()
+                                    .scaledToFill()
+                            }
                             .clipped()
                         Image("bottom")
                             .resizable()
@@ -44,7 +51,7 @@ struct BlanksGameView: View {
                                 correctPercentage: game.correctPercentage
                             )
                             Spacer()
-                            DropZoneView(isHighlighted: false)
+                            DropZoneView(isHighlighted: isDragOverBlank)
                                 .padding(.horizontal, 40)
                                 .background(
                                     GeometryReader { proxy in
@@ -67,6 +74,7 @@ struct BlanksGameView: View {
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                                 .padding(.top, 16)
+                                .accessibilityLabel("Definition: \(game.definition)")
                             Spacer()
                         }
                         .frame(maxHeight: .infinity)
@@ -82,25 +90,59 @@ struct BlanksGameView: View {
                                     dropZoneCenter: CGPoint(
                                         x: dropZoneFrame.midX,
                                         y: dropZoneFrame.midY
-                                    )
-                                ) { droppedWord, location in
-                                    if dropZoneFrame.contains(location) {
-                                        game.checkAnswer(droppedWord)
-                                        return true
+                                    ),
+                                    onDragMoved: { location in
+                                        isDragOverBlank = dropZoneFrame.contains(location)
                                     }
-                                    return false
+                                ) { droppedWord, location in
+                                    isDragOverBlank = false
+                                    guard dropZoneFrame.contains(location) else { return false }
+                                    let accepted = game.checkAnswer(droppedWord)
+                                    if accepted {
+                                        hasSeenDragHint = true
+                                    }
+                                    return accepted
                                 }
                             }
                         }
                         .padding(.horizontal, 16)
                         .frame(height: bottomHeight)
                     }
+
+                    // One-time hint: the drag interaction is not discoverable.
+                    if !hasSeenDragHint {
+                        VStack {
+                            Spacer()
+                            Label("Drag a word into the blank", systemImage: "hand.draw")
+                                .font(.subheadline.bold())
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(Capsule().fill(.regularMaterial))
+                                .padding(.bottom, bottomHeight + 12)
+                        }
+                        .allowsHitTesting(false)
+                        .transition(.opacity)
+                    }
                 }
             }
             .coordinateSpace(.named("game"))
             .overlay {
                 if game.showFeedback, let isCorrect = game.lastAnswerCorrect {
-                    FeedbackOverlayView(isCorrect: isCorrect, isVisible: game.showFeedback)
+                    FeedbackOverlayView(
+                        isCorrect: isCorrect,
+                        isVisible: game.showFeedback,
+                        correctWord: game.correctWord
+                    )
+                }
+            }
+            .overlay {
+                if game.contentUnavailable {
+                    ContentUnavailableView(
+                        "Word List Unavailable",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text("The bundled word list could not be loaded. Try reinstalling the app.")
+                    )
+                    .background(.regularMaterial)
                 }
             }
             .sensoryFeedback(.success, trigger: game.correctCount)

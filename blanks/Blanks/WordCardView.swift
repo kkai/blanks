@@ -3,6 +3,7 @@ import SwiftUI
 struct WordCardView: View {
     let word: String
     let dropZoneCenter: CGPoint
+    let onDragMoved: (CGPoint) -> Void
     let onDropped: (String, CGPoint) -> Bool
 
     @State private var offset: CGSize = .zero
@@ -24,6 +25,9 @@ struct WordCardView: View {
                 Text(word)
                     .font(.headline.bold())
                     .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+                    .padding(.horizontal, 8)
             }
             .background(
                 GeometryReader { geo in
@@ -53,30 +57,29 @@ struct WordCardView: View {
                         guard !isSnapping else { return }
                         offset = value.translation
                         isDragging = true
+                        onDragMoved(value.location)
                     }
                     .onEnded { value in
                         guard !isSnapping else { return }
-                        let dropLocation = value.location
-                        let didHit = onDropped(word, dropLocation)
+                        let didHit = onDropped(word, value.location)
 
                         if didHit {
+                            // Seat the card in the blank for the feedback beat;
+                            // the grid is replaced when the round advances.
                             isSnapping = true
                             isDragging = false
-                            let snapOffset = CGSize(
-                                width: dropZoneCenter.x - cardOrigin.x,
-                                height: dropZoneCenter.y - cardOrigin.y
-                            )
                             withAnimation(.interpolatingSpring(stiffness: 200, damping: 15)) {
-                                offset = snapOffset
+                                offset = CGSize(
+                                    width: dropZoneCenter.x - cardOrigin.x,
+                                    height: dropZoneCenter.y - cardOrigin.y
+                                )
                             }
                             Task {
-                                try? await Task.sleep(for: .seconds(0.7))
-                                await MainActor.run {
-                                    withAnimation(.easeOut(duration: 0.2)) {
-                                        offset = .zero
-                                        isSnapping = false
-                                    }
-                                }
+                                // Silent reset after the longest feedback window,
+                                // in case this view is reused for a future round.
+                                try? await Task.sleep(for: .seconds(1.6))
+                                offset = .zero
+                                isSnapping = false
                             }
                         } else {
                             withAnimation(.interpolatingSpring(stiffness: 300, damping: 20)) {
@@ -87,5 +90,13 @@ struct WordCardView: View {
                     }
             )
             .animation(.spring(duration: 0.2), value: cardScale)
+            // VoiceOver can't perform the drag; activating the card answers directly.
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(word)
+            .accessibilityHint("Selects this word as your answer")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction {
+                _ = onDropped(word, dropZoneCenter)
+            }
     }
 }

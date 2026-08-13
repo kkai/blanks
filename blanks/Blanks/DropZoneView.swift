@@ -14,5 +14,6 @@ struct DropZoneView: View {
                     .fill(isHighlighted ? Color.accentColor.opacity(0.15) : Color.clear)
             )
             .animation(.easeInOut(duration: 0.2), value: isHighlighted)
+            .accessibilityLabel("Blank for your answer")
     }
 }

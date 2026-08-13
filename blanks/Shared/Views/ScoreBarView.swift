@@ -34,5 +34,7 @@ struct ScoreBarView: View {
         .font(.subheadline.monospacedDigit())
         .animation(.default, value: streak)
         .animation(.default, value: totalAnswered)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Streak \(streak), \(totalAnswered) answered, \(correctPercentage) percent correct")
     }
 }
