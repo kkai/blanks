@@ -10,19 +10,21 @@ struct WordCardView: View {
     @State private var isSnapping = false
     @State private var cardOrigin: CGPoint = .zero
 
+    private var cardScale: CGFloat {
+        if isSnapping { return 0.95 }
+        if isDragging { return 1.1 }
+        return 1.0
+    }
+
     var body: some View {
-        Text(word)
-            .font(.title3.bold())
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(
-                Image("ripped")
-                    .resizable()
-                    .scaledToFill()
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 4))
-            .scaleEffect(isDragging ? 1.1 : 1.0)
-            .offset(offset)
+        Image("ripped")
+            .resizable()
+            .scaledToFit()
+            .overlay {
+                Text(word)
+                    .font(.headline.bold())
+                    .foregroundStyle(.primary)
+            }
             .background(
                 GeometryReader { geo in
                     Color.clear
@@ -32,14 +34,19 @@ struct WordCardView: View {
                                 y: geo.frame(in: .named("game")).midY
                             )
                         }
-                        .onChange(of: geo.size) {
-                            cardOrigin = CGPoint(
-                                x: geo.frame(in: .named("game")).midX,
-                                y: geo.frame(in: .named("game")).midY
-                            )
+                        .onChange(of: geo.frame(in: .named("game")).origin) {
+                            if !isDragging && !isSnapping {
+                                cardOrigin = CGPoint(
+                                    x: geo.frame(in: .named("game")).midX,
+                                    y: geo.frame(in: .named("game")).midY
+                                )
+                            }
                         }
                 }
             )
+            .scaleEffect(cardScale)
+            .offset(offset)
+            .zIndex(isDragging || isSnapping ? 1 : 0)
             .gesture(
                 DragGesture(coordinateSpace: .named("game"))
                     .onChanged { value in
@@ -54,16 +61,16 @@ struct WordCardView: View {
 
                         if didHit {
                             isSnapping = true
+                            isDragging = false
                             let snapOffset = CGSize(
                                 width: dropZoneCenter.x - cardOrigin.x,
                                 height: dropZoneCenter.y - cardOrigin.y
                             )
-                            withAnimation(.spring(duration: 0.3, bounce: 0.4)) {
+                            withAnimation(.interpolatingSpring(stiffness: 200, damping: 15)) {
                                 offset = snapOffset
-                                isDragging = false
                             }
                             Task {
-                                try? await Task.sleep(for: .seconds(0.8))
+                                try? await Task.sleep(for: .seconds(0.7))
                                 await MainActor.run {
                                     withAnimation(.easeOut(duration: 0.2)) {
                                         offset = .zero
@@ -72,13 +79,13 @@ struct WordCardView: View {
                                 }
                             }
                         } else {
-                            withAnimation(.spring(duration: 0.3)) {
+                            withAnimation(.interpolatingSpring(stiffness: 300, damping: 20)) {
                                 offset = .zero
                                 isDragging = false
                             }
                         }
                     }
             )
-            .animation(.spring(duration: 0.2), value: isDragging)
+            .animation(.spring(duration: 0.2), value: cardScale)
     }
 }
