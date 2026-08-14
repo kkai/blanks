@@ -7,8 +7,7 @@ import SwiftUI
 @MainActor
 final class GameState {
     private let wordModel: WordModel
-    private var currentEntry: WordEntry?
-    private var feedbackTask: Task<Void, Never>?
+    private let defaults: UserDefaults
 
     var options: [String] = []
     var definition: String = ""
@@ -20,7 +19,7 @@ final class GameState {
 
     /// Persisted like 4.3 ("HighScore"), but never displayed.
     var highScore: Int {
-        didSet { UserDefaults.standard.set(highScore, forKey: "HighScore") }
+        didSet { defaults.set(highScore, forKey: "HighScore") }
     }
 
     var lastAnswerCorrect: Bool?
@@ -48,9 +47,10 @@ final class GameState {
         return Double(correctCount) / Double(correctCount + wrongCount) * 100
     }
 
-    init(wordModel: WordModel? = nil) {
+    init(wordModel: WordModel? = nil, defaults: UserDefaults = .standard) {
         self.wordModel = wordModel ?? WordModel()
-        highScore = UserDefaults.standard.integer(forKey: "HighScore")
+        self.defaults = defaults
+        highScore = defaults.integer(forKey: "HighScore")
         nextWord()
     }
 
@@ -77,10 +77,10 @@ final class GameState {
         hasAnswered = true
         showFeedback = true
 
-        feedbackTask?.cancel()
-        feedbackTask = Task {
+        // No cancellation needed: the isAcceptingAnswers guard means at
+        // most one feedback window is ever in flight.
+        Task {
             try? await Task.sleep(for: .seconds(0.6))
-            guard !Task.isCancelled else { return }
             showFeedback = false
             isAcceptingAnswers = true
             if wasCorrect {
@@ -93,7 +93,6 @@ final class GameState {
 
     func nextWord() {
         guard let entry = wordModel.randomEntry() else { return }
-        currentEntry = entry
         correctWord = entry.word
         definition = entry.definition
         options = wordModel.shuffledOptions(for: entry)

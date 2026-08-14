@@ -8,6 +8,7 @@ final class TipStore {
     private(set) var products: [Product] = []
     private(set) var loadFailed = false
     var showThanks = false
+    var purchaseFailed = false
 
     private var updatesTask: Task<Void, Never>?
 
@@ -25,6 +26,7 @@ final class TipStore {
 
     func loadProducts() async {
         guard products.isEmpty else { return }
+        loadFailed = false
         do {
             let loaded = try await Product.products(for: Self.productIds)
             products = loaded.sorted { $0.price < $1.price }
@@ -35,7 +37,13 @@ final class TipStore {
     }
 
     func purchase(_ product: Product) async {
-        guard let result = try? await product.purchase() else { return }
+        let result: Product.PurchaseResult
+        do {
+            result = try await product.purchase()
+        } catch {
+            purchaseFailed = true
+            return
+        }
         switch result {
         case .success(.verified(let transaction)):
             await transaction.finish()

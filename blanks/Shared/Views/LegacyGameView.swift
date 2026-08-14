@@ -34,8 +34,10 @@ struct LegacyGameView: View {
     let config: SKUConfig
 
     @Environment(GameState.self) private var game
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("TappingUI") private var isTapping = false
-    @State private var showAbout = false
+    // "-showAbout" launch argument opens About immediately (UI testing).
+    @State private var showAbout = ProcessInfo.processInfo.arguments.contains("-showAbout")
 
     @State private var cardCenters: [CGPoint] = LegacyGameView.slotCenters
     @State private var draggingIndex: Int?
@@ -54,12 +56,18 @@ struct LegacyGameView: View {
     static let blankCenter = CGPoint(x: 110.5, y: 91.5)
     /// 4.3 drop test: card center released in the top 110 pt counts, x ignored.
     static let dropMaxY: CGFloat = 110
+    /// VoiceOver reading order for slot indices 0..3 (visual TL,TR,BL,BR).
+    static let readingPriority: [Double] = [4, 1, 3, 2]
 
     private let infoTint = Color(red: 0.196, green: 0.310, blue: 0.522)
 
     var body: some View {
         GeometryReader { geo in
-            let scale = geo.size.width / Self.canvas.width
+            // Fit the canvas: width-bound on iPhone portrait (legacy compat
+            // look), height-bound where the screen is short relative to
+            // width (iPad, landscape) so the cards never fall off-screen.
+            let scale = min(geo.size.width / Self.canvas.width,
+                            geo.size.height / Self.canvas.height)
             canvasContent
                 .frame(width: Self.canvas.width, height: Self.canvas.height)
                 .scaleEffect(scale)
@@ -75,12 +83,14 @@ struct LegacyGameView: View {
         }
         .overlay {
             if game.contentUnavailable {
-                ContentUnavailableView(
-                    "Word List Unavailable",
-                    systemImage: "exclamationmark.triangle",
-                    description: Text("The bundled word list could not be loaded. Try reinstalling the app.")
-                )
-                .background(.regularMaterial)
+                ZStack {
+                    Color.black.ignoresSafeArea()
+                    ContentUnavailableView(
+                        "Word List Unavailable",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text("The bundled word list could not be loaded. Try reinstalling the app.")
+                    )
+                }
             }
         }
     }
@@ -90,27 +100,32 @@ struct LegacyGameView: View {
             Color(red: 0.25, green: 0.25, blue: 0.25)
 
             // Background art, legacy frames.
-            Image("top")
+            Image(decorative: "top")
                 .resizable()
                 .frame(width: 320, height: 152)
                 .position(x: 160, y: 76)
-            Image("middle")
+            Image(decorative: "middle")
                 .resizable()
                 .frame(width: 320, height: 291)
                 .position(x: 160, y: 148 + 145.5)
-            Image("bottom")
+            Image(decorative: "bottom")
                 .resizable()
                 .frame(width: 320, height: 133)
                 .position(x: 160, y: 430 + 66.5)
 
             // Definition — UITextView at (19,160,283,185); its default
-            // insets put the text at (24, 168).
-            Text(game.definition)
-                .font(.custom("IowanOldStyle-Roman", size: 16))
-                .foregroundStyle(.black)
-                .frame(width: 273, height: 169, alignment: .topLeading)
-                .position(x: 24 + 136.5, y: 168 + 84.5)
-                .accessibilityLabel("Definition: \(game.definition)")
+            // insets put the text at (24, 168). Scrollable like the
+            // legacy text view: the longest entry (333 chars) overflows.
+            ScrollView {
+                Text(game.definition)
+                    .font(.custom("IowanOldStyle-Roman", size: 16))
+                    .foregroundStyle(.black)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+            .scrollIndicators(.hidden)
+            .frame(width: 273, height: 169)
+            .position(x: 24 + 136.5, y: 168 + 84.5)
+            .accessibilityLabel("Definition: \(game.definition)")
 
             // Score bar — one 9pt Iowan Old Style line at x=16, above row 1.
             Text(scoreString)
@@ -119,7 +134,7 @@ struct LegacyGameView: View {
                 .lineLimit(1)
                 .frame(width: 237, height: 12.5, alignment: .leading)
                 .position(x: 16 + 118.5, y: 427.75)
-                .accessibilityLabel("Streak \(game.streak), word count \(game.correctCount), correct \(Int(game.percentValue)) percent")
+                .accessibilityLabel("Streak \(game.streak), word count \(game.correctCount), correct \(Int(game.percentValue.rounded())) percent")
 
             // Info button (legacy infoLight) at x=277..299, bottom = 434.
             Button {
@@ -128,22 +143,27 @@ struct LegacyGameView: View {
                 Image(systemName: "info.circle")
                     .font(.system(size: 20))
                     .foregroundStyle(infoTint)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
-            .frame(width: 22, height: 22)
             .position(x: 288, y: 423)
             .accessibilityLabel("About")
 
-            // Answer cards / buttons.
+            // Answer cards / buttons. accessibilitySortPriority puts
+            // VoiceOver in visual order (TL, TR, BL, BR) instead of the
+            // legacy outlet-wiring order the indices follow.
             ForEach(0..<4, id: \.self) { i in
                 if i < game.options.count {
                     if isTapping {
                         tapButton(index: i)
                             .position(Self.slotCenters[i])
                             .zIndex(Double(i))
+                            .accessibilitySortPriority(Self.readingPriority[i])
                     } else {
                         dragCard(index: i)
                             .position(cardCenters[i])
                             .zIndex(draggingIndex == i ? 100 : Double(i))
+                            .accessibilitySortPriority(Self.readingPriority[i])
                     }
                 }
             }
@@ -160,10 +180,15 @@ struct LegacyGameView: View {
                     .allowsHitTesting(false)
                     .accessibilityLabel(isCorrect ? "Correct" : "Wrong")
                     .onAppear {
-                        feedbackGrown = false
+                        guard !reduceMotion else { return }
                         withAnimation(.easeInOut(duration: 0.6)) {
                             feedbackGrown = true
                         }
+                    }
+                    .onDisappear {
+                        // Reset so the next showing starts at 1.0 instead
+                        // of flashing at 1.3 for its first frame.
+                        feedbackGrown = false
                     }
             }
         }
@@ -172,7 +197,19 @@ struct LegacyGameView: View {
         .onChange(of: game.roundID) {
             // grow3AnimationDidStop: every card snaps back to its slot.
             cardCenters = Self.slotCenters
+            announceRoundResult()
         }
+        .onChange(of: isTapping) {
+            // Mode toggled in About: clear stranded/seated card positions.
+            cardCenters = Self.slotCenters
+            draggingIndex = nil
+        }
+    }
+
+    private func announceRoundResult() {
+        guard let isCorrect = game.lastAnswerCorrect else { return }
+        let outcome = isCorrect ? "Correct." : "Wrong, try again."
+        AccessibilityNotification.Announcement("\(outcome) \(game.definition)").post()
     }
 
     private var scoreString: String {
@@ -222,9 +259,12 @@ struct LegacyGameView: View {
                     .frame(width: 154, height: 35, alignment: .leading)
                     .offset(x: 32, y: 8)
             }
-            .scaleEffect(draggingIndex == index ? 1.3 : 1.0)
+            .scaleEffect(!reduceMotion && draggingIndex == index ? 1.3 : 1.0)
             .animation(.easeOut(duration: 0.15), value: draggingIndex == index)
             .gesture(
+                // Note: draggingIndex is a single value — a second finger
+                // on another card takes over the drag state. The legacy
+                // app had the same one-drag-at-a-time model.
                 DragGesture(minimumDistance: 0, coordinateSpace: .named("canvas"))
                     .onChanged { value in
                         // 4.3 snaps the card's center to the finger.
@@ -238,23 +278,34 @@ struct LegacyGameView: View {
                             // dropped until the round resets.
                             return
                         }
-                        withAnimation(.interpolatingSpring(stiffness: 400, damping: 14)) {
+                        if reduceMotion {
                             cardCenters[index] = Self.blankCenter
+                        } else {
+                            withAnimation(.interpolatingSpring(stiffness: 400, damping: 14)) {
+                                cardCenters[index] = Self.blankCenter
+                            }
                         }
+                        guard game.options.indices.contains(index) else { return }
                         let word = game.options[index]
+                        let round = game.roundID
                         Task {
                             // Legacy scores after the bounce-into-place
                             // animation (~0.35 s), then shows feedback.
                             try? await Task.sleep(for: .seconds(0.35))
+                            // If the round advanced while we slept (drop
+                            // during the feedback window), the word would
+                            // be scored against the NEW round — skip it.
+                            guard game.roundID == round else { return }
                             game.checkAnswer(word)
                         }
                     }
             )
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(game.options[index])
+            .accessibilityLabel(game.options.indices.contains(index) ? game.options[index] : "")
             .accessibilityAddTraits(.isButton)
             .accessibilityHint("Selects this word as your answer")
             .accessibilityAction {
+                guard game.options.indices.contains(index) else { return }
                 game.checkAnswer(game.options[index])
             }
     }

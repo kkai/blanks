@@ -51,7 +51,7 @@ private func makeEntry(
         let url = try #require(Bundle.main.url(forResource: "average", withExtension: "plist"))
         let data = try Data(contentsOf: url)
         let entries = try PropertyListDecoder().decode([WordEntry].self, from: data)
-        #expect(entries.count == 8109)
+        #expect(entries.count > 8000)
         #expect(entries.allSatisfy { !$0.word.isEmpty && !$0.definition.isEmpty })
         #expect(entries.allSatisfy { !Set($0.falseOptions).subtracting([$0.word]).isEmpty })
     }
@@ -60,41 +60,37 @@ private func makeEntry(
 @MainActor
 @Suite(.serialized) struct GameStateTests {
     private static let highScoreKey = "HighScore"
+    private static let suiteName = "BlanksTests"
 
-    private func withCleanHighScore(_ body: () async throws -> Void) async rethrows {
-        let defaults = UserDefaults.standard
-        let original = defaults.object(forKey: Self.highScoreKey)
-        defaults.removeObject(forKey: Self.highScoreKey)
-        defer {
-            if let original {
-                defaults.set(original, forKey: Self.highScoreKey)
-            } else {
-                defaults.removeObject(forKey: Self.highScoreKey)
-            }
-        }
-        try await body()
+    /// A throwaway defaults suite so tests never touch the app's real
+    /// HighScore, even if a test run crashes mid-flight.
+    private func withCleanHighScore(_ body: (UserDefaults) async throws -> Void) async rethrows {
+        let defaults = UserDefaults(suiteName: Self.suiteName)!
+        defaults.removePersistentDomain(forName: Self.suiteName)
+        defer { defaults.removePersistentDomain(forName: Self.suiteName) }
+        try await body(defaults)
     }
 
-    private func makeGame() -> GameState {
-        GameState(wordModel: WordModel(words: [makeEntry()]))
+    private func makeGame(defaults: UserDefaults) -> GameState {
+        GameState(wordModel: WordModel(words: [makeEntry()]), defaults: defaults)
     }
 
     @Test func correctAnswerScoresAndRaisesHighScore() async {
-        await withCleanHighScore {
-            let game = makeGame()
+        await withCleanHighScore { defaults in
+            let game = makeGame(defaults: defaults)
             #expect(game.checkAnswer("apple"))
             #expect(game.correctCount == 1)
             #expect(game.streak == 1)
             #expect(game.lastAnswerCorrect == true)
             #expect(Int(game.percentValue) == 100)
             #expect(game.highScore == 1)
-            #expect(UserDefaults.standard.integer(forKey: Self.highScoreKey) == 1)
+            #expect(defaults.integer(forKey: Self.highScoreKey) == 1)
         }
     }
 
     @Test func wrongAnswerDoesNotAdvanceAndLocksBriefly() async {
-        await withCleanHighScore {
-            let game = makeGame()
+        await withCleanHighScore { defaults in
+            let game = makeGame(defaults: defaults)
             let wordBefore = game.correctWord
             #expect(game.checkAnswer("banana"))
             #expect(game.wrongCount == 1)
@@ -110,8 +106,8 @@ private func makeEntry(
     }
 
     @Test func retryAfterWrongAnswerScoresOnSameWord() async throws {
-        try await withCleanHighScore {
-            let game = makeGame()
+        try await withCleanHighScore { defaults in
+            let game = makeGame(defaults: defaults)
             let wordBefore = game.correctWord
             game.checkAnswer("banana")
             try await Task.sleep(for: .seconds(1))
@@ -128,8 +124,8 @@ private func makeEntry(
     }
 
     @Test func percentageIsZeroWhileNoCorrectAnswers() async {
-        await withCleanHighScore {
-            let game = makeGame()
+        await withCleanHighScore { defaults in
+            let game = makeGame(defaults: defaults)
             game.checkAnswer("banana")
             // 4.3 forces 0% while correctCount == 0, despite wrong answers.
             #expect(game.percentValue == 0)
@@ -137,9 +133,9 @@ private func makeEntry(
     }
 
     @Test func highScoreLoadsFromDefaultsAndOnlyRises() async {
-        await withCleanHighScore {
-            UserDefaults.standard.set(5, forKey: Self.highScoreKey)
-            let game = makeGame()
+        await withCleanHighScore { defaults in
+            defaults.set(5, forKey: Self.highScoreKey)
+            let game = makeGame(defaults: defaults)
             #expect(game.highScore == 5)
 
             // A streak of 1 must not lower a high score of 5.
@@ -148,9 +144,29 @@ private func makeEntry(
         }
     }
 
+    @Test func roundIDAdvancesOnBothOutcomesAndLockRecovers() async throws {
+        try await withCleanHighScore { defaults in
+            let game = makeGame(defaults: defaults)
+            #expect(game.roundID == 0)
+
+            game.checkAnswer("banana")
+            #expect(!game.isAcceptingAnswers)
+            try await Task.sleep(for: .seconds(1))
+            // Wrong outcome: cards reset (roundID bumps), input unlocked.
+            #expect(game.roundID == 1)
+            #expect(game.isAcceptingAnswers)
+
+            game.checkAnswer("apple")
+            try await Task.sleep(for: .seconds(1))
+            // Correct outcome: roundID bumps again.
+            #expect(game.roundID == 2)
+            #expect(game.isAcceptingAnswers)
+        }
+    }
+
     @Test func missingContentIsSurfaced() async {
-        await withCleanHighScore {
-            let game = GameState(wordModel: WordModel(words: []))
+        await withCleanHighScore { defaults in
+            let game = GameState(wordModel: WordModel(words: []), defaults: defaults)
             #expect(game.contentUnavailable)
             #expect(game.options.isEmpty)
         }

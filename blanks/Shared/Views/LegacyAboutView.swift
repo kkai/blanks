@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Faithful reproduction of the 4.3 About screen (OptionsViewController):
-/// optionback paper art on a 320×568 canvas, black nav bar with Done,
-/// the tap/drag toggle, and per-SKU extras (Blanks: store link + tip
-/// jar; MoreBlanks: thank-you label only).
+/// The About screen. Unlike the game screen (a frozen 4.3 replica), this
+/// screen keeps the legacy identity — optionback paper, Iowan Old Style,
+/// black bar — but is built as a modern flowing layout: Dynamic Type,
+/// proper hit targets, readable license.
 struct LegacyAboutView: View {
     let config: SKUConfig
 
@@ -11,140 +11,117 @@ struct LegacyAboutView: View {
     @AppStorage("TappingUI") private var isTapping = false
     @State private var showTipJar = false
 
-    static let canvas = CGSize(width: 320, height: 568)
+    private static let headerFont = Font.custom("IowanOldStyle-Italic", size: 22, relativeTo: .title3)
+    private static let bodyFont = Font.custom("IowanOldStyle-Roman", size: 17, relativeTo: .body)
+    private static let footFont = Font.custom("IowanOldStyle-Roman", size: 12, relativeTo: .footnote)
 
     var body: some View {
-        GeometryReader { geo in
-            let scale = geo.size.width / Self.canvas.width
-            canvasContent
-                .frame(width: Self.canvas.width, height: Self.canvas.height)
-                .scaleEffect(scale)
-                .position(x: geo.size.width / 2, y: geo.size.height / 2)
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 28) {
+                    modeSection
+                    if config.isBlanksSKU {
+                        moreWordsSection
+                        supportSection
+                    } else {
+                        Text("Thank you for your support!")
+                            .font(Self.headerFont)
+                    }
+                    licenseSection
+                }
+                .foregroundStyle(.black)
+                .padding(20)
+                .padding(.bottom, 40)
+            }
+            .background {
+                // The art carries a printed-text texture; faded so it
+                // reads as paper grain instead of competing copy.
+                ZStack {
+                    Color.white
+                    Image(decorative: "optionback")
+                        .resizable()
+                        .scaledToFill()
+                        .opacity(0.22)
+                }
+                .ignoresSafeArea()
+            }
+            .navigationTitle("About")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Done") { dismiss() }
+                        .tint(.white)
+                }
+            }
+            .toolbarBackground(.black, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
-        .background(Color.black)
-        .ignoresSafeArea()
         .sheet(isPresented: $showTipJar) {
             TipJarView()
         }
     }
 
-    private var canvasContent: some View {
-        ZStack(alignment: .topLeading) {
-            Color(red: 0.25, green: 0.25, blue: 0.25)
+    private var modeSection: some View {
+        Toggle("Tap words instead of dragging", isOn: $isTapping)
+            .font(Self.bodyFont)
+            .tint(.black.opacity(0.75))
+    }
 
-            Image("optionback")
-                .resizable()
-                .frame(width: 320, height: 568)
+    private var moreWordsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("More Words")
+                .font(Self.headerFont)
+            Text("Get more words with More Blanks.")
+                .font(Self.bodyFont)
+            Link("Get More Blanks on the App Store",
+                 destination: URL(string: "https://apps.apple.com/app/moreblanks/id288808376")!)
+                .font(Self.bodyFont.bold())
+                .frame(minHeight: 44, alignment: .leading)
+            Text("New features are coming — stay tuned!")
+                .font(Self.footFont)
+                .foregroundStyle(.black.opacity(0.6))
+        }
+    }
 
-            // Black navigation bar at (0, 31, 320, 44), title "About",
-            // Done on the left.
-            ZStack {
-                Rectangle().fill(Color.black.opacity(0.92))
-                Text("About")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                HStack {
-                    Button("Done") { dismiss() }
-                        .tint(.white)
-                        .padding(.leading, 10)
-                    Spacer()
-                }
+    private var supportSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Support")
+                .font(Self.headerFont)
+            Text("Enjoying Blanks? Support development with a small tip.")
+                .font(Self.bodyFont)
+            Button("Buy Me a Coffee") {
+                showTipJar = true
             }
-            .frame(width: 320, height: 44)
-            .position(x: 160, y: 31 + 22)
+            .font(Self.bodyFont.bold())
+            .frame(minHeight: 44, alignment: .leading)
+        }
+    }
 
-            // Tap-instead-of-drag toggle (both SKUs).
-            Text("Tap the word instead dragging")
-                .font(.custom("Baskerville", size: 18))
-                .foregroundStyle(.black)
-                .frame(width: 242, height: 45, alignment: .leading)
-                .position(x: 20 + 121, y: 113 + 22.5)
-            Toggle("", isOn: $isTapping)
-                .labelsHidden()
-                .frame(width: 51, height: 31)
-                .position(x: 251 + 25.5, y: 120 + 15.5)
-
-            if config.isBlanksSKU {
-                blanksExtras
-            } else {
-                moreBlanksExtras
-            }
-
-            // WordNet / Princeton license.
-            Text(config.isBlanksSKU ? "Licence information" : "licence information")
-                .font(.custom("IowanOldStyle-Italic", size: 23))
-                .foregroundStyle(.black)
-                .frame(width: 178, height: 32, alignment: .leading)
-                .position(x: config.isBlanksSKU ? 20 + 89 : 26 + 89,
-                          y: config.isBlanksSKU ? 385 + 16 : 358 + 16)
-
-            ScrollView {
+    private var licenseSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("License")
+                .font(Self.headerFont)
+            Text("Word definitions from WordNet 3.0, Princeton University. The developer is not associated with WordNet or Princeton.")
+                .font(Self.footFont)
+            Link("Questions? Send me a mail.",
+                 destination: URL(string: "mailto:iappsupport@googlemail.com")!)
+                .font(Self.footFont.bold())
+                .frame(minHeight: 44, alignment: .leading)
+            DisclosureGroup {
                 Text(Self.licenseText)
-                    .font(.custom("IowanOldStyle-Roman", size: 11))
-                    .foregroundStyle(.black)
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .font(Self.footFont)
+                    .padding(.top, 4)
+            } label: {
+                Text("WordNet 3.0 License")
+                    .font(Self.footFont.bold())
             }
-            .frame(width: 269, height: 112)
-            .position(x: 20 + 134.5, y: 416 + 56)
+            .tint(.black)
         }
-        .clipped()
-    }
-
-    @ViewBuilder
-    private var blanksExtras: some View {
-        Text("If you want, you can get more words:")
-            .font(.custom("IowanOldStyle-Italic", size: 18))
-            .foregroundStyle(.black)
-            .frame(width: 259, height: 65, alignment: .leading)
-            .position(x: 16 + 129.5, y: 153 + 32.5)
-
-        Link("Get More Blanks from the AppStore",
-             destination: URL(string: "https://apps.apple.com/app/moreblanks/id288808376")!)
-            .font(.system(size: 15))
-            .frame(width: 294, height: 35)
-            .position(x: 6 + 147, y: 203 + 17.5)
-
-        Text("new features are coming stay tuned :) ")
-            .font(.custom("IowanOldStyle-Italic", size: 18))
-            .foregroundStyle(.black)
-            .lineLimit(1)
-            .minimumScaleFactor(0.8)
-            .frame(width: 302, height: 32, alignment: .leading)
-            .position(x: 18 + 151, y: 246 + 16)
-
-        Text("If you want, you can also support ")
-            .font(.custom("IowanOldStyle-Italic", size: 18))
-            .foregroundStyle(.black)
-            .frame(width: 259, height: 32, alignment: .leading)
-            .position(x: 20 + 129.5, y: 282 + 16)
-
-        Text("developement and buy me a coffee:")
-            .font(.custom("IowanOldStyle-Italic", size: 18))
-            .foregroundStyle(.black)
-            .lineLimit(1)
-            .minimumScaleFactor(0.8)
-            .frame(width: 239, height: 25, alignment: .leading)
-            .position(x: 20 + 119.5, y: 311 + 12.5)
-
-        Button("Buy me a Coffee") {
-            showTipJar = true
-        }
-        .font(.system(size: 15))
-        .frame(width: 150, height: 35)
-        .position(x: 85 + 75, y: 344 + 17.5)
-    }
-
-    private var moreBlanksExtras: some View {
-        Text("Thank you for your support!")
-            .font(.custom("IowanOldStyle-Italic", size: 18))
-            .foregroundStyle(.black)
-            .frame(width: 215, height: 32, alignment: .leading)
-            .position(x: 26 + 107.5, y: 242 + 16)
     }
 
     static let licenseText = """
-    The word definitions are from Wordnet. The application developer is not associated in any way with Wordnet or Princeton.
-    In case you have any questions just send me a mail iappsupport@googlemail.com                                                      ======================================WordNet Release 3.0
+    WordNet Release 3.0
 
     This software and database is being provided to you, the LICENSEE, by
     Princeton University under the following license.  By obtaining, using
