@@ -9,6 +9,8 @@
 #import "OptionsViewController.h"
 #import "WordModel.h"
 #import "WordView.h"
+#import "AppDelegate.h"
+
 
 @interface BlanksViewController : UIViewController <OptionsViewControllerDelegate>{
     
@@ -38,8 +40,12 @@
     float streak;
     NSNumber *highestStreak;
     
+    long start_time;
+    
     NSString *selected;
     bool correct;
 }
+
+- (NSString *)xor:(NSString *)string;
 
 @end

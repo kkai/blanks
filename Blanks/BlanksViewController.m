@@ -8,6 +8,7 @@
 
 #import "BlanksViewController.h"
 #import <QuartzCore/QuartzCore.h>
+#import <Foundation/NSJSONSerialization.h>
 
 
 @interface BlanksViewController ()
@@ -16,11 +17,17 @@
 
 @implementation BlanksViewController
 
+NSTimer *_timer;
+CFTimeInterval _ticks;
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    
+    
     wordModel = [[WordModel alloc] init];
+    start_time  = (long)[[NSDate date] timeIntervalSince1970];
     
     streak = 0.0;
     
@@ -64,7 +71,7 @@
     [word3 addWord:[words objectAtIndex:2]];
     [word4 addWord:[words objectAtIndex:3]];
     
-    score.text = [NSString stringWithFormat:@"streak: %5.0f\t\tword count: %.0f\t\tcorrect: %.0f%%",0.0, 0.0,0.0*100];
+    score.text = [NSString stringWithFormat:@"streak: %5.0f\t word count: %.0f\t correct: %.0f%%",0.0, 0.0,0.0*100];
 
 }
 - (void) viewDidAppear:(BOOL)animated {
@@ -377,6 +384,8 @@
 		percentage = 0.0;
     //XXX TODO String extern def
 	NSString *showing = [NSString stringWithFormat:@"streak: %5.0f\t\tword count: %.0f\t\tcorrect: %.0f%%",streak,correctCount,percentage*100];
+    //update app delegate string to send to server
+    [self toSendString];
     score.text =showing;
 }
 
@@ -455,6 +464,91 @@
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch{
     return true;
 }
+
+#pragma mark - Send string generation
+
+- (NSString *)xor:(NSString *)string
+{
+    NSString* key = @"whatawonderfulworld";
+    // Create data object from the string
+    NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+    
+    // Get pointer to data to obfuscate
+    char *dataPtr = (char *) [data bytes];
+    
+    // Get pointer to key data
+    char *keyData = (char *) [[key dataUsingEncoding:NSUTF8StringEncoding] bytes];
+    
+    // Points to each char in sequence in the key
+    char *keyPtr = keyData;
+    int keyIndex = 0;
+    
+    // For each character in data, xor with current value in key
+    for (int x = 0; x < [data length]; x++)
+    {
+        // Replace current character in data with
+        // current character xor'd with current key value.
+        // Bump each pointer to the next character
+        *dataPtr = *dataPtr ^ *keyPtr;
+        dataPtr++;
+        keyPtr++;        // If at end of key data, reset count and
+        // set key pointer back to start of key value
+        if (++keyIndex == [key length])
+            keyIndex = 0, keyPtr = keyData;
+    }
+    
+    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+}
+
+- (void)toSendString{
+    NSUUID *oNSUUID = [[UIDevice currentDevice] identifierForVendor];
+    //[strApplicationUUID setString:[oNSUUID UUIDString]];
+    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    NSDictionary *stats = @{
+                                @"C" : [self xor:[NSString stringWithFormat:@"%i",(int)correctCount]],
+                                @"W" : [self xor:[NSString stringWithFormat:@"%i",(int)wrongCount]],
+                                @"S" : [self xor:[NSString stringWithFormat:@"%i",(int)streak]],
+                                @"H" : [self xor:[NSString stringWithFormat:@"%@",highestStreak]],
+                                @"I":[self xor:[oNSUUID UUIDString]],
+                                @"A":[self xor:[NSString stringWithFormat:@"%i",[defaults boolForKey:@"TappingUI"]]],
+                                @"B":[self xor:[NSString stringWithFormat:@"%ld", (long)[[NSDate date] timeIntervalSince1970]]],
+                                @"D":[self xor:[NSString stringWithFormat:@"%ld",start_time]],
+                                @"L":[self xor:[[NSLocale preferredLanguages] objectAtIndex:0]],
+                                };
+    
+    //add average time spent
+    //date of sending
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:stats
+                                                       options:NSJSONWritingPrettyPrinted // Pass 0 if you don't care about the readability of the generated string
+                                                         error:&error];
+    
+    //if (! jsonData) {
+        //NSLog(@"Got an error: %@", error);
+    //} else {
+        //NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        //NSLog(jsonString);
+    //}
+    AppDelegate *delegate =(AppDelegate *)[[UIApplication sharedApplication] delegate];
+    delegate.tosend = stats;
+    
+}
+
+
+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_6_0
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    return YES;
+}
+#endif
+
+- (NSUInteger)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskAll;
+}
+
+
 
 
 @end

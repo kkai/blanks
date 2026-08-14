@@ -7,6 +7,7 @@
 //
 
 #import "OptionsViewController.h"
+#import "MoreBlanks-Swift.h"
 
 @interface OptionsViewController ()
 @property (weak, nonatomic) IBOutlet UISwitch *dragSwitch;
@@ -14,6 +15,14 @@
 @end
 
 @implementation OptionsViewController
+
+
+- (IBAction)buyCoffee:(id)sender {
+    UIViewController *vc = [SwiftUIViewFactory makeSwiftUIViewWithDismissHandler:^{
+        [[self presentedViewController] dismissViewControllerAnimated:YES completion:nil];
+    }];
+    [self presentViewController:vc animated:YES completion:nil];
+}
 
 - (void)viewDidLoad
 {
@@ -42,9 +51,9 @@
 #pragma mark - Actions
 - (IBAction)toggleDragging:(id)sender {
     NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
-    NSLog(@"%d",self.dragSwitch.isOn);
-
+    //NSLog(@"%d",self.dragSwitch.isOn);
     [prefs setBool:self.dragSwitch.isOn forKey:@"TappingUI"];
+    [prefs synchronize];
     //NSLog(@"%d",[prefs boolForKey:@"theBoolKey"]);
 }
 
