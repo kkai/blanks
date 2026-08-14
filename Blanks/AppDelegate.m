@@ -7,12 +7,30 @@
 //
 
 #import "AppDelegate.h"
+//#import "Purchases.h"
 
 @implementation AppDelegate
 
+NSMutableData *mutData;
+
+@synthesize tosend;
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // Override point for customization after application launch.
+    
+
+    
+    logging = false;
+    NSString *url = @"http://kaikunze.de/bl.html";
+    NSURL *urlRequest = [NSURL URLWithString:url];
+    NSError *err = nil;
+    
+    NSString *h = [NSString stringWithContentsOfURL:urlRequest encoding:NSUTF8StringEncoding error:&err];
+    //NSLog(@"%@",h);
+    if([h isEqualToString:@"on\n"]){
+        //NSLog(@"Logging is %@",h);
+        logging = true;
+    }
     return YES;
 }
 							
@@ -20,28 +38,37 @@
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
-    NSLog(@"inactive");
-}
+    //NSLog(@"inactive");
+    //NSLog(@"%@",tosend);
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-}
+    
+    if(logging){
+        NSURL *url = [NSURL URLWithString:@"http://geist.kmd.keio.ac.jp:8000/"];
+        
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLCacheStorageNotAllowed timeoutInterval:3.0];
+        [request setHTTPMethod:@"POST"];
+        [request setValue:@"bla-blup" forHTTPHeaderField:@"test"];
+        
+        //[request setValue:[NSString stringWithFormat:@"%ld", (unsigned long)[tosend length]] forHTTPHeaderField:@"Content-Length"];
+        //[request setHTTPBody:tosend];
+        //[request setValue:@"text/html" forHTTPHeaderField:@"Content-Type"];
+        //NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+        //[connection start];
+        
+        for(id key in tosend){
+            //NSLog(@"key=%@ value=%@", key, [tosend objectForKey:key]);
+            [request setValue: [tosend objectForKey:key] forHTTPHeaderField: key];
+        }
+        //NSError *err = nil;
+        NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+        NSString *returnString = [[NSString alloc] initWithData:returnData encoding:NSUTF8StringEncoding];
+        //NSString *urls = @"http://geist.kmd.keio.ac.jp:8000/";
+        //NSURL *urlRequest = [NSURL URLWithString:urls];
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-}
+        //NSString *h = [NSString stringWithContentsOfURL:urlRequest encoding:NSUTF8StringEncoding error:&err];
 
-- (void)applicationDidBecomeActive:(UIApplication *)application
-{
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-}
-
-- (void)applicationWillTerminate:(UIApplication *)application
-{
-    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        //NSLog(@"return %@",h);
+    }
 }
 
 @end

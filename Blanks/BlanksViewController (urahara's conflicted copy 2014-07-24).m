@@ -1,0 +1,657 @@
+//
+//  MainViewController.m
+//  Blanks
+//
+//  Created by Kai Kunze on 19/10/2013.
+//  Copyright (c) 2013 Kai Kunze. All rights reserved.
+//
+
+#import "BlanksViewController.h"
+#import <QuartzCore/QuartzCore.h>
+#import <Foundation/NSJSONSerialization.h>
+
+
+@interface BlanksViewController ()
+
+@end
+
+@implementation BlanksViewController
+
+ADBannerView *_bannerView;
+NSTimer *_timer;
+CFTimeInterval _ticks;
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+	// Do any additional setup after loading the view, typically from a nib.
+    
+    //iads
+    if ([ADBannerView instancesRespondToSelector:@selector(initWithAdType:)]) {
+        _bannerView = [[ADBannerView alloc] initWithAdType:ADAdTypeBanner];
+    } else {
+        _bannerView = [[ADBannerView alloc] init];
+    }
+    _bannerView.delegate = self;
+    [self.view addSubview:_bannerView];
+    
+    wordModel = [[WordModel alloc] init];
+    start_time  = (long)[[NSDate date] timeIntervalSince1970];
+    
+    streak = 0.0;
+    
+    highestStreak = [[NSUserDefaults standardUserDefaults] objectForKey: @"HighScore"];
+    if(!highestStreak){
+        highestStreak =[NSNumber numberWithFloat:0.0];
+        [[NSUserDefaults standardUserDefaults] setObject: highestStreak forKey: @"HighScore"];
+    }
+    NSArray *words=[wordModel getWords];
+    
+    //word1 = [[WordView alloc] init];
+    word1=[[[NSBundle mainBundle] loadNibNamed:@"WordView" owner:self options:nil] objectAtIndex:0];
+    [word1 setOpaque:true];
+    word1.backgroundColor = [UIColor clearColor];
+
+    word2 = [[WordView alloc] init];
+    word2=[[[NSBundle mainBundle] loadNibNamed:@"WordView" owner:self options:nil] objectAtIndex:0];
+    [word2 setOpaque:true];
+    word2.backgroundColor = [UIColor clearColor];
+    word3 = [[WordView alloc] init];
+    word3 =[[[NSBundle mainBundle] loadNibNamed:@"WordView" owner:self options:nil] objectAtIndex:0];
+    [word3 setOpaque:true];
+    word3.backgroundColor = [UIColor clearColor];
+    
+    word4 = [[WordView alloc] init];
+    word4=[[[NSBundle mainBundle] loadNibNamed:@"WordView" owner:self options:nil] objectAtIndex:0];
+    [word4 setOpaque:true];
+    word4.backgroundColor = [UIColor clearColor];
+
+
+    
+    //NSLog(@"@&",[words objectAtIndex:0]);
+    [wordButton1 setTitle: (NSString*)[words objectAtIndex:0] forState: UIControlStateNormal];
+    [wordButton2 setTitle: (NSString*)[words objectAtIndex:1] forState: UIControlStateNormal];
+    [wordButton3 setTitle: (NSString*)[words objectAtIndex:2] forState: UIControlStateNormal];
+    [wordButton4 setTitle: (NSString*)[words objectAtIndex:3] forState: UIControlStateNormal];
+    [definitionTV setText: wordModel.definition];
+    
+    [word1 addWord:(NSString*)[words objectAtIndex:0]];
+    [word2 addWord:[words objectAtIndex:1]];
+    [word3 addWord:[words objectAtIndex:2]];
+    [word4 addWord:[words objectAtIndex:3]];
+    
+    score.text = [NSString stringWithFormat:@"streak: %5.0f\t\tword count: %.0f\t\tcorrect: %.0f%%",0.0, 0.0,0.0*100];
+
+}
+- (void) viewDidAppear:(BOOL)animated {
+
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    if ([defaults objectForKey:@"TappingUI"] != nil) {
+        isTapping = [defaults boolForKey:@"TappingUI"];
+    }else{
+        srand(time(0));
+        int randomval = rand() % 2;
+        isTapping = (BOOL)randomval;
+        [defaults setBool:isTapping forKey:@"TappingUI"];
+    }
+    
+    if (!isTapping) {
+        [self addGestureRecognizersToPiece:word1];
+        [self addGestureRecognizersToPiece:word2];
+        [self addGestureRecognizersToPiece:word3];
+        [self addGestureRecognizersToPiece:word4];
+        
+        word1.hidden = NO;
+        word2.hidden = NO;
+        word3.hidden = NO;
+        word4.hidden = NO;
+
+        wordButton1.hidden = YES;
+        wordButton2.hidden = YES;
+        wordButton3.hidden = YES;
+        wordButton4.hidden = YES;
+        
+    }else{
+        word1.hidden = YES;
+        word2.hidden = YES;
+        word3.hidden = YES;
+        word4.hidden = YES;
+        
+        wordButton1.hidden = NO;
+        wordButton2.hidden = NO;
+        wordButton3.hidden = NO;
+        wordButton4.hidden = NO;
+    }
+    
+    
+    
+    [word1 setFrame: wordButton1.frame];
+    [word2 setFrame: wordButton2.frame];
+    [word3 setFrame: wordButton3.frame];
+    [word4 setFrame: wordButton4.frame];
+    
+    [self.view addSubview:word1];
+    [self.view addSubview:word2];
+    [self.view addSubview:word3];
+    [self.view addSubview:word4];
+
+
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - Check Answer
+
+- (IBAction)answerPressed:(id) sender
+{
+    if (isTapping){
+    UIButton *s = (UIButton *)sender;
+    selected = s.titleLabel.text;
+    UIImageView* result;
+    if ([selected isEqualToString:wordModel.correct]){
+        correct = true;
+        result = tickView;
+        //put this in WordModel or Statsmodel
+        correctCount++;
+        streak ++;
+        if(streak > [highestStreak floatValue]){
+            highestStreak = [NSNumber numberWithFloat:streak];
+            [[NSUserDefaults standardUserDefaults] setObject: highestStreak forKey: @"HighScore"];
+//highscore.text = [NSString stringWithFormat:@"highest streak: %5.0f\t",streak];
+            
+        }
+    }else{
+        correct = false;
+        result = crossView;
+        wrongCount ++;
+        streak =0.0;
+        
+    }
+    //[self.view bringSubviewToFront:result];
+    result.hidden = NO;
+	[self animateCorrectWrongView:result];
+    }
+}
+
+
+-(void)animateCorrectWrongView:(UIImageView *) selectedView {
+    //NSLog(@"Animate");
+    [UIView beginAnimations:nil context:NULL];
+	[UIView setAnimationDuration:0.6];
+	[UIView setAnimationDelegate:self];
+	[UIView setAnimationDidStopSelector:@selector(grow3AnimationDidStop:finished:context:)];
+	CGAffineTransform transform = CGAffineTransformMakeScale(1.3, 1.3);
+	selectedView.transform = transform;
+	[UIView commitAnimations];
+	//selectedView.center = touchPoint;
+	//[UIView commitAnimations];
+}
+
+
+/*- (void)grow3AnimationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context {
+    tickView.hidden = YES;
+    crossView.hidden = YES;
+    tickView.transform =CGAffineTransformIdentity;
+    crossView.transform =CGAffineTransformIdentity;
+    
+    if (correct){
+        [wordModel selectNextWord];
+        NSArray *words=[wordModel getWords];
+        //NSLog(@"@&",[words objectAtIndex:0]);
+        [wordButton1 setTitle: (NSString*)[words objectAtIndex:0] forState: UIControlStateNormal];
+        [wordButton2 setTitle: (NSString*)[words objectAtIndex:1] forState: UIControlStateNormal];
+        [wordButton3 setTitle: (NSString*)[words objectAtIndex:2] forState: UIControlStateNormal];
+        [wordButton4 setTitle: (NSString*)[words objectAtIndex:3] forState:UIControlStateNormal];
+        [definitionTV setText:wordModel.definition];
+    }
+}*/
+
+
+
+
+#pragma mark - Option View
+
+- (void)optionsViewControllerDidFinish:(OptionsViewController *)controller
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([[segue identifier] isEqualToString:@"showAlternate"]) {
+        [[segue destinationViewController] setDelegate:self];
+    }
+}
+
+#pragma mark - Handling Touch
+
+// adds a set of gesture recognizers to one of our piece subviews
+- (void)addGestureRecognizersToPiece:(UIView *)piece
+{
+    
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panPiece:)];
+    [panGesture setMaximumNumberOfTouches:1];
+    [panGesture setMinimumNumberOfTouches:1];
+    [panGesture setDelegate:self];
+    [piece addGestureRecognizer:panGesture];
+    
+}
+
+/*
+ // Only override drawRect: if you perform custom drawing.
+ // An empty implementation adversely affects performance during animation.
+ - (void)drawRect:(CGRect)rect
+ {
+ // Drawing code
+ }
+ */
+
+// shift the piece's center by the pan amount
+// reset the gesture recognizer's translation to {0, 0} after applying so the next callback is a delta from the current position
+- (void)panPiece:(UIPanGestureRecognizer *)gestureRecognizer
+{
+    UIView *piece = [gestureRecognizer view];
+    
+    [self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
+    
+    
+    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan){
+        [self.view bringSubviewToFront:piece];
+        CGPoint locationInSuperview = [gestureRecognizer locationInView:piece.superview];
+        [self animateFirstTouchAtPoint:locationInSuperview on:(WordView *)piece];
+        
+    }
+    
+    
+    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged) {
+        CGPoint translation = [gestureRecognizer translationInView:[piece superview]];
+        
+        [piece setCenter:CGPointMake([piece center].x + translation.x, [piece center].y + translation.y)];
+        [gestureRecognizer setTranslation:CGPointZero inView:[piece superview]];
+    }
+    
+    if ([gestureRecognizer state] == UIGestureRecognizerStateEnded){
+        if(piece.center.y <= 110){ //&& point.x<=159){
+            //  = selected;
+            //selectedWord = selected.label.text;
+            [self animateWordToPlace:(WordView*)piece];
+            
+        }
+        piece.transform = CGAffineTransformIdentity;
+        //piece.transform = CGAffineTransformMakeScale(0.7, 0.7);
+        
+        
+	}
+    
+}
+
+// scale and rotation transforms are applied relative to the layer's anchor point
+// this method moves a gesture recognizer's view's anchor point between the user's fingers
+- (void)adjustAnchorPointForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
+{
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        UIView *piece = gestureRecognizer.view;
+        CGPoint locationInSuperview = [gestureRecognizer locationInView:piece.superview];
+        piece.center = locationInSuperview;
+    }
+}
+
+
+#define GROW_ANIMATION_DURATION_SECONDS 0.15
+#define SHRINK_ANIMATION_DURATION_SECONDS 0.15
+
+- (void)animateFirstTouchAtPoint:(CGPoint)touchPoint  on:(WordView *) selectedView {
+	
+	[UIView beginAnimations:nil context:NULL];
+	[UIView setAnimationDuration:GROW_ANIMATION_DURATION_SECONDS];
+	[UIView setAnimationDelegate:self];
+	[UIView setAnimationDidStopSelector:@selector(growAnimationDidStop:finished:context:)];
+	CGAffineTransform transform = CGAffineTransformMakeScale(1.3, 1.3);
+	selectedView.transform = transform;
+	[UIView commitAnimations];
+	[UIView beginAnimations:nil context:NULL];
+	[UIView setAnimationDuration:GROW_ANIMATION_DURATION_SECONDS + SHRINK_ANIMATION_DURATION_SECONDS];
+	selectedView.center = touchPoint;
+	[UIView commitAnimations];
+}
+
+
+- (void)growAnimationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context {
+	[UIView beginAnimations:nil context:NULL];
+	[UIView setAnimationDuration:SHRINK_ANIMATION_DURATION_SECONDS];
+	//self.transform = CGAffineTransformMakeScale(1.1, 1.1);
+	[UIView commitAnimations];
+}
+
+- (void)animationDidStop:(CAAnimation *)theAnimation finished:(BOOL)flag {
+    
+    UIImageView* result;
+    if ([selected isEqualToString:wordModel.correct]){
+        correct = true;
+        result = tickView;
+        //put this in WordModel or Statsmodel
+        correctCount++;
+        streak ++;
+        if(streak > [highestStreak floatValue]){
+            highestStreak = [NSNumber numberWithFloat:streak];
+            [[NSUserDefaults standardUserDefaults] setObject: highestStreak forKey: @"HighScore"];
+            //highscore.text = [NSString stringWithFormat:@"highest streak: %5.0f\t",streak];
+            
+        }
+    }else{
+        correct = false;
+        result = crossView;
+        wrongCount ++;
+        streak =0.0;
+        
+    }
+    //[self.view bringSubviewToFront:result];
+    result.hidden = NO;
+	[self animateCorrectWrongView:result];
+	//[self checkWord:self.selectedV];
+}
+
+
+
+
+- (void)grow3AnimationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context {
+    
+    [word1 setFrame: wordButton1.frame];
+    [word2 setFrame: wordButton2.frame];
+    [word3 setFrame: wordButton3.frame];
+    [word4 setFrame: wordButton4.frame];
+    
+    [self.view bringSubviewToFront:word3];
+    [self.view bringSubviewToFront:word4];
+    
+    
+    tickView.hidden = YES;
+    crossView.hidden = YES;
+    tickView.transform =CGAffineTransformIdentity;
+    crossView.transform =CGAffineTransformIdentity;
+    
+    if (correct){
+        [wordModel selectNextWord];
+        NSArray *words=[wordModel getWords];
+        //NSLog(@"@&",[words objectAtIndex:0]);
+        [word1 addWord:(NSString*)[words objectAtIndex:0]];
+        [word2 addWord:[words objectAtIndex:1]];
+        [word3 addWord:[words objectAtIndex:2]];
+        [word4 addWord:[words objectAtIndex:3]];
+        
+        [wordButton1 setTitle: (NSString*)[words objectAtIndex:0] forState: UIControlStateNormal];
+        [wordButton2 setTitle: (NSString*)[words objectAtIndex:1] forState: UIControlStateNormal];
+        [wordButton3 setTitle: (NSString*)[words objectAtIndex:2] forState: UIControlStateNormal];
+        [wordButton4 setTitle: (NSString*)[words objectAtIndex:3] forState:UIControlStateNormal];
+        
+        [definitionTV setText: wordModel.definition];
+    }
+    float percentage = correctCount/(correctCount+wrongCount);
+	if(correctCount== 0)
+		percentage = 0.0;
+    //XXX TODO String extern def
+	NSString *showing = [NSString stringWithFormat:@"streak: %5.0f\t\tword count: %.0f\t\tcorrect: %.0f%%",streak,correctCount,percentage*100];
+    //update app delegate string to send to server
+    [self toSendString];
+    score.text =showing;
+}
+
+
+
+- (void)animateWordToPlace:(WordView *) selectedView {
+	
+	// Bounces the placard back to the center
+	
+	CALayer *welcomeLayer = selectedView.layer;
+	
+	// Create a keyframe animation to follow a path back to the center
+	CAKeyframeAnimation *bounceAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
+	bounceAnimation.removedOnCompletion = NO;
+	
+	CGFloat animationDuration = 0.1;
+	
+	
+	// Create the path for the bounces
+	CGMutablePathRef thePath = CGPathCreateMutable();
+	
+	CGFloat midX = gapLabel.center.x;
+	CGFloat midY = gapLabel.center.y;
+	CGFloat originalOffsetX = selectedView.center.x - midX;
+	CGFloat originalOffsetY = selectedView.center.y - midY;
+	CGFloat offsetDivider = 4.0;
+	
+	BOOL stopBouncing = NO;
+	
+	// Start the path at the placard's current location
+	CGPathMoveToPoint(thePath, NULL, selectedView.center.x, selectedView.center.y);
+	CGPathAddLineToPoint(thePath, NULL, midX, midY);
+	
+	// Add to the bounce path in decreasing excursions from the center
+	while (stopBouncing != YES) {
+		CGPathAddLineToPoint(thePath, NULL, midX + originalOffsetX/offsetDivider, midY + originalOffsetY/offsetDivider);
+		CGPathAddLineToPoint(thePath, NULL, midX, midY);
+		
+		offsetDivider += 4;
+		animationDuration += 1/offsetDivider;
+		if ((abs(originalOffsetX/offsetDivider) < 6) && (abs(originalOffsetY/offsetDivider) < 6)) {
+			stopBouncing = YES;
+		}
+	}
+	
+	bounceAnimation.path = thePath;
+	bounceAnimation.duration = animationDuration;
+	
+	
+	// Create a basic animation to restore the size of the placard
+	//CABasicAnimation *transformAnimation = [CABasicAnimation animationWithKeyPath:@"transform"];
+	//transformAnimation.removedOnCompletion = YES;
+	//transformAnimation.duration = animationDuration;
+	//transformAnimation.toValue = [NSValue valueWithCATransform3D:CATransform3DIdentity];
+	
+	// Create an animation group to combine the keyframe and basic animations
+	CAAnimationGroup *theGroup = [CAAnimationGroup animation];
+	
+	// Set self as the delegate to allow for a callback to reenable user interaction
+	theGroup.delegate = self;
+	theGroup.duration = animationDuration;
+	theGroup.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+	
+	theGroup.animations = [NSArray arrayWithObjects:bounceAnimation, nil];
+	
+	
+	// Add the animation group to the layer
+	[welcomeLayer addAnimation:theGroup forKey:@"animatePlacardViewToCenter"];
+	
+	// Set the placard view's center and transformation to the original values in preparation for the end of the animation
+	selectedView.center = gapLabel.center;
+	selectedView.transform = CGAffineTransformIdentity;
+    selected = [selectedView getWord];
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch{
+    return true;
+}
+
+#pragma mark - Send string generation
+
+- (NSString *)xor:(NSString *)string
+{
+    NSString* key = @"whatawonderfulworld";
+    // Create data object from the string
+    NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+    
+    // Get pointer to data to obfuscate
+    char *dataPtr = (char *) [data bytes];
+    
+    // Get pointer to key data
+    char *keyData = (char *) [[key dataUsingEncoding:NSUTF8StringEncoding] bytes];
+    
+    // Points to each char in sequence in the key
+    char *keyPtr = keyData;
+    int keyIndex = 0;
+    
+    // For each character in data, xor with current value in key
+    for (int x = 0; x < [data length]; x++)
+    {
+        // Replace current character in data with
+        // current character xor'd with current key value.
+        // Bump each pointer to the next character
+        *dataPtr = *dataPtr ^ *keyPtr;
+        dataPtr++;
+        keyPtr++;        // If at end of key data, reset count and
+        // set key pointer back to start of key value
+        if (++keyIndex == [key length])
+            keyIndex = 0, keyPtr = keyData;
+    }
+    
+    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+}
+
+- (void)toSendString{
+    NSUUID *oNSUUID = [[UIDevice currentDevice] identifierForVendor];
+    //[strApplicationUUID setString:[oNSUUID UUIDString]];
+    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    NSDictionary *stats = @{
+                                @"C" : [self xor:[NSString stringWithFormat:@"%i",(int)correctCount]],
+                                @"W" : [self xor:[NSString stringWithFormat:@"%i",(int)wrongCount]],
+                                @"S" : [self xor:[NSString stringWithFormat:@"%i",(int)streak]],
+                                @"H" : [self xor:[NSString stringWithFormat:@"%@",highestStreak]],
+                                @"I":[self xor:[oNSUUID UUIDString]],
+                                @"A":[self xor:[NSString stringWithFormat:@"%i",[defaults boolForKey:@"TappingUI"]]],
+                                @"B":[self xor:[NSString stringWithFormat:@"%ld", (long)[[NSDate date] timeIntervalSince1970]]],
+                                @"D":[self xor:[NSString stringWithFormat:@"%ld",start_time]],
+                                @"L":[self xor:[[NSLocale preferredLanguages] objectAtIndex:0]],
+                                };
+    
+    //add average time spent
+    //date of sending
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:stats
+                                                       options:NSJSONWritingPrettyPrinted // Pass 0 if you don't care about the readability of the generated string
+                                                         error:&error];
+    
+    if (! jsonData) {
+        NSLog(@"Got an error: %@", error);
+    } else {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        //NSLog(jsonString);
+    }
+    AppDelegate *delegate =(AppDelegate *)[[UIApplication sharedApplication] delegate];
+    delegate.tosend = stats;
+    
+}
+
+#pragma mark -iAds
+
+- (void)layoutAnimated:(BOOL)animated
+{
+    CGRect contentFrame = self.view.bounds;
+    
+    // all we need to do is ask the banner for a size that fits into the layout area we are using
+    CGSize sizeForBanner = [_bannerView sizeThatFits:contentFrame.size];
+    
+    // compute the ad banner frame
+    CGRect bannerFrame = _bannerView.frame;
+    if (_bannerView.bannerLoaded) {
+        
+        // bring the ad into view
+        contentFrame.size.height -= sizeForBanner.height;   // shrink down content frame to fit the banner below it
+        
+        bannerFrame.origin.y = 0;//contentFrame.size.height;
+        bannerFrame.size.height = sizeForBanner.height;
+        bannerFrame.size.width = sizeForBanner.width;
+        
+        // if the ad is available and loaded, shrink down the content frame to fit the banner below it,
+        // we do this by modifying the vertical bottom constraint constant to equal the banner's height
+        //
+        //NSLayoutConstraint *verticalBottomConstraint = self.bottomConstraint;
+        //verticalBottomConstraint.constant = sizeForBanner.height;
+        [self.view layoutSubviews];
+        
+    } else {
+        // hide the banner off screen further off the bottom
+        bannerFrame.origin.y = contentFrame.size.height;
+    }
+    
+    [UIView animateWithDuration:animated ? 0.25 : 0.0 animations:^{
+        //_contentView.frame = contentFrame;
+        //[_contentView layoutIfNeeded];
+        _bannerView.frame = bannerFrame;
+    }];
+}
+
+
+- (void)startTimer
+{
+    if (_timer == nil) {
+        _timer = [NSTimer scheduledTimerWithTimeInterval:0.1
+                                                  target:self
+                                                selector:@selector(timerTick:)
+                                                userInfo:nil
+                                                 repeats:YES];
+    }
+}
+
+- (void)stopTimer
+{
+    [_timer invalidate];
+    _timer = nil;
+}
+
+- (void)timerTick:(NSTimer *)timer
+{
+    // Timers are not guaranteed to tick at the nominal rate specified, so this isn't technically accurate.
+    // However, this is just an example to demonstrate how to stop some ongoing activity, so we can live with that inaccuracy.
+    _ticks += 0.1;
+    double seconds = fmod(_ticks, 60.0);
+    double minutes = fmod(trunc(_ticks / 60.0), 60.0);
+    double hours = trunc(_ticks / 3600.0);
+    //self.timerLabel.text = [NSString stringWithFormat:@"%02.0f:%02.0f:%04.1f", hours, minutes, seconds];
+}
+
+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_6_0
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    return YES;
+}
+#endif
+
+- (NSUInteger)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskAll;
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [self layoutAnimated:[UIView areAnimationsEnabled]];
+}
+
+- (void)bannerViewDidLoadAd:(ADBannerView *)banner
+{
+    [self layoutAnimated:YES];
+}
+
+- (void)bannerView:(ADBannerView *)banner didFailToReceiveAdWithError:(NSError *)error
+{
+    NSLog(@"didFailToReceiveAdWithError %@", error);
+    [self layoutAnimated:YES];
+}
+
+- (BOOL)bannerViewActionShouldBegin:(ADBannerView *)banner willLeaveApplication:(BOOL)willLeave
+{
+    [self stopTimer];
+    return YES;
+}
+
+- (void)bannerViewActionDidFinish:(ADBannerView *)banner
+{
+    [self startTimer];
+}
+
+
+@end

@@ -7,6 +7,7 @@
 //
 
 #import "OptionsViewController.h"
+#import "Blanks-Swift.h"
 
 @interface OptionsViewController ()
 @property (weak, nonatomic) IBOutlet UISwitch *dragSwitch;
@@ -14,6 +15,21 @@
 @end
 
 @implementation OptionsViewController
+
+#pragma mark - Open More Blanks
+
+- (IBAction)getMoreBlanks:(id)sender {
+    
+    NSString *iTunesLink = @"https://apps.apple.com/app/moreblanks/id288808376";
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:iTunesLink]];
+}
+
+- (IBAction)buyCoffee:(id)sender {
+    UIViewController *vc = [SwiftUIViewFactory makeSwiftUIViewWithDismissHandler:^{
+        [[self presentedViewController] dismissViewControllerAnimated:YES completion:nil];
+    }];
+    [self presentViewController:vc animated:YES completion:nil];
+}
 
 - (void)viewDidLoad
 {
@@ -42,9 +58,9 @@
 #pragma mark - Actions
 - (IBAction)toggleDragging:(id)sender {
     NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
-    NSLog(@"%d",self.dragSwitch.isOn);
-
+    //NSLog(@"%d",self.dragSwitch.isOn);
     [prefs setBool:self.dragSwitch.isOn forKey:@"TappingUI"];
+    [prefs synchronize];
     //NSLog(@"%d",[prefs boolForKey:@"theBoolKey"]);
 }
 

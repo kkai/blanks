@@ -10,6 +10,8 @@
 
 @class OptionsViewController;
 
+@class SwiftUIViewFactory;
+
 @protocol OptionsViewControllerDelegate
 - (void) optionsViewControllerDidFinish:(OptionsViewController *)controller;
 @end
