@@ -47,6 +47,7 @@ struct TipJarView: View {
                 }
             }
             .scrollContentBackground(.hidden)
+            .font(.custom("TimesNewRomanPSMT", size: 20))
         }
         .navigationTitle("Tip Jar")
         .task {

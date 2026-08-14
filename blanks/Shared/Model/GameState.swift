@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// Game rules replicate the shipped ObjC 4.3 app: a wrong answer never
+/// advances the round — the same word stays on screen for retry, every
+/// wrong answer counts, and nothing is revealed.
 @Observable
 @MainActor
 final class GameState {
@@ -15,6 +18,7 @@ final class GameState {
     var correctCount: Int = 0
     var wrongCount: Int = 0
 
+    /// Persisted like 4.3 ("HighScore"), but never displayed.
     var highScore: Int {
         didSet { UserDefaults.standard.set(highScore, forKey: "HighScore") }
     }
@@ -22,20 +26,26 @@ final class GameState {
     var lastAnswerCorrect: Bool?
     var showFeedback: Bool = false
 
-    /// Answers are ignored while feedback for the previous answer is on screen.
+    /// True once any answer was given — 4.3 switches the score-bar
+    /// format string after the first answer.
+    private(set) var hasAnswered = false
+
+    /// Bumped when a feedback window ends (correct or wrong) so views can
+    /// reset card positions, mirroring 4.3's grow3AnimationDidStop.
+    private(set) var roundID = 0
+
+    /// Answers are ignored while feedback for the previous answer is on
+    /// screen (guard against double-count races; 4.3 left input unlocked).
     private(set) var isAcceptingAnswers = true
 
     /// True when the bundled word list could not be loaded.
     var contentUnavailable: Bool { wordModel.loadFailed }
 
-    var correctPercentage: Int {
-        let total = correctCount + wrongCount
-        guard total > 0 else { return 0 }
-        return Int(Double(correctCount) / Double(total) * 100)
-    }
-
-    var totalAnswered: Int {
-        correctCount + wrongCount
+    /// 4.3 percentage rule: correct/(correct+wrong), forced to 0 while
+    /// correctCount is 0 — even when wrong answers exist.
+    var percentValue: Double {
+        guard correctCount > 0 else { return 0 }
+        return Double(correctCount) / Double(correctCount + wrongCount) * 100
     }
 
     init(wordModel: WordModel? = nil) {
@@ -44,7 +54,8 @@ final class GameState {
         nextWord()
     }
 
-    /// Scores the answer and advances to the next word after feedback.
+    /// Scores the answer; the round only advances on a correct answer,
+    /// 0.6 s later (the feedback animation length in 4.3).
     /// Returns false if the answer was ignored (feedback still showing).
     @discardableResult
     func checkAnswer(_ answer: String) -> Bool {
@@ -63,17 +74,19 @@ final class GameState {
             streak = 0
         }
         lastAnswerCorrect = wasCorrect
+        hasAnswered = true
         showFeedback = true
 
-        // A miss reveals the correct word, so it stays up longer.
-        let feedbackDuration: Duration = wasCorrect ? .seconds(0.6) : .seconds(1.4)
         feedbackTask?.cancel()
         feedbackTask = Task {
-            try? await Task.sleep(for: feedbackDuration)
+            try? await Task.sleep(for: .seconds(0.6))
             guard !Task.isCancelled else { return }
             showFeedback = false
             isAcceptingAnswers = true
-            nextWord()
+            if wasCorrect {
+                nextWord()
+            }
+            roundID += 1
         }
         return true
     }

@@ -85,38 +85,54 @@ private func makeEntry(
             #expect(game.checkAnswer("apple"))
             #expect(game.correctCount == 1)
             #expect(game.streak == 1)
-            #expect(game.totalAnswered == 1)
             #expect(game.lastAnswerCorrect == true)
+            #expect(Int(game.percentValue) == 100)
             #expect(game.highScore == 1)
             #expect(UserDefaults.standard.integer(forKey: Self.highScoreKey) == 1)
         }
     }
 
-    @Test func wrongAnswerCountsOnceAndLocksUntilNextRound() async {
+    @Test func wrongAnswerDoesNotAdvanceAndLocksBriefly() async {
         await withCleanHighScore {
             let game = makeGame()
+            let wordBefore = game.correctWord
             #expect(game.checkAnswer("banana"))
             #expect(game.wrongCount == 1)
             #expect(game.streak == 0)
             #expect(game.lastAnswerCorrect == false)
+            // Same word stays on screen (4.3: retry, no reveal).
+            #expect(game.correctWord == wordBefore)
 
-            // Further answers during the feedback window are ignored,
-            // so retries can no longer inflate the stats.
+            // Answers during the 0.6s feedback window are ignored.
             #expect(!game.checkAnswer("apple"))
             #expect(game.correctCount == 0)
-            #expect(game.totalAnswered == 1)
         }
     }
 
-    @Test func roundAdvancesAfterWrongAnswerFeedback() async throws {
+    @Test func retryAfterWrongAnswerScoresOnSameWord() async throws {
         try await withCleanHighScore {
             let game = makeGame()
+            let wordBefore = game.correctWord
             game.checkAnswer("banana")
-            #expect(game.showFeedback)
-            try await Task.sleep(for: .seconds(2))
+            try await Task.sleep(for: .seconds(1))
             #expect(!game.showFeedback)
             #expect(game.isAcceptingAnswers)
+            // Round did not advance — retrying the SAME word succeeds.
+            #expect(game.correctWord == wordBefore)
             #expect(game.checkAnswer("apple"))
+            #expect(game.correctCount == 1)
+            #expect(game.streak == 1)
+            // 4.3 percentage: 1 correct / 2 answered = 50%.
+            #expect(Int(game.percentValue) == 50)
+        }
+    }
+
+    @Test func percentageIsZeroWhileNoCorrectAnswers() async {
+        await withCleanHighScore {
+            let game = makeGame()
+            game.checkAnswer("banana")
+            // 4.3 forces 0% while correctCount == 0, despite wrong answers.
+            #expect(game.percentValue == 0)
         }
     }
 

@@ -43,8 +43,6 @@
 			membershipExceptions = (
 				Blanks/BlanksApp.swift,
 				Blanks/BlanksGameView.swift,
-				Blanks/DropZoneView.swift,
-				Blanks/WordCardView.swift,
 			);
 			target = 2A37163A2F49B98A0094A22A /* MoreBlanks */;
 		};
