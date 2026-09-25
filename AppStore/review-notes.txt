@@ -1,0 +1,7 @@
+No login or account. Everything runs offline; nothing is collected.
+
+To see the 5.1 changes:
+- Drag the word that matches the definition into the hole at the top of the paper (or turn on "Tap words instead of dragging" under the i button and tap it). After a right answer the app shows what all four words mean; tap anywhere to go on. Holding a word on that screen opens the system dictionary, or the app's own definition if no dictionary is installed.
+- More Blanks only: under the i button, "Review" (with "Review mistakes only"), "Recent words" and "Progress". Answer a word wrong once and it appears there.
+
+The tip jar in Blanks (i button > Buy Me a Coffee) uses the three existing consumable in-app purchases; it unlocks nothing.

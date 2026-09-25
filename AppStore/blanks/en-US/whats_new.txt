@@ -1,0 +1,5 @@
+• After a right answer, see what all four words mean. Hold one to look it up in the dictionary. You can turn this off on the About screen.
+• Words no longer repeat until you have seen the whole list, and words you miss come back sooner.
+• Your best streak now shows on the About screen.
+• Cleaner word list: 34 definitions corrected and 6 names removed.
+• VoiceOver improvements.

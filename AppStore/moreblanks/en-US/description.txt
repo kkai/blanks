@@ -1,0 +1,12 @@
+More Blanks is the Blanks vocabulary game with a review mode. It shows you a definition and four words. Drag the right word into the hole in the paper, or switch to tapping it.
+
+Every word you miss is remembered. It comes back after a few words, then less and less often as you keep getting it right. Turn on "Review mistakes only" to practise nothing but those words.
+
+• Review mode for the words you missed
+• Your last 50 words, with their meanings
+• Progress: words practised, right the first time, learned, still to review, and your best streak
+• After a right answer, see what all four words mean; hold one to look it up in the dictionary
+• The same 8,000+ English words as Blanks, with definitions from WordNet
+• No ads and no account; your progress stays on your device
+
+Word definitions from WordNet 3.0, Princeton University. The developer is not associated with WordNet or Princeton.

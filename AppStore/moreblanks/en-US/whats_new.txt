@@ -1,0 +1,7 @@
+• Review mode: words you miss come back until you get them right the first time. Turn on "Review mistakes only" on the About screen to practise just those.
+• Recent Words: your last 50 words with their meanings.
+• Progress: words practised, right the first time, learned, still to review, and your best streak.
+• After a right answer, see what all four words mean. Hold one to look it up in the dictionary.
+• Words no longer repeat until you have seen the whole list.
+• Cleaner word list: 34 definitions corrected and 6 names removed.
+• VoiceOver improvements.

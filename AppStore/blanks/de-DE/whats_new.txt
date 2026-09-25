@@ -1,0 +1,5 @@
+• Nach einer richtigen Antwort siehst Du, was alle vier Wörter bedeuten. Halte eines gedrückt, um es im Wörterbuch nachzuschlagen. Im Info-Bildschirm lässt sich das abschalten.
+• Wörter wiederholen sich erst, wenn Du die ganze Liste gesehen hast, und verpasste Wörter kommen früher wieder.
+• Deine beste Serie steht jetzt im Info-Bildschirm.
+• Aufgeräumte Wortliste: 34 Definitionen korrigiert, 6 Namen entfernt.
+• Verbesserungen für VoiceOver.
