@@ -1,12 +1,13 @@
 import Foundation
 
 struct WordModel {
-    private let words: [WordEntry]
+    let words: [WordEntry]
+    private let indexByWord: [String: Int]
 
     /// True when no usable word list is available; views show an error state.
     let loadFailed: Bool
 
-    // Parsed once per process; the plist is 2.5 MB and identical for every instance.
+    // Parsed once per process; the plist is 800 KB and identical for every instance.
     private static let bundledWords: [WordEntry]? = {
         guard let url = Bundle.main.url(forResource: "average", withExtension: "plist"),
               let data = try? Data(contentsOf: url),
@@ -23,11 +24,23 @@ struct WordModel {
 
     init(words: [WordEntry]) {
         self.words = words
+        indexByWord = Dictionary(words.enumerated().map { ($1.word, $0) },
+                                 uniquingKeysWith: { first, _ in first })
         loadFailed = words.isEmpty
     }
 
     func randomEntry() -> WordEntry? {
         words.randomElement()
+    }
+
+    func entry(for word: String) -> WordEntry? {
+        indexByWord[word].map { words[$0] }
+    }
+
+    /// Nearly every distractor is itself a headword, so its meaning is
+    /// available offline.
+    func definition(of word: String) -> String? {
+        entry(for: word)?.definition
     }
 
     func shuffledOptions(for entry: WordEntry) -> [String] {

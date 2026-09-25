@@ -1,13 +1,24 @@
 import SwiftUI
 
-/// Game rules replicate the shipped ObjC 4.3 app: a wrong answer never
+/// Game rules follow the shipped ObjC 4.3 app: a wrong answer never
 /// advances the round — the same word stays on screen for retry, every
-/// wrong answer counts, and nothing is revealed.
+/// wrong answer counts, and nothing is revealed. Since 5.1 a correct
+/// answer can pause on the meanings of all four choices, and missed
+/// words come back for review.
 @Observable
 @MainActor
 final class GameState {
+    static let pauseAfterWordKey = "PauseAfterWord"
+    static let reviewModeKey = "ReviewMode"
+    /// Chance that a due review word replaces the next word from the deck.
+    static let reviewShare = 0.35
+
     private let wordModel: WordModel
     private let defaults: UserDefaults
+    private var deck: WordDeck
+    /// MoreBlanks only: the "Review mistakes" mode can be switched on.
+    let reviewModeAvailable: Bool
+    let progress: ProgressStore
 
     var options: [String] = []
     var definition: String = ""
@@ -17,13 +28,17 @@ final class GameState {
     var correctCount: Int = 0
     var wrongCount: Int = 0
 
-    /// Persisted like 4.3 ("HighScore"), but never displayed.
+    /// Persisted like 4.3 ("HighScore"); shown on About since 5.1.
     var highScore: Int {
         didSet { defaults.set(highScore, forKey: "HighScore") }
     }
 
     var lastAnswerCorrect: Bool?
     var showFeedback: Bool = false
+
+    /// True after a correct answer while the meanings of all four
+    /// choices are on screen; a tap moves on.
+    private(set) var isShowingMeanings = false
 
     /// True once any answer was given — 4.3 switches the score-bar
     /// format string after the first answer.
@@ -37,6 +52,9 @@ final class GameState {
     /// screen (guard against double-count races; 4.3 left input unlocked).
     private(set) var isAcceptingAnswers = true
 
+    /// Whether the current word has had a wrong answer.
+    private var missedCurrentWord = false
+
     /// True when the bundled word list could not be loaded.
     var contentUnavailable: Bool { wordModel.loadFailed }
 
@@ -47,11 +65,35 @@ final class GameState {
         return Double(correctCount) / Double(correctCount + wrongCount) * 100
     }
 
-    init(wordModel: WordModel? = nil, defaults: UserDefaults = .standard) {
-        self.wordModel = wordModel ?? WordModel()
+    var pauseAfterWord: Bool {
+        defaults.object(forKey: Self.pauseAfterWordKey) as? Bool ?? true
+    }
+
+    var reviewModeOn: Bool {
+        reviewModeAvailable && defaults.bool(forKey: Self.reviewModeKey)
+    }
+
+    init(
+        wordModel: WordModel? = nil,
+        progress: ProgressStore? = nil,
+        defaults: UserDefaults = .standard,
+        reviewModeAvailable: Bool = false
+    ) {
+        let wordModel = wordModel ?? WordModel()
+        self.wordModel = wordModel
+        self.progress = progress ?? ProgressStore()
         self.defaults = defaults
+        self.reviewModeAvailable = reviewModeAvailable
+        deck = WordDeck(count: wordModel.words.count, defaults: defaults)
         highScore = defaults.integer(forKey: "HighScore")
         nextWord()
+        #if DEBUG
+        // "-showMeanings" opens on the meanings pause (screenshots, UI checks).
+        if ProcessInfo.processInfo.arguments.contains("-showMeanings") {
+            isShowingMeanings = true
+            isAcceptingAnswers = false
+        }
+        #endif
     }
 
     /// Scores the answer; the round only advances on a correct answer,
@@ -69,9 +111,11 @@ final class GameState {
             if streak > highScore {
                 highScore = streak
             }
+            progress.record(word: correctWord, firstTry: !missedCurrentWord)
         } else {
             wrongCount += 1
             streak = 0
+            missedCurrentWord = true
         }
         lastAnswerCorrect = wasCorrect
         hasAnswered = true
@@ -82,6 +126,12 @@ final class GameState {
         Task {
             try? await Task.sleep(for: .seconds(0.6))
             showFeedback = false
+            if wasCorrect && pauseAfterWord {
+                // Input stays locked and the cards stay put until
+                // continueToNextWord().
+                isShowingMeanings = true
+                return
+            }
             isAcceptingAnswers = true
             if wasCorrect {
                 nextWord()
@@ -91,10 +141,46 @@ final class GameState {
         return true
     }
 
+    func continueToNextWord() {
+        guard isShowingMeanings else { return }
+        isShowingMeanings = false
+        nextWord()
+        isAcceptingAnswers = true
+        roundID += 1
+    }
+
+    /// The four choices with their meanings, the answer first.
+    var meanings: [(word: String, definition: String?, isAnswer: Bool)] {
+        let ordered = [correctWord] + options.filter { $0 != correctWord }
+        return ordered.map { word in
+            (word, word == correctWord ? definition : wordModel.definition(of: word), word == correctWord)
+        }
+    }
+
+    func definition(of word: String) -> String? {
+        wordModel.definition(of: word)
+    }
+
     func nextWord() {
-        guard let entry = wordModel.randomEntry() else { return }
+        guard let entry = pickEntry() else { return }
         correctWord = entry.word
         definition = entry.definition
         options = wordModel.shuffledOptions(for: entry)
+        missedCurrentWord = false
+    }
+
+    private func pickEntry() -> WordEntry? {
+        let current = correctWord.isEmpty ? nil : correctWord
+        if reviewModeOn,
+           let word = progress.reviewWord(excluding: current),
+           let entry = wordModel.entry(for: word) {
+            return entry
+        }
+        if Double.random(in: 0..<1) < Self.reviewShare,
+           let word = progress.dueWord(excluding: current),
+           let entry = wordModel.entry(for: word) {
+            return entry
+        }
+        return deck.next().map { wordModel.words[$0] }
     }
 }

@@ -116,16 +116,30 @@ struct LegacyGameView: View {
             // Definition — UITextView at (19,160,283,185); its default
             // insets put the text at (24, 168). Scrollable like the
             // legacy text view: the longest entry (333 chars) overflows.
-            ScrollView {
-                Text(game.definition)
-                    .font(.custom("IowanOldStyle-Roman", size: 16))
-                    .foregroundStyle(.black)
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
+            if game.isShowingMeanings {
+                // Uses the paper down to the score bar: four long meanings
+                // do not fit the 169 pt definition box.
+                meaningsView
+                    .frame(width: 273, height: 222)
+                    .position(x: 24 + 136.5, y: 168 + 111)
+                Text("Tap to continue")
+                    .font(.custom("IowanOldStyle-Italic", size: 12))
+                    .foregroundStyle(.black.opacity(0.55))
+                    .position(x: 160, y: 404)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityAction { game.continueToNextWord() }
+            } else {
+                ScrollView {
+                    Text(game.definition)
+                        .font(.custom("IowanOldStyle-Roman", size: 16))
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                }
+                .scrollIndicators(.hidden)
+                .frame(width: 273, height: 169)
+                .position(x: 24 + 136.5, y: 168 + 84.5)
+                .accessibilityLabel("Definition: \(game.definition)")
             }
-            .scrollIndicators(.hidden)
-            .frame(width: 273, height: 169)
-            .position(x: 24 + 136.5, y: 168 + 84.5)
-            .accessibilityLabel("Definition: \(game.definition)")
 
             // Score bar — one 9pt Iowan Old Style line at x=16, above row 1.
             Text(scoreString)
@@ -167,6 +181,7 @@ struct LegacyGameView: View {
                     }
                 }
             }
+            .allowsHitTesting(!game.isShowingMeanings)
 
             // Tick / cross feedback, upper right over the paper.
             if game.showFeedback, let isCorrect = game.lastAnswerCorrect {
@@ -194,10 +209,22 @@ struct LegacyGameView: View {
         }
         .coordinateSpace(name: "canvas")
         .clipped()
+        .contentShape(Rectangle())
+        // While the meanings are up, a tap anywhere moves on. The mask
+        // keeps this gesture out of the way during normal play.
+        .gesture(
+            TapGesture().onEnded { game.continueToNextWord() },
+            including: game.isShowingMeanings ? .all : .subviews
+        )
         .onChange(of: game.roundID) {
             // grow3AnimationDidStop: every card snaps back to its slot.
             cardCenters = Self.slotCenters
             announceRoundResult()
+        }
+        .onChange(of: game.isShowingMeanings) { _, showing in
+            if showing {
+                AccessibilityNotification.Announcement("Correct. The meanings of all four words are shown.").post()
+            }
         }
         .onChange(of: isTapping) {
             // Mode toggled in About: clear stranded/seated card positions.
@@ -208,8 +235,51 @@ struct LegacyGameView: View {
 
     private func announceRoundResult() {
         guard let isCorrect = game.lastAnswerCorrect else { return }
-        let outcome = isCorrect ? "Correct." : "Wrong, try again."
-        AccessibilityNotification.Announcement("\(outcome) \(game.definition)").post()
+        // After a wrong answer the definition has not changed, so only a
+        // new word repeats it.
+        let message = isCorrect ? "Next word. \(game.definition)" : "Wrong, try again."
+        AccessibilityNotification.Announcement(message).post()
+    }
+
+    // MARK: Meanings of all four choices, after a correct answer.
+
+    /// The answer (its definition was the question) and what the three
+    /// other choices mean, one flowing line each.
+    private var meaningsView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(game.meanings, id: \.word) { item in
+                    meaningRow(item)
+                        .onLongPressGesture { lookUp(item.word) }
+                        .accessibilityLabel(item.isAnswer
+                            ? "\(item.word) is the answer"
+                            : "\(item.word): \(item.definition ?? "no definition")")
+                        .accessibilityAction(named: "Look up \(item.word)") { lookUp(item.word) }
+                        .accessibilityAction(named: "Next word") { game.continueToNextWord() }
+                }
+            }
+            .foregroundStyle(.black)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+        // Visible (and flashed) so an overflowing list reads as scrollable.
+        .scrollIndicators(.visible)
+        .scrollIndicatorsFlash(onAppear: true)
+    }
+
+    /// Lookups only happen after the answer: before it, the answer card's
+    /// entry would show the question's own definition.
+    private func lookUp(_ word: String) {
+        DictionaryLookup.present(term: word, fallback: game.definition(of: word))
+    }
+
+    private func meaningRow(_ item: (word: String, definition: String?, isAnswer: Bool)) -> Text {
+        let word = Text(item.word).font(.custom("IowanOldStyle-Bold", size: 14))
+        if item.isAnswer {
+            return Text("\(word) \(Image(systemName: "checkmark"))")
+                .font(.custom("IowanOldStyle-Roman", size: 12.5))
+        }
+        return Text("\(word)  \(item.definition ?? "")")
+            .font(.custom("IowanOldStyle-Roman", size: 12.5))
     }
 
     private var scoreString: String {

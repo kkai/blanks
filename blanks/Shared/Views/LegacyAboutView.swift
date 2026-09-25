@@ -8,7 +8,11 @@ struct LegacyAboutView: View {
     let config: SKUConfig
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(GameState.self) private var game
     @AppStorage("TappingUI") private var isTapping = false
+    @AppStorage(GameState.pauseAfterWordKey) private var pauseAfterWord = true
+    @AppStorage(GameState.reviewModeKey) private var reviewMode = false
+    @State private var confirmReset = false
     @State private var showTipJar = false
 
     private static let headerFont = Font.custom("IowanOldStyle-Italic", size: 22, relativeTo: .title3)
@@ -20,8 +24,14 @@ struct LegacyAboutView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 28) {
                     modeSection
+                    if game.reviewModeAvailable {
+                        reviewSection
+                        progressSection
+                    } else {
+                        bestStreakRow
+                    }
                     if config.isBlanksSKU {
-                        moreWordsSection
+                        moreBlanksSection
                         supportSection
                     } else {
                         Text("Thank you for your support!")
@@ -63,24 +73,101 @@ struct LegacyAboutView: View {
     }
 
     private var modeSection: some View {
-        Toggle("Tap words instead of dragging", isOn: $isTapping)
-            .font(Self.bodyFont)
-            .tint(.black.opacity(0.75))
+        VStack(alignment: .leading, spacing: 16) {
+            Toggle("Tap words instead of dragging", isOn: $isTapping)
+            VStack(alignment: .leading, spacing: 4) {
+                Toggle("Show all four meanings", isOn: $pauseAfterWord)
+                Text("After a right answer, see what every choice means. Hold a word there to look it up in the dictionary; tap to go on.")
+                    .font(Self.footFont)
+                    .foregroundStyle(.black.opacity(0.6))
+            }
+        }
+        .font(Self.bodyFont)
+        .tint(.black.opacity(0.75))
     }
 
-    private var moreWordsSection: some View {
+    private var bestStreakRow: some View {
+        statRow("Best streak", "\(game.highScore)")
+    }
+
+    // MARK: MoreBlanks: review mode, progress, recent words.
+
+    private var reviewSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("More Words")
+            Text("Review")
                 .font(Self.headerFont)
-            Text("Get more words with More Blanks.")
+            Text("Words you miss come back until you get them right the first time.")
+                .font(Self.bodyFont)
+            VStack(alignment: .leading, spacing: 4) {
+                Toggle("Review mistakes only", isOn: $reviewMode)
+                    .font(Self.bodyFont)
+                    .tint(.black.opacity(0.75))
+                Text(reviewFootnote)
+                    .font(Self.footFont)
+                    .foregroundStyle(.black.opacity(0.6))
+            }
+            NavigationLink {
+                RecentWordsView()
+            } label: {
+                Text("Recent words")
+                    .font(Self.bodyFont.bold())
+                    .frame(minHeight: 44, alignment: .leading)
+            }
+            .tint(.black)
+        }
+    }
+
+    private var reviewFootnote: String {
+        switch game.progress.reviewCount {
+        case 0: "No words to review yet. New words are used until you miss one."
+        case 1: "1 word to review."
+        case let n: "\(n) words to review."
+        }
+    }
+
+    private var progressSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Progress")
+                .font(Self.headerFont)
+                .padding(.bottom, 2)
+            bestStreakRow
+            statRow("Words practised", "\(game.progress.wordsPractised)")
+            statRow("Right the first time", "\(Int((game.progress.firstTryRate * 100).rounded()))%")
+            statRow("Learned", "\(game.progress.knownCount)")
+            statRow("To review", "\(game.progress.reviewCount)")
+            Button("Reset progress…") { confirmReset = true }
+                .font(Self.footFont.bold())
+                .tint(.black)
+                .frame(minHeight: 44, alignment: .leading)
+                .disabled(game.progress.wordsPractised == 0)
+                .confirmationDialog("Reset progress?", isPresented: $confirmReset, titleVisibility: .visible) {
+                    Button("Reset", role: .destructive) { game.progress.reset() }
+                } message: {
+                    Text("This clears your word history, review list and statistics. Your best streak stays.")
+                }
+        }
+    }
+
+    private func statRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label)
+            Spacer()
+            Text(value).monospacedDigit()
+        }
+        .font(Self.bodyFont)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var moreBlanksSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("More Blanks")
+                .font(Self.headerFont)
+            Text("More Blanks brings back the words you missed until they stick, keeps a list of your recent words, and tracks your progress.")
                 .font(Self.bodyFont)
             Link("Get More Blanks on the App Store",
                  destination: URL(string: "https://apps.apple.com/app/moreblanks/id288808376")!)
                 .font(Self.bodyFont.bold())
                 .frame(minHeight: 44, alignment: .leading)
-            Text("New features are coming — stay tuned!")
-                .font(Self.footFont)
-                .foregroundStyle(.black.opacity(0.6))
         }
     }
 

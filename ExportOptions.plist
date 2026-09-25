@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>teamID</key>
+	<string>8H42EZRCCP</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+
+	<!--
+	  `export` rather than `upload`: this produces a local .ipa so it can be
+	  inspected before anything reaches App Store Connect. altool uploads it.
+	  What to check is in AppStore/SUBMISSION.md.
+	-->
+	<key>destination</key>
+	<string>export</string>
+
+	<key>uploadSymbols</key>
+	<true/>
+
+	<!-- Stops Xcode renumbering the build behind the runbook's back. -->
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
+</dict>
+</plist>
