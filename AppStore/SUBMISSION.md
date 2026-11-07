@@ -12,6 +12,7 @@ words. More Blanks adds box counts and Missed This Week. Code: tag `v5.2-submiss
 | Version 5.2 | `9ac9218b-5b46-49c7-965e-c99a0e7ffe1d` | `47f5e3ca-aeaf-4acc-b3ad-8fcd856d8e5c` |
 | Build 7 | `0eb2fde7-c116-4476-a01a-ac881b09f98e` | `cbc16330-23f1-4025-966a-faaaaedf27c2` |
 | Release | MANUAL | MANUAL |
+| Review submission (draft) | `a0ba3e87-5d85-497e-a57f-85776f9e79dc` | `d25e1c87-3111-4ef1-a123-789e32cf22da` |
 
 Screenshots: `studio/appstoreconnect/screenshots/{blanks,moreblanks}-5.2/{iphone,ipad}`,
 from real play on iPhone 11 Pro Max and iPad Pro 12.9 6th gen (iOS 18.5). Run
@@ -19,8 +20,9 @@ from real play on iPhone 11 Pro Max and iPad Pro 12.9 6th gen (iOS 18.5). Run
 the reinstall. Upload them before creating the review item: a draft item locks them.
 The widget is not in the screenshots.
 
-Find the review submission ids with `GET reviewSubmissions?filter[app]=<app id>`, then
-submit with the call below, or press Submit for Review on each version.
+To submit, press Submit for Review on each version, or send
+`PATCH reviewSubmissions/<id>` with `attributes:{submitted:true}` for each id above.
+Still owed on a device: hearing the pronunciation, and the widget on a Home Screen.
 
 ## Earlier release: 5.1 (build 6)
 
