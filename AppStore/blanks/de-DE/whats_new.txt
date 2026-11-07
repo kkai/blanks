@@ -1,5 +1,7 @@
-• Nach einer richtigen Antwort siehst Du, was alle vier Wörter bedeuten. Halte eines gedrückt, um es im Wörterbuch nachzuschlagen. Im Info-Bildschirm lässt sich das abschalten.
-• Wörter wiederholen sich erst, wenn Du die ganze Liste gesehen hast, und verpasste Wörter kommen früher wieder.
-• Deine beste Serie steht jetzt im Info-Bildschirm.
-• Aufgeräumte Wortliste: 34 Definitionen korrigiert, 6 Namen entfernt.
-• Verbesserungen für VoiceOver.
+• Neue Spieler beginnen mit häufigen Wörtern, bevor die ganze Liste ins Spiel kommt.
+• Wörter anhören: Tippe nach einer richtigen Antwort auf den Lautsprecher neben dem Wort.
+• Wort des Tages: ein neues Widget für Deinen Home-Bildschirm.
+• Größere Schrift: Bei den größten Schriftgrößen der Bedienungshilfen wechselt das Spiel zu einem Layout, in das der Text passt.
+• Eine Karte, die neben dem Loch landet, geht jetzt an ihren Platz zurück. So kann die richtige Antwort nicht verloren gehen.
+• Dein Fortschritt ist besser geschützt, falls seine Datei nicht gelesen werden kann.
+• Fünf anstößige Einträge aus der Wortliste entfernt.

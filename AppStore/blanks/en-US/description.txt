@@ -5,6 +5,9 @@ After every right answer, Blanks shows what all four words mean, so the wrong ch
 • Over 8,000 English words, with definitions from WordNet
 • No repeats until you have seen the whole list; words you miss come back sooner
 • Drag the words, or switch to tapping them
+• Hear any of the four words after a right answer
+• A Word of the Day widget for your Home Screen
+• A layout that fits the largest accessibility text sizes
 • Your best streak is kept
 • No ads and no account; your progress stays on your device
 

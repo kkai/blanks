@@ -5,6 +5,9 @@ Nach jeder richtigen Antwort zeigt Blanks, was alle vier Wörter bedeuten. So le
 • Über 8.000 englische Wörter, mit Definitionen aus WordNet
 • Keine Wiederholungen, bis Du die ganze Liste gesehen hast; verpasste Wörter kommen früher wieder
 • Wörter ziehen oder antippen, wie Du magst
+• Höre Dir die vier Wörter nach einer richtigen Antwort an
+• Ein Widget mit dem Wort des Tages für Deinen Home-Bildschirm
+• Ein Layout, das auch zu den größten Schriftgrößen der Bedienungshilfen passt
 • Deine beste Serie wird gespeichert
 • Keine Werbung, kein Konto; Dein Fortschritt bleibt auf Deinem Gerät
 

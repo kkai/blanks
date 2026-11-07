@@ -4,7 +4,11 @@ Every word you miss is remembered. It comes back after a few words, then less an
 
 • Review mode for the words you missed
 • Your last 50 words, with their meanings
-• Progress: words practised, right the first time, learned, still to review, and your best streak
+• Progress: words practised, right the first time, learned, still to review, words per review box, and your best streak
+• Missed This Week: the words you missed in the last seven days
+• Hear any of the four words after a right answer
+• A Word of the Day widget for your Home Screen
+• A layout that fits the largest accessibility text sizes
 • After a right answer, see what all four words mean; hold one to look it up in the dictionary
 • The same 8,000+ English words as Blanks, with definitions from WordNet
 • No ads and no account; your progress stays on your device

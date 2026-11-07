@@ -1,7 +1,10 @@
 No login or account. Everything runs offline; nothing is collected.
 
-To see the 5.1 changes:
-- Drag the word that matches the definition into the hole at the top of the paper (or turn on "Tap words instead of dragging" under the i button and tap it). After a right answer the app shows what all four words mean; tap anywhere to go on. Holding a word on that screen opens the system dictionary, or the app's own definition if no dictionary is installed.
-- More Blanks only: under the i button, "Review" (with "Review mistakes only"), "Recent words" and "Progress". Answer a word wrong once and it appears there.
+To see the 5.2 changes:
+- Play: drag the word that matches the definition into the hole at the top of the paper (or turn on "Tap words instead of dragging" under the i button and tap it). A new install starts with common words.
+- Pronunciation: after a right answer the app shows what all four words mean. Tap the speaker beside a word to hear it. It uses the voices built into iOS. Tap anywhere else to go on.
+- Widget: add "Word of the Day" from the Home Screen widget gallery. Its word comes from a list inside the app and changes daily.
+- Larger text: set an accessibility text size in Settings > Accessibility > Display & Text Size > Larger Text. The game switches to a layout with tap answers.
+- More Blanks only: under the i button, "Progress" now has words per review box and "Missed this week". Answer a word wrong once and it appears there.
 
 The tip jar in Blanks (i button > Buy Me a Coffee) uses the three existing consumable in-app purchases; it unlocks nothing.

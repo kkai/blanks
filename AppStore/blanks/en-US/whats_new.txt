@@ -1,5 +1,7 @@
-• After a right answer, see what all four words mean. Hold one to look it up in the dictionary. You can turn this off on the About screen.
-• Words no longer repeat until you have seen the whole list, and words you miss come back sooner.
-• Your best streak now shows on the About screen.
-• Cleaner word list: 34 definitions corrected and 6 names removed.
-• VoiceOver improvements.
+• New players start with common words before the whole list opens up.
+• Hear a word: after a right answer, tap the speaker beside it.
+• Word of the Day: a new widget for your Home Screen.
+• Larger text: at the largest accessibility text sizes, the game switches to a layout that fits the text.
+• A card dropped outside the hole now goes back to its place, so the right answer can't get lost.
+• Your progress is better protected if its file can't be read.
+• Five offensive entries removed from the word list.
