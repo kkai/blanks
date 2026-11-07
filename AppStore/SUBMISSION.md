@@ -1,6 +1,28 @@
 # Blanks and More Blanks — submission runbook
 
-## Current release: 5.1 (build 6), staged 2026-09-26, NOT submitted
+## Current release: 5.2 (build 7), staged 2026-11-07, NOT submitted
+
+Common words first for new players, pronunciation on the meanings screen, a Word
+of the Day widget, a flowing layout at accessibility text sizes, and fixes for
+stranded cards and progress-file loss. Five slur-defined entries removed, 8,098
+words. More Blanks adds box counts and Missed This Week. Code: tag `v5.2-submission`.
+
+| | Blanks | More Blanks |
+|---|---|---|
+| Version 5.2 | `9ac9218b-5b46-49c7-965e-c99a0e7ffe1d` | `47f5e3ca-aeaf-4acc-b3ad-8fcd856d8e5c` |
+| Build 7 | `0eb2fde7-c116-4476-a01a-ac881b09f98e` | `cbc16330-23f1-4025-966a-faaaaedf27c2` |
+| Release | MANUAL | MANUAL |
+
+Screenshots: `studio/appstoreconnect/screenshots/{blanks,moreblanks}-5.2/{iphone,ipad}`,
+from real play on iPhone 11 Pro Max and iPad Pro 12.9 6th gen (iOS 18.5). Run
+`defaults delete <bundle id>` in the simulator first, or an old best streak survives
+the reinstall. Upload them before creating the review item: a draft item locks them.
+The widget is not in the screenshots.
+
+Find the review submission ids with `GET reviewSubmissions?filter[app]=<app id>`, then
+submit with the call below, or press Submit for Review on each version.
+
+## Earlier release: 5.1 (build 6)
 
 Show all four meanings after a right answer (hold a word for the dictionary),
 no repeats until the whole list is seen, missed words come back, best streak on
