@@ -82,6 +82,9 @@ final class GameState {
         let wordModel = wordModel ?? WordModel()
         self.wordModel = wordModel
         self.progress = progress ?? ProgressStore()
+        if !wordModel.words.isEmpty {
+            self.progress.vocabulary = Set(wordModel.words.map(\.word))
+        }
         self.defaults = defaults
         self.reviewModeAvailable = reviewModeAvailable
         deck = WordDeck(count: wordModel.words.count, defaults: defaults)
@@ -178,6 +181,11 @@ final class GameState {
         }
         if Double.random(in: 0..<1) < Self.reviewShare,
            let word = progress.dueWord(excluding: current),
+           let entry = wordModel.entry(for: word) {
+            return entry
+        }
+        if StarterPolicy.isActive(round: progress.round, firstTryRate: progress.firstTryRate),
+           let word = progress.unseenWord(from: wordModel.starterWords, excluding: current),
            let entry = wordModel.entry(for: word) {
             return entry
         }

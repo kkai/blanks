@@ -35,6 +35,7 @@ struct LegacyGameView: View {
 
     @Environment(GameState.self) private var game
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @AppStorage("TappingUI") private var isTapping = false
     // "-showAbout" launch argument opens About immediately (UI testing).
     @State private var showAbout = ProcessInfo.processInfo.arguments.contains("-showAbout")
@@ -42,6 +43,7 @@ struct LegacyGameView: View {
     @State private var cardCenters: [CGPoint] = LegacyGameView.slotCenters
     @State private var draggingIndex: Int?
     @State private var feedbackGrown = false
+    @State private var speaker = WordSpeaker()
 
     static let canvas = CGSize(width: 320, height: 568)
     static let cardSize = CGSize(width: 174, height: 63)
@@ -62,22 +64,18 @@ struct LegacyGameView: View {
     private let infoTint = Color(red: 0.196, green: 0.310, blue: 0.522)
 
     var body: some View {
-        GeometryReader { geo in
-            // Fit the canvas: width-bound on iPhone portrait (legacy compat
-            // look), height-bound where the screen is short relative to
-            // width (iPad, landscape) so the cards never fall off-screen.
-            let scale = min(geo.size.width / Self.canvas.width,
-                            geo.size.height / Self.canvas.height)
-            canvasContent
-                .frame(width: Self.canvas.width, height: Self.canvas.height)
-                .scaleEffect(scale)
-                .position(x: geo.size.width / 2, y: geo.size.height / 2)
+        // The canvas is a fixed size, so accessibility text sizes get a
+        // flowing layout. Below them the game keeps its 4.3 look.
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                FlowingGameView(showAbout: $showAbout)
+            } else {
+                legacyCanvas
+            }
         }
-        .background(Color.black)
-        .ignoresSafeArea()
-        .statusBarHidden(false)
         .sensoryFeedback(.success, trigger: game.correctCount)
         .sensoryFeedback(.error, trigger: game.wrongCount)
+        .onChange(of: game.roundID) { announceRoundResult() }
         .fullScreenCover(isPresented: $showAbout) {
             LegacyAboutView(config: config)
         }
@@ -93,6 +91,23 @@ struct LegacyGameView: View {
                 }
             }
         }
+    }
+
+    private var legacyCanvas: some View {
+        GeometryReader { geo in
+            // Fit the canvas: width-bound on iPhone portrait (legacy compat
+            // look), height-bound where the screen is short relative to
+            // width (iPad, landscape) so the cards never fall off-screen.
+            let scale = min(geo.size.width / Self.canvas.width,
+                            geo.size.height / Self.canvas.height)
+            canvasContent
+                .frame(width: Self.canvas.width, height: Self.canvas.height)
+                .scaleEffect(scale)
+                .position(x: geo.size.width / 2, y: geo.size.height / 2)
+        }
+        .background(Color.black)
+        .ignoresSafeArea()
+        .statusBarHidden(false)
     }
 
     private var canvasContent: some View {
@@ -139,6 +154,16 @@ struct LegacyGameView: View {
                 .frame(width: 273, height: 169)
                 .position(x: 24 + 136.5, y: 168 + 84.5)
                 .accessibilityLabel("Definition: \(game.definition)")
+            }
+
+            // First run only: dragging is not discoverable.
+            if !isTapping && !game.hasAnswered && game.progress.round == 0 && !game.isShowingMeanings {
+                Text("Drag a word up into the hole in the paper")
+                    .font(.custom("IowanOldStyle-Italic", size: 12))
+                    .foregroundStyle(.black.opacity(0.55))
+                    .position(x: 160, y: 404)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
             }
 
             // Score bar — one 9pt Iowan Old Style line at x=16, above row 1.
@@ -219,7 +244,6 @@ struct LegacyGameView: View {
         .onChange(of: game.roundID) {
             // grow3AnimationDidStop: every card snaps back to its slot.
             cardCenters = Self.slotCenters
-            announceRoundResult()
         }
         .onChange(of: game.isShowingMeanings) { _, showing in
             if showing {
@@ -249,13 +273,17 @@ struct LegacyGameView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(game.meanings, id: \.word) { item in
-                    meaningRow(item)
-                        .onLongPressGesture { lookUp(item.word) }
-                        .accessibilityLabel(item.isAnswer
-                            ? "\(item.word) is the answer"
-                            : "\(item.word): \(item.definition ?? "no definition")")
-                        .accessibilityAction(named: "Look up \(item.word)") { lookUp(item.word) }
-                        .accessibilityAction(named: "Next word") { game.continueToNextWord() }
+                    HStack(alignment: .firstTextBaseline, spacing: 2) {
+                        speakButton(item.word)
+                        meaningRow(item)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .onLongPressGesture { lookUp(item.word) }
+                            .accessibilityLabel(item.isAnswer
+                                ? "\(item.word) is the answer"
+                                : "\(item.word): \(item.definition ?? "no definition")")
+                            .accessibilityAction(named: "Look up \(item.word)") { lookUp(item.word) }
+                            .accessibilityAction(named: "Next word") { game.continueToNextWord() }
+                    }
                 }
             }
             .foregroundStyle(.black)
@@ -264,6 +292,23 @@ struct LegacyGameView: View {
         // Visible (and flashed) so an overflowing list reads as scrollable.
         .scrollIndicators(.visible)
         .scrollIndicatorsFlash(onAppear: true)
+    }
+
+    /// The tap area overlaps the lines around it, so it stays usable once the
+    /// canvas is scaled without pushing the rows apart.
+    private func speakButton(_ word: String) -> some View {
+        Button {
+            speaker.speak(word)
+        } label: {
+            Image(systemName: "speaker.wave.2")
+                .font(.system(size: 11))
+                .foregroundStyle(infoTint)
+                .frame(width: 30, height: 34)
+                .contentShape(Rectangle())
+                .padding(.vertical, -10)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Pronounce \(word)")
     }
 
     /// Lookups only happen after the answer: before it, the answer card's
@@ -337,15 +382,26 @@ struct LegacyGameView: View {
                 // app had the same one-drag-at-a-time model.
                 DragGesture(minimumDistance: 0, coordinateSpace: .named("canvas"))
                     .onChanged { value in
-                        // 4.3 snaps the card's center to the finger.
+                        // 4.3 snaps the card's center to the finger. Clamped so
+                        // a card cannot leave the screen.
                         draggingIndex = index
-                        cardCenters[index] = value.location
+                        cardCenters[index] = CGPoint(
+                            x: min(max(value.location.x, 0), Self.canvas.width),
+                            y: min(max(value.location.y, 0), Self.canvas.height)
+                        )
                     }
                     .onEnded { value in
                         draggingIndex = nil
                         guard value.location.y <= Self.dropMaxY else {
-                            // 4.3: no snap-back — the card stays where
-                            // dropped until the round resets.
+                            // 4.3 left the card where it landed, which could
+                            // strand the right answer. Since 5.2 it goes home.
+                            if reduceMotion {
+                                cardCenters[index] = Self.slotCenters[index]
+                            } else {
+                                withAnimation(.interpolatingSpring(stiffness: 300, damping: 22)) {
+                                    cardCenters[index] = Self.slotCenters[index]
+                                }
+                            }
                             return
                         }
                         if reduceMotion {

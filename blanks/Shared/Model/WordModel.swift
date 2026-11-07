@@ -2,6 +2,8 @@ import Foundation
 
 struct WordModel {
     let words: [WordEntry]
+    /// Common words new players see first. Empty means no starter stretch.
+    let starterWords: [String]
     private let indexByWord: [String: Int]
 
     /// True when no usable word list is available; views show an error state.
@@ -19,11 +21,12 @@ struct WordModel {
     }()
 
     init() {
-        self.init(words: Self.bundledWords ?? [])
+        self.init(words: Self.bundledWords ?? [], starterWords: WordLists.bundled?.starter ?? [])
     }
 
-    init(words: [WordEntry]) {
+    init(words: [WordEntry], starterWords: [String] = []) {
         self.words = words
+        self.starterWords = starterWords
         indexByWord = Dictionary(words.enumerated().map { ($1.word, $0) },
                                  uniquingKeysWith: { first, _ in first })
         loadFailed = words.isEmpty

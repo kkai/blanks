@@ -374,3 +374,184 @@ private func makeEntry(
         #expect(!game.reviewModeOn)
     }
 }
+
+// MARK: - 5.2
+
+@Suite struct StarterPolicyTests {
+    @Test(arguments: [
+        (0, 0.0, true), (14, 1.0, true),
+        (15, 0.95, false), (15, 0.7, true), (39, 0.89, true),
+        (40, 0.7, false), (40, 0.4, true), (79, 0.1, true),
+        (80, 0.1, false), (500, 0.0, false),
+    ])
+    func starterStretch(round: Int, rate: Double, active: Bool) {
+        #expect(StarterPolicy.isActive(round: round, firstTryRate: rate) == active)
+    }
+}
+
+@MainActor
+@Suite(.serialized) struct StarterWordTests {
+    private func makeGame(progress: ProgressStore) -> GameState {
+        let suiteName = "StarterWordTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let words = (0..<200).map { makeEntry(word: "word\($0)") }
+        let model = WordModel(words: words, starterWords: ["word0", "word1", "word2"])
+        return GameState(wordModel: model, progress: progress, defaults: defaults)
+    }
+
+    @Test func newPlayerStartsOnACommonWord() {
+        for _ in 0..<20 {
+            let game = makeGame(progress: ProgressStore(fileURL: nil))
+            #expect(["word0", "word1", "word2"].contains(game.correctWord))
+        }
+    }
+
+    @Test func starterWordsAreNotRepeatedAndTheDeckTakesOver() {
+        let progress = ProgressStore(fileURL: nil)
+        for word in ["word0", "word1", "word2"] { progress.record(word: word, firstTry: true) }
+        #expect(progress.unseenWord(from: ["word0", "word1", "word2"], excluding: nil) == nil)
+        let game = makeGame(progress: progress)
+        #expect(!game.correctWord.isEmpty)
+    }
+
+    @Test func experiencedPlayerSkipsTheStarterWords() {
+        let progress = ProgressStore(fileURL: nil)
+        for index in 0..<StarterPolicy.longest { progress.record(word: "word\(index + 50)", firstTry: true) }
+        var starterSeen = 0
+        for _ in 0..<40 {
+            let game = makeGame(progress: progress)
+            if ["word0", "word1", "word2"].contains(game.correctWord) { starterSeen += 1 }
+        }
+        // Three words of 200 can still come from the deck, but rarely.
+        #expect(starterSeen < 12)
+    }
+}
+
+@MainActor
+@Suite struct ProgressStore52Tests {
+    private func tempURL() -> URL {
+        FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).json")
+    }
+
+    @Test func fileFrom51Loads() throws {
+        let url = tempURL()
+        let json = #"{"records":{"abase":{"box":1,"seen":2,"firstTry":1,"lastRound":4}},"recent":[],"round":4}"#
+        try Data(json.utf8).write(to: url)
+        let store = ProgressStore(fileURL: url)
+        #expect(store.records["abase"]?.box == 1)
+        #expect(store.records["abase"]?.lastMissed == nil)
+        #expect(store.round == 4)
+    }
+
+    @Test func oneBadFieldKeepsTheRest() throws {
+        let url = tempURL()
+        let json = #"{"records":{"abase":{"box":1,"seen":2,"firstTry":1,"lastRound":4}},"recent":"broken","round":4}"#
+        try Data(json.utf8).write(to: url)
+        let store = ProgressStore(fileURL: url)
+        #expect(store.wordsPractised == 1)
+        #expect(store.recent.isEmpty)
+    }
+
+    @Test func unreadableFileIsKeptBeforeTheNextSave() throws {
+        let url = tempURL()
+        try Data("not json".utf8).write(to: url)
+        let store = ProgressStore(fileURL: url)
+        store.record(word: "abase", firstTry: true)
+        let backup = url.deletingPathExtension().appendingPathExtension("unreadable.json")
+        #expect(try String(contentsOf: backup, encoding: .utf8) == "not json")
+    }
+
+    @Test func wordRemovedFromTheListDoesNotBlockReview() {
+        let store = ProgressStore(fileURL: nil)
+        store.record(word: "removed", firstTry: false)
+        store.record(word: "kept", firstTry: false)
+        store.vocabulary = ["kept"]
+        #expect(store.reviewWord(excluding: nil) == "kept")
+        for _ in 0..<5 { store.record(word: "other", firstTry: true) }
+        #expect(store.dueWord(excluding: nil) == "kept")
+    }
+
+    @Test func missedThisWeekDropsOldMissesAndSortsNewestFirst() {
+        var now = Date(timeIntervalSince1970: 1_000_000)
+        let store = ProgressStore(fileURL: nil, now: { now })
+        store.record(word: "old", firstTry: false)
+        now += 6 * 86_400
+        store.record(word: "newer", firstTry: false)
+        now += 3600
+        store.record(word: "newest", firstTry: false)
+        store.record(word: "right", firstTry: true)
+        #expect(store.missedThisWeek == ["newest", "newer", "old"])
+        now += 86_400 + 1
+        #expect(store.missedThisWeek == ["newest", "newer"])
+    }
+
+    @Test func boxCountsCoverEveryBox() {
+        let store = ProgressStore(fileURL: nil)
+        store.record(word: "a", firstTry: false)
+        store.record(word: "b", firstTry: false)
+        store.record(word: "b", firstTry: true)
+        store.record(word: "c", firstTry: true)
+        let counts = store.boxCounts
+        #expect(counts[1] == 1)
+        #expect(counts[2] == 1)
+        #expect(counts[3] == 0)
+        #expect(counts[ProgressStore.knownBox] == 1)
+    }
+}
+
+@MainActor
+@Suite struct BundledWordDataTests {
+    @Test func removedWordsAreGoneEverywhere() {
+        let removed: Set<String> = ["retard", "dyke", "darky", "boche", "fagin"]
+        let model = WordModel()
+        #expect(!model.words.isEmpty)
+        for entry in model.words {
+            #expect(!removed.contains(entry.word))
+            #expect(removed.isDisjoint(with: entry.falseOptions))
+        }
+    }
+
+    @Test func listsOnlyUseWordsFromTheGame() throws {
+        let model = WordModel()
+        let lists = try #require(WordLists.bundled)
+        #expect(lists.starter.count > 500)
+        #expect(lists.daily.count > 2000)
+        for word in lists.starter { #expect(model.entry(for: word) != nil) }
+        for item in lists.daily { #expect(model.entry(for: item.word)?.definition == item.definition) }
+    }
+}
+
+@Suite struct DailyWordTests {
+    private var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        return calendar
+    }
+
+    @Test func sameDaySameWord() {
+        let morning = Date(timeIntervalSinceReferenceDate: 86_400 * 9000 + 60)
+        let evening = morning.addingTimeInterval(80_000)
+        #expect(DailyWord.index(for: morning, count: 3314, calendar: calendar)
+                == DailyWord.index(for: evening, count: 3314, calendar: calendar))
+    }
+
+    @Test func everyWordComesUpBeforeOneRepeats() {
+        let count = 3314
+        var seen = Set<Int>()
+        for day in 0..<count {
+            let date = Date(timeIntervalSinceReferenceDate: 86_400 * Double(9000 + day))
+            seen.insert(DailyWord.index(for: date, count: count, calendar: calendar)!)
+        }
+        #expect(seen.count == count)
+    }
+
+    @Test func emptyListHasNoWord() {
+        #expect(DailyWord.index(for: .now, count: 0) == nil)
+    }
+
+    @Test func changesAtTheNextMidnight() {
+        let date = Date(timeIntervalSinceReferenceDate: 86_400 * 9000 + 500)
+        #expect(DailyWord.nextChange(after: date, calendar: calendar)
+                == Date(timeIntervalSinceReferenceDate: 86_400 * 9001))
+    }
+}

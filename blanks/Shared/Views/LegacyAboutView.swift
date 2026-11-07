@@ -135,6 +135,18 @@ struct LegacyAboutView: View {
             statRow("Right the first time", "\(Int((game.progress.firstTryRate * 100).rounded()))%")
             statRow("Learned", "\(game.progress.knownCount)")
             statRow("To review", "\(game.progress.reviewCount)")
+            ForEach(1..<ProgressStore.knownBox, id: \.self) { box in
+                statRow("Box \(box), back after \(ProgressStore.intervals[box] ?? 0) words",
+                        "\(game.progress.boxCounts[box] ?? 0)")
+            }
+            NavigationLink {
+                MissedWordsView()
+            } label: {
+                Text("Missed this week (\(game.progress.missedThisWeek.count))")
+                    .font(Self.bodyFont.bold())
+                    .frame(minHeight: 44, alignment: .leading)
+            }
+            .tint(.black)
             Button("Reset progress…") { confirmReset = true }
                 .font(Self.footFont.bold())
                 .tint(.black)
@@ -190,6 +202,8 @@ struct LegacyAboutView: View {
             Text("License")
                 .font(Self.headerFont)
             Text("Word definitions from WordNet 3.0, Princeton University. The developer is not associated with WordNet or Princeton.")
+                .font(Self.footFont)
+            Text("The choice of common words uses frequency data from wordfreq by Robyn Speer, CC BY-SA 4.0.")
                 .font(Self.footFont)
             Link("Questions? Send me a mail.",
                  destination: URL(string: "mailto:iappsupport@googlemail.com")!)

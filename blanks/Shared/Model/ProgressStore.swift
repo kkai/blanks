@@ -13,6 +13,8 @@ final class ProgressStore {
         var firstTry: Int
         /// Value of `round` when the word was last completed.
         var lastRound: Int
+        /// When the word was last missed. Nil for words from before 5.2.
+        var lastMissed: Date?
     }
 
     struct RecentWord: Codable, Identifiable, Equatable {
@@ -25,6 +27,20 @@ final class ProgressStore {
         var records: [String: WordRecord]
         var recent: [RecentWord]
         var round: Int
+
+        init(records: [String: WordRecord], recent: [RecentWord], round: Int) {
+            self.records = records
+            self.recent = recent
+            self.round = round
+        }
+
+        /// A field that cannot be read costs that field, not the whole file.
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            records = (try? container.decode([String: WordRecord].self, forKey: .records)) ?? [:]
+            recent = (try? container.decode([RecentWord].self, forKey: .recent)) ?? []
+            round = (try? container.decode(Int.self, forKey: .round)) ?? 0
+        }
     }
 
     static let knownBox = 5
@@ -37,14 +53,22 @@ final class ProgressStore {
     /// Completed words, ever. Drives when review words are due.
     private(set) var round = 0
 
+    /// The current word list. A record for a word outside it, such as one
+    /// removed in an update, is kept but never offered for review.
+    var vocabulary: Set<String>?
+
     private let fileURL: URL?
+    private let now: () -> Date
 
     /// `fileURL: nil` keeps progress in memory only (previews, tests).
-    init(fileURL: URL? = ProgressStore.defaultFileURL) {
+    init(fileURL: URL? = ProgressStore.defaultFileURL, now: @escaping () -> Date = Date.init) {
         self.fileURL = fileURL
-        guard let fileURL,
-              let data = try? Data(contentsOf: fileURL),
-              let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) else {
+        self.now = now
+        guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return }
+        guard let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) else {
+            // The next save would overwrite this file, so keep a copy.
+            let backup = fileURL.deletingPathExtension().appendingPathExtension("unreadable.json")
+            try? data.write(to: backup, options: .atomic)
             return
         }
         records = snapshot.records
@@ -68,6 +92,7 @@ final class ProgressStore {
             entry.box = entry.seen == 0 ? Self.knownBox : min(entry.box + 1, Self.knownBox)
         } else {
             entry.box = 1
+            entry.lastMissed = now()
         }
         entry.seen += 1
         entry.lastRound = round
@@ -110,6 +135,32 @@ final class ProgressStore {
         return Double(records.values.reduce(0) { $0 + $1.firstTry }) / Double(seen)
     }
 
+    /// A word from `words` the player has never completed.
+    func unseenWord(from words: [String], excluding current: String?) -> String? {
+        words.filter { records[$0] == nil && $0 != current }.randomElement()
+    }
+
+    /// Words per Leitner box, for boxes 1 to the known box.
+    var boxCounts: [Int: Int] {
+        var counts = Dictionary(uniqueKeysWithValues: (1...Self.knownBox).map { ($0, 0) })
+        for record in records.values where counts[record.box] != nil {
+            counts[record.box, default: 0] += 1
+        }
+        return counts
+    }
+
+    /// Words missed in the last seven days, most recent first.
+    var missedThisWeek: [String] {
+        let cutoff = now().addingTimeInterval(-7 * 86_400)
+        return records
+            .compactMap { word, record -> (String, Date)? in
+                guard let missed = record.lastMissed, missed >= cutoff else { return nil }
+                return (word, missed)
+            }
+            .sorted { ($1.1, $0.0) < ($0.1, $1.0) }
+            .map(\.0)
+    }
+
     func reset() {
         records = [:]
         recent = []
@@ -120,7 +171,9 @@ final class ProgressStore {
     /// Lowest box first, then the word waiting longest.
     private func reviewCandidates(excluding current: String?) -> [(key: String, value: WordRecord)] {
         records
-            .filter { $0.value.box < Self.knownBox && $0.key != current }
+            .filter { word, record in
+                record.box < Self.knownBox && word != current && vocabulary?.contains(word) != false
+            }
             .sorted {
                 ($0.value.box, $0.value.lastRound, $0.key) < ($1.value.box, $1.value.lastRound, $1.key)
             }

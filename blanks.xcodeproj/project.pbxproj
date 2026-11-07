@@ -7,8 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0781917C6FE8B744F2B2D5C8 /* WordLists.swift in Sources */ = {isa = PBXBuildFile; fileRef = 874BC74558EC5183EADCF3BD /* WordLists.swift */; };
 		0A7BCC7F0855527C6FEB04EC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD982447D9408D243B03366A /* Foundation.framework */; };
+		178F22F7DFA63A275CE20E15 /* WordLists.swift in Sources */ = {isa = PBXBuildFile; fileRef = 874BC74558EC5183EADCF3BD /* WordLists.swift */; };
+		183C8A8B52F555EA49AA218A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD982447D9408D243B03366A /* Foundation.framework */; };
+		4428C358851AADA5A1CF2376 /* MoreBlanksWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A0EFF410F9221827B68F3DD0 /* MoreBlanksWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6397BAF4AB83A1A1E56BC0BD /* BlanksTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AF5638FD4C4A491F8EA8E1 /* BlanksTests.swift */; };
+		E78F687A2201700DDCC1BB88 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD982447D9408D243B03366A /* Foundation.framework */; };
+		F01CDB30AB2C940094B597ED /* wordlists.json in Resources */ = {isa = PBXBuildFile; fileRef = 41DF35DB185896F28B17C537 /* wordlists.json */; };
+		F18D4AD03B74DE4AE2B2B64D /* wordlists.json in Resources */ = {isa = PBXBuildFile; fileRef = 41DF35DB185896F28B17C537 /* wordlists.json */; };
+		F8A801C9B92F23AEE1E0CC1B /* BlanksWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EE0F46EF33662ADFC70A93BE /* BlanksWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -19,14 +27,57 @@
 			remoteGlobalIDString = 2A37162B2F49B9880094A22A;
 			remoteInfo = Blanks;
 		};
+		47888522D1B3EFE51CD395D0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A3716242F49B9880094A22A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 838E4ECEE7ABE29E9724D0CA;
+			remoteInfo = BlanksWidget;
+		};
+		5BDF4D3E7362C3CA0AABF655 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A3716242F49B9880094A22A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EB41B435247588D5B8EF4ABD;
+			remoteInfo = MoreBlanksWidget;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1D7F6BF377175087C9FDFCCD /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4428C358851AADA5A1CF2376 /* MoreBlanksWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		823958340193B75B3115148C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F8A801C9B92F23AEE1E0CC1B /* BlanksWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		2A37162C2F49B9880094A22A /* Blanks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blanks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A37163B2F49B98A0094A22A /* MoreBlanks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoreBlanks.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		41DF35DB185896F28B17C537 /* wordlists.json */ = {isa = PBXFileReference; includeInIndex = 1; name = wordlists.json; path = blanks/Shared/Resources/wordlists.json; sourceTree = "<group>"; };
 		76AF5638FD4C4A491F8EA8E1 /* BlanksTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlanksTests.swift; sourceTree = "<group>"; };
+		874BC74558EC5183EADCF3BD /* WordLists.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WordLists.swift; path = blanks/Shared/Model/WordLists.swift; sourceTree = "<group>"; };
+		A0EFF410F9221827B68F3DD0 /* MoreBlanksWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MoreBlanksWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD982447D9408D243B03366A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		E5793163847063B74504FD21 /* BlanksTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BlanksTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE0F46EF33662ADFC70A93BE /* BlanksWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BlanksWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -58,6 +109,13 @@
 			path = blanks;
 			sourceTree = "<group>";
 		};
+		9FD626842BF6EEC09454F4F2 /* BlanksWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = BlanksWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +130,22 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A8519071D9875A4442988D38 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E78F687A2201700DDCC1BB88 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BE5334D45E66197C2125C78A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				183C8A8B52F555EA49AA218A /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +167,9 @@
 				2A37162D2F49B9880094A22A /* Products */,
 				5770EF2A7B7C599D01C11BB3 /* Frameworks */,
 				32F2A9F419A419B4A3A6FA02 /* BlanksTests */,
+				9FD626842BF6EEC09454F4F2 /* BlanksWidget */,
+				874BC74558EC5183EADCF3BD /* WordLists.swift */,
+				41DF35DB185896F28B17C537 /* wordlists.json */,
 			);
 			sourceTree = "<group>";
 		};
@@ -102,6 +179,8 @@
 				2A37162C2F49B9880094A22A /* Blanks.app */,
 				2A37163B2F49B98A0094A22A /* MoreBlanks.app */,
 				E5793163847063B74504FD21 /* BlanksTests.xctest */,
+				EE0F46EF33662ADFC70A93BE /* BlanksWidget.appex */,
+				A0EFF410F9221827B68F3DD0 /* MoreBlanksWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -141,10 +220,12 @@
 				2A3716282F49B9880094A22A /* Sources */,
 				2A3716292F49B9880094A22A /* Frameworks */,
 				2A37162A2F49B9880094A22A /* Resources */,
+				823958340193B75B3115148C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				8CB39AC17E4628B7562E353B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				2A37162E2F49B9880094A22A /* blanks */,
@@ -161,10 +242,12 @@
 				2A37163C2F49B98A0094A22A /* Sources */,
 				2A37163D2F49B98A0094A22A /* Frameworks */,
 				2A37163E2F49B98A0094A22A /* Resources */,
+				1D7F6BF377175087C9FDFCCD /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				5299CB584638B4FA50A183F8 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				2A37162E2F49B9880094A22A /* blanks */,
@@ -173,6 +256,26 @@
 			productName = MoreBlanks;
 			productReference = 2A37163B2F49B98A0094A22A /* MoreBlanks.app */;
 			productType = "com.apple.product-type.application";
+		};
+		838E4ECEE7ABE29E9724D0CA /* BlanksWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3B4C11F278DD62EE88A58700 /* Build configuration list for PBXNativeTarget "BlanksWidget" */;
+			buildPhases = (
+				B0E5EA9EA48153C821B21CE0 /* Sources */,
+				BE5334D45E66197C2125C78A /* Frameworks */,
+				D03045697D06AF235EBE448A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9FD626842BF6EEC09454F4F2 /* BlanksWidget */,
+			);
+			name = BlanksWidget;
+			productName = BlanksWidget;
+			productReference = EE0F46EF33662ADFC70A93BE /* BlanksWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		BB8F5314CE8812D35899FC0F /* BlanksTests */ = {
 			isa = PBXNativeTarget;
@@ -191,6 +294,26 @@
 			productName = BlanksTests;
 			productReference = E5793163847063B74504FD21 /* BlanksTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		EB41B435247588D5B8EF4ABD /* MoreBlanksWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 23207AA9AB5D9E138205E615 /* Build configuration list for PBXNativeTarget "MoreBlanksWidget" */;
+			buildPhases = (
+				2E32C4297141339B393D04E0 /* Sources */,
+				A8519071D9875A4442988D38 /* Frameworks */,
+				9ABC755CF255BE55AD84BFE4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9FD626842BF6EEC09454F4F2 /* BlanksWidget */,
+			);
+			name = MoreBlanksWidget;
+			productName = MoreBlanksWidget;
+			productReference = A0EFF410F9221827B68F3DD0 /* MoreBlanksWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -227,6 +350,8 @@
 				2A37162B2F49B9880094A22A /* Blanks */,
 				2A37163A2F49B98A0094A22A /* MoreBlanks */,
 				BB8F5314CE8812D35899FC0F /* BlanksTests */,
+				838E4ECEE7ABE29E9724D0CA /* BlanksWidget */,
+				EB41B435247588D5B8EF4ABD /* MoreBlanksWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -243,6 +368,22 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9ABC755CF255BE55AD84BFE4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F01CDB30AB2C940094B597ED /* wordlists.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D03045697D06AF235EBE448A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F18D4AD03B74DE4AE2B2B64D /* wordlists.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -270,6 +411,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2E32C4297141339B393D04E0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0781917C6FE8B744F2B2D5C8 /* WordLists.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B0E5EA9EA48153C821B21CE0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				178F22F7DFA63A275CE20E15 /* WordLists.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E978EC4077DE7E75ABF2894B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -281,15 +438,56 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		5299CB584638B4FA50A183F8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = MoreBlanksWidget;
+			target = EB41B435247588D5B8EF4ABD /* MoreBlanksWidget */;
+			targetProxy = 5BDF4D3E7362C3CA0AABF655 /* PBXContainerItemProxy */;
+		};
 		7FAE239AA9AAED8B2E68EA65 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = Blanks;
 			target = 2A37162B2F49B9880094A22A /* Blanks */;
 			targetProxy = 25A93A78CE646C3D3E2960C4 /* PBXContainerItemProxy */;
 		};
+		8CB39AC17E4628B7562E353B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BlanksWidget;
+			target = 838E4ECEE7ABE29E9724D0CA /* BlanksWidget */;
+			targetProxy = 47888522D1B3EFE51CD395D0 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		040027E7A6FC71DEC9189304 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 7;
+				DEVELOPMENT_TEAM = 8H42EZRCCP;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BlanksWidgetSupport/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Word of the Day";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 5.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Blanks.WordWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		2A3716352F49B98A0094A22A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -417,21 +615,23 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8H42EZRCCP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIViewControllerBasedStatusBarAppearance = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.1;
+				MARKETING_VERSION = 5.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Blanks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "BLANKS $(inherited)";
@@ -450,21 +650,23 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8H42EZRCCP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIViewControllerBasedStatusBarAppearance = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.1;
+				MARKETING_VERSION = 5.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Blanks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "BLANKS $(inherited)";
@@ -483,21 +685,23 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconMoreBlanks;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8H42EZRCCP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIViewControllerBasedStatusBarAppearance = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.1;
+				MARKETING_VERSION = 5.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.MoreBlanks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "MORE_BLANKS $(inherited)";
@@ -516,21 +720,23 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconMoreBlanks;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8H42EZRCCP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIViewControllerBasedStatusBarAppearance = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.1;
+				MARKETING_VERSION = 5.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.MoreBlanks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "MORE_BLANKS $(inherited)";
@@ -540,6 +746,63 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		36D4ACA80C30D3604772BD27 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 7;
+				DEVELOPMENT_TEAM = 8H42EZRCCP;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BlanksWidgetSupport/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Word of the Day";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 5.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Blanks.WordWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4E748AF792A99F221036FDAC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 7;
+				DEVELOPMENT_TEAM = 8H42EZRCCP;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BlanksWidgetSupport/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Word of the Day";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 5.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.MoreBlanks.WordWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -586,9 +849,46 @@
 			};
 			name = Release;
 		};
+		B6C271804C12C37425D2C4D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 7;
+				DEVELOPMENT_TEAM = 8H42EZRCCP;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BlanksWidgetSupport/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Word of the Day";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 5.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.MoreBlanks.WordWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		23207AA9AB5D9E138205E615 /* Build configuration list for PBXNativeTarget "MoreBlanksWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4E748AF792A99F221036FDAC /* Release */,
+				B6C271804C12C37425D2C4D1 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		2A3716272F49B9880094A22A /* Build configuration list for PBXProject "blanks" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -612,6 +912,15 @@
 			buildConfigurations = (
 				2A3716402F49B98A0094A22A /* Debug */,
 				2A3716412F49B98A0094A22A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3B4C11F278DD62EE88A58700 /* Build configuration list for PBXNativeTarget "BlanksWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				040027E7A6FC71DEC9189304 /* Release */,
+				36D4ACA80C30D3604772BD27 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
