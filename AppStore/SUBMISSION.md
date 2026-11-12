@@ -1,6 +1,6 @@
 # Blanks and More Blanks — submission runbook
 
-## Current release: 5.2 (build 7), staged 2026-11-07, NOT submitted
+## Current release: 5.2 (build 7) — submitted 2026-11-09, approved, RELEASED 2026-11-12 (both apps READY_FOR_SALE)
 
 Common words first for new players, pronunciation on the meanings screen, a Word
 of the Day widget, a flowing layout at accessibility text sizes, and fixes for
